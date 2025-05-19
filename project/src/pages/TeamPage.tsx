@@ -1,43 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Linkedin, Mail, PhoneCall, FileText, Award, BookOpen, Instagram } from 'lucide-react';
+import { teamMemberData } from '../components/shared/DataTeam';
+import { company } from '../components/shared/DataCompany';
 
-const teamMembers = [
-  {
-    id: 1,
-    name: 'Dr. Wilson Santos',
-    position: 'Sócio',
-    image: '/Wilson1.jpg',
-    education: [
-      'Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
-      'Especialização em Direito Empresarial',
-      'Mestrado em Direito Tributário'
-    ],
-    specialties: ['Direito Empresarial', 'Direito Tributário', 'Direito Civil', 'Direito de Família'],
-    bio: 'Com vasta experiência em questões empresariais e tributárias, Dr. Wilson Santos é reconhecido por sua dedicação e excelência no atendimento aos clientes. Sua abordagem combina conhecimento técnico com uma visão estratégica dos negócios.',
-    linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com',
-    email: 'wilson@advocaciaintegral.com',
-    phone: '(63) 98417-3391'
-  },
-  {
-    id: 2,
-    name: 'Dr. Lucas Nascimento',
-    position: 'Sócio',
-    image: '/Lucas2.png',
-    education: [
-      'Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
-      'Especialização em Direito Civil',
-      'Mestrando em Direito Imobiliário'
-    ],
-    specialties: ['Direito Civil', 'Direito Imobiliário'],
-    bio: 'Dr. Lucas Nascimento construiu uma sólida carreira focada em Direito Civil e Imobiliário. Com profundo conhecimento teórico e prático, desenvolveu metodologias inovadoras para a resolução de conflitos. Sua atuação é marcada pelo compromisso com a excelência e atendimento humanizado.',
-    linkedin: 'https://linkedin.com',
-    instagram: 'https://www.instagram.com/p/CwKqqyEO8sG/',
-    email: 'lucas@advocaciaintegral.com',
-    phone: '(63) 99207-4376'
-  }
-];
 
 const TeamPage = () => {
   const fadeInUp = {
@@ -61,7 +27,7 @@ const TeamPage = () => {
               Nossa Equipe
             </h1>
             <p className="mt-6 text-lg text-neutral-200">
-              Conheça os profissionais dedicados que fazem parte do escritório Santos & Nascimento Advogados Associados, 
+              Conheça os profissionais dedicados que fazem parte do escritório {company.nome}, 
               comprometidos em oferecer serviços jurídicos de excelência.
             </p>
           </motion.div>
@@ -89,7 +55,7 @@ const TeamPage = () => {
       <section className="py-16 bg-neutral-50">
         <div className="container mx-auto px-4">
           <div className="space-y-16">
-            {teamMembers.map((member, index) => (
+            {teamMemberData.map((member, index) => (
               <motion.div
                 key={member.id}
                 initial="hidden"
@@ -104,7 +70,7 @@ const TeamPage = () => {
                   <div className="md:col-span-1">
                     <div className="h-full relative">
                       <img 
-                        src={member.image} 
+                        src={member.image[0]} 
                         alt={member.name} 
                         className="w-full h-full object-cover object-center"
                         style={{ minHeight: '300px' }}
@@ -237,7 +203,7 @@ const TeamPage = () => {
               Estamos sempre em busca de talentos que compartilhem nossos valores e compromisso com a excelência jurídica. Se você é um profissional qualificado e deseja fazer parte de nossa equipe, envie seu currículo.
             </p>
             <a 
-              href="mailto:contato@advocaciaintegral.com" 
+              href={`mailto:${company.email}`}  
               className="px-6 py-3 bg-gold-600 hover:bg-gold-700 text-white rounded text-sm font-medium transition-colors inline-flex items-center"
             >
               <Mail size={16} className="mr-2" />

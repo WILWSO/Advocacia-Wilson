@@ -19,18 +19,17 @@ const Header = () => {
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `relative px-2 py-2 text-sm font-medium transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-gold-600 after:transition-transform hover:after:scale-x-100 ${
-      isActive ? 'text-primary-900 after:scale-x-100' : 'text-primary-700'
-    }`;
-
-  return (
+    isActive ? 'text-primary-300 after:scale-x-100' : isScrolled ? 'text-primary-800' : 'text-white' 
+   }`; //TEXTOS DO MENU
+   return (
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-custom py-2' : 'bg-transparent py-4'
-      }`}
+        isScrolled ? 'bg-white shadow-custom py-2' : 'bg-transparent py-4' 
+      }`} //TEXTOS DO MENU -
     >
       <div className="container mx-auto px-4">
         {/* Main header with logo and navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between"> 
           <Link to="/" className="flex items-center">
             <Logo className="h-10 md:h-12" />
           </Link>
@@ -62,7 +61,7 @@ const Header = () => {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          <div className={`md:hidden flex items-center ${isScrolled ? 'text-primary-800' : 'text-white'}`}>
             <LoginButton />
             <button
               className="ml-4 p-2 focus:outline-none"
@@ -84,7 +83,7 @@ const Header = () => {
             transition={{ duration: 0.3 }}
             className="md:hidden bg-white border-t mt-2"
           >
-            <nav className="container mx-auto px-4 py-4 flex flex-col">
+            <nav className= {`container mx-auto px-4 py-4 flex flex-col`}>
               <NavLink
                 to="/"
                 className="py-3 border-b border-neutral-100 text-primary-800"

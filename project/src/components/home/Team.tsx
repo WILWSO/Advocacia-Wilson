@@ -2,25 +2,26 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Linkedin, Mail } from 'lucide-react';
+import { teamMemberData } from '../shared/DataTeam';
 
-const teamMembers = [
+const teamHome = [
   {
-    id: 1,
-    name: 'Dr. Wilson Santos',
-    position: 'Sócio',
-    image: '/wilton-santos.jpg',
-    specialties: ['Direito Empresarial', 'Direito Tributário'],
-    linkedin: 'https://linkedin.com',
-    email: 'wilton.santos@advocaciaintegral.com'
+    id: `${teamMemberData[0].id}`,
+    name: `${teamMemberData[0].name}`,
+    position: `${teamMemberData[0].position}`,
+    image: [`${teamMemberData[0].image[1]}`], //traz a primeira imagem do array 
+    specialties: [`${teamMemberData[0].specialties}`], //traz todo o array
+    linkedin: `${teamMemberData[0].linkedin}`,
+    email: `${teamMemberData[0].email}`
   },
   {
-    id: 2,
-    name: 'Dr. Lucas Nascimento',
-    position: 'Sócio',
-    image: '/marcos-nascimento.jpg',
-    specialties: ['Direito Civil', 'Direito Imobiliário'],
-    linkedin: 'https://linkedin.com',
-    email: 'marcos.nascimento@advocaciaintegral.com'
+    id: `${teamMemberData[1].id}`,
+    name: `${teamMemberData[1].name}`,
+    position: `${teamMemberData[1].position}`,
+    image: [`${teamMemberData[1].image[1]}`], //traz a primeira imagem do array 
+    specialties: [`${teamMemberData[1].specialties}`], //traz todo o array
+    linkedin: `${teamMemberData[1].linkedin}`,
+    email: `${teamMemberData[1].email}`
   }
 ];
 
@@ -65,7 +66,7 @@ const Team = () => {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
         >
-          {teamMembers.map((member) => (
+          {teamHome.map((member) => (
             <motion.div
               key={member.id}
               variants={itemVariants}

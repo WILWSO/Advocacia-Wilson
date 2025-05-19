@@ -12,6 +12,7 @@ import {
   Landmark,
   HeartPulse
 } from 'lucide-react';
+import { company } from '../components/shared/DataCompany';
 
 const PracticeAreasPage = () => {
   const practiceAreas = [
@@ -204,7 +205,7 @@ const PracticeAreasPage = () => {
               Soluções Jurídicas Completas
             </h2>
             <p className="text-neutral-700">
-              O escritório Santos & Nascimento Advogados Associados atua em diversas áreas do Direito, 
+              O escritório {company.nome} atua em diversas áreas do Direito, 
               oferecendo soluções jurídicas completas e personalizadas para pessoas físicas e jurídicas. 
               Nossa equipe multidisciplinar está preparada para atender às necessidades específicas de cada cliente, 
               sempre com o compromisso de entregar resultados de excelência.
@@ -282,10 +283,10 @@ const PracticeAreasPage = () => {
                 Agende uma Consulta
               </a>
               <a 
-                href="tel:+551199999999" 
+                href= {company.fone}//"tel:+556332143886" 
                 className="px-6 py-3 bg-transparent hover:bg-white/10 border border-white text-white rounded text-sm font-medium transition-colors"
               >
-                (11) 9999-9999
+                {company.fone} 
               </a>
             </div>
           </div>

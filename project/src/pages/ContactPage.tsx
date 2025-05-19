@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Calendar, Send } from 'lucide-react';
+import { teamMemberData } from '../components/shared/DataTeam';
+import { company } from '../components/shared/DataCompany';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -91,9 +93,9 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-white">Telefone</h3>
-                      <p className="text-neutral-300 mt-1">(63) 3217-3886 - Escritório</p>
-                      <p className="text-neutral-300 mt-1">(63) 98417-3391 - Dr. Wilsom</p>
-                      <p className="text-neutral-300 mt-1">(63) 99207-4376 - Dr. Lucas</p>
+                      <p className="text-neutral-300 mt-1"> {company.fone} - Escritório </p>
+                      <p className="text-neutral-300 mt-1"> {teamMemberData[0].phone} - Dr. Wilsom </p>
+                      <p className="text-neutral-300 mt-1"> {teamMemberData[1].phone} - Dr. Lucas </p>
                     </div>
                   </li>
                   
@@ -103,9 +105,9 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-white">E-mail</h3>
-                      <p className="text-neutral-300 mt-1">contato@advocaciaintegral.com</p>
-                      <p className="text-neutral-300">Wil.oliv.advogados@gmail.com</p>
-                      <p className="text-neutral-300">Lucas@advocaciaintegral.com</p>
+                      <p className="text-neutral-300 mt-1"> {company.email} </p>
+                      <p className="text-neutral-300"> {teamMemberData[0].email} </p>
+                      <p className="text-neutral-300"> {teamMemberData[1].email} </p>
                     </div>
                   </li>
                   
@@ -115,11 +117,7 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-white">Endereço</h3>
-                      <p className="text-neutral-300 mt-1">
-                        Quadra 104 Sul, Rua SE 06, Lote 32, Sala 1<br />
-                        Palmas - Tocantins<br />
-                        CEP 777.000-000
-                      </p>
+                      <p className="text-neutral-300 mt-1"> {company.endereco} </p>
                     </div>
                   </li>
                   
@@ -129,7 +127,7 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-white">Horário de Atendimento</h3>
-                      <p className="text-neutral-300 mt-1">Segunda a Sexta: 9h às 18h</p>
+                      <p className="text-neutral-300 mt-1"> {company.horarios} </p>
                       <p className="text-neutral-300">Sábados e Domingos: Fechado</p>
                     </div>
                   </li>
@@ -286,7 +284,7 @@ const ContactPage = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <a
-                      href="tel:+556384173391"
+                      href="tel:+556332143886"
                       className="px-6 py-3 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors flex items-center justify-center"
                     >
                       <Phone size={16} className="mr-2" />
@@ -351,7 +349,7 @@ const ContactPage = () => {
             >
               <h3 className="text-lg font-medium text-primary-900 mb-3">Transporte Público</h3>
               <p className="text-neutral-700">
-                Estamos a 5 minutos da estação Brigadeiro do Metrô (Linha 2-Verde) e próximos a várias linhas de ônibus.
+                Estamos a 2 minutos da Av. JK e próximos a várias linhas de ônibus.
               </p>
             </motion.div>
             

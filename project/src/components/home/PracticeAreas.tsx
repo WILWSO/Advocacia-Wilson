@@ -23,7 +23,7 @@ const practiceAreas = [
     icon: <Scale size={32} className="text-gold-600" />,
     title: 'Direito Civil',
     description: 'Representação em contratos, responsabilidade civil, direito de família, sucessões e questões patrimoniais.',
-    link: '/areas-de-atuacao'
+    link: '#civil'
   },
   {
     id: 3,

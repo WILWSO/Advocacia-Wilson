@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Award, Scale, Users, Clock, Building } from 'lucide-react';
+import { company } from '../components/shared/DataCompany';
+import { teamMemberData } from '../components/shared/DataTeam';
 
 const AboutPage = () => {
   const fadeInUp = {
@@ -24,7 +26,7 @@ const AboutPage = () => {
               Nossa História e Princípios
             </h1>
             <p className="mt-6 text-lg text-neutral-200">
-              Conheça a jornada e os valores que moldaram o escritório Santos & Nascimento Advogados Associados,
+              Conheça a jornada e os valores que moldaram o escritório {company.nome},
               nossa missão, visão e o compromisso que mantemos com nossos clientes.
             </p>
           </motion.div>
@@ -48,10 +50,10 @@ const AboutPage = () => {
               </h2>
               <div className="space-y-4 text-neutral-700">
                 <p>
-                  Fundado em 2005 pelos advogados Carlos Santos e Ana Nascimento, o escritório nasceu com a visão de oferecer serviços jurídicos de excelência, combinando conhecimento técnico aprofundado com um atendimento personalizado e humanizado.
+                  Fundado em {company.fundacao} pelos advogados {teamMemberData[0].name} e {teamMemberData[1].name}, o escritório nasceu com a visão de oferecer serviços jurídicos de excelência, combinando conhecimento técnico aprofundado com um atendimento personalizado e humanizado.
                 </p>
                 <p>
-                  O que começou como um pequeno escritório especializado em Direito Empresarial e Civil cresceu e se expandiu para diversas áreas do Direito, sempre mantendo o compromisso com a qualidade e a ética que nos caracteriza desde o início.
+                  O escritório sempre pensou nas diversas áreas do Direito, exercendo sua atuação na ADVOCACIA INTEGRAL, sempre mantendo o compromisso com a qualidade e a ética que nos caracteriza desde o início.
                 </p>
                 <p>
                   Ao longo dos anos, conquistamos a confiança de nossos clientes através de resultados consistentes e de nossa abordagem dedicada a cada caso. Hoje, somos reconhecidos como referência em soluções jurídicas personalizadas e eficazes.
@@ -68,8 +70,8 @@ const AboutPage = () => {
               className="relative"
             >
               <div className="relative z-10 rounded-lg overflow-hidden shadow-xl">
-                <img 
-                  src="https://images.pexels.com/photos/5668766/pexels-photo-5668766.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
+                <img //IMAGEM NOSSA HISTORIA
+                  src="./logoAzul.jpg" 
                   alt="Nossa História" 
                   className="w-full h-auto"
                 />
@@ -172,7 +174,7 @@ const AboutPage = () => {
               Nossa Trajetória
             </h2>
             <p className="mt-4 text-neutral-700">
-              Conheça os principais marcos na história do escritório Santos & Nascimento Advogados Associados.
+              Conheça os principais marcos na história do escritório {company.nome}.
             </p>
           </div>
 
@@ -192,9 +194,9 @@ const AboutPage = () => {
               >
                 <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
                   <div className="bg-white p-6 rounded-lg shadow-custom">
-                    <h3 className="text-xl font-medium text-primary-900 mb-2">2005</h3>
+                    <h3 className="text-xl font-medium text-primary-900 mb-2">2020</h3>
                     <p className="text-neutral-700">
-                      Fundação do escritório pelos advogados Carlos Santos e Ana Nascimento, com foco inicial em Direito Empresarial e Civil.
+                      Fundação do escritório pelos advogados {teamMemberData[0].name} e {teamMemberData[1].name}, com foco Advocacia integral.
                     </p>
                   </div>
                 </div>
@@ -218,9 +220,9 @@ const AboutPage = () => {
                 </div>
                 <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
                   <div className="bg-white p-6 rounded-lg shadow-custom">
-                    <h3 className="text-xl font-medium text-primary-900 mb-2">2010</h3>
+                    <h3 className="text-xl font-medium text-primary-900 mb-2">2022</h3>
                     <p className="text-neutral-700">
-                      Expansão para novas áreas de atuação, incluindo Direito Tributário e Trabalhista, e mudança para um escritório maior na Av. Paulista.
+                      Expansão para novas áreas de atuação, incluindo Direito Eleitoral, Tributário e Trabalhista.
                     </p>
                   </div>
                 </div>
@@ -236,9 +238,9 @@ const AboutPage = () => {
               >
                 <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
                   <div className="bg-white p-6 rounded-lg shadow-custom">
-                    <h3 className="text-xl font-medium text-primary-900 mb-2">2015</h3>
+                    <h3 className="text-xl font-medium text-primary-900 mb-2">2023</h3>
                     <p className="text-neutral-700">
-                      Comemoração de 10 anos com a entrada de novos sócios e um aumento significativo no quadro de colaboradores.
+                      Comemoração de 3 anos com a entrada de novos sócios e um aumento significativo no quadro de colaboradores.
                     </p>
                   </div>
                 </div>
@@ -262,9 +264,9 @@ const AboutPage = () => {
                 </div>
                 <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
                   <div className="bg-white p-6 rounded-lg shadow-custom">
-                    <h3 className="text-xl font-medium text-primary-900 mb-2">2020</h3>
+                    <h3 className="text-xl font-medium text-primary-900 mb-2">2024</h3>
                     <p className="text-neutral-700">
-                      Reconhecimento como um dos escritórios mais respeitados de São Paulo em consultoria empresarial, com uma carteira de mais de 200 clientes ativos.
+                      Reconhecimento como um dos escritórios mais respeitados do Tocantins em consultoria empresarial, com uma carteira de mais de 200 clientes ativos.
                     </p>
                   </div>
                 </div>

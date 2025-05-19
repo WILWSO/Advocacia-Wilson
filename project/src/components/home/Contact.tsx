@@ -171,7 +171,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-white">Telefone</h5>
-                      <p className="text-neutral-300 mt-1">(63) 3217-3886 - Escritório</p>
+                      <p className="text-neutral-300 mt-1">(63) 3214-3886 - Escritório</p>
                       <p className="text-neutral-300 mt-1">(63) 98417-3391 - Dr. Wilsom</p>
                       <p className="text-neutral-300 mt-1">(63) 99207-4376 - Dr. Lucas</p>
                     </div>
@@ -203,34 +203,36 @@ const Contact = () => {
                     </div>
                   </li>
                 </ul>
-              </div>
+              </div>              
               
-              <div className="flex-grow bg-white rounded-lg shadow-custom p-8">
-                <h4 className="text-xl font-medium text-primary-900 mb-6">Horário de Atendimento</h4>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between pb-2 border-b border-neutral-200">
-                    <span className="font-medium">Segunda a Sexta</span>
-                    <span>9h às 18h</span>
-                  </div>
-                  <div className="flex justify-between pb-2 border-b border-neutral-200">
-                    <span className="font-medium">Sábado</span>
-                    <span>Fechado</span>
-                  </div>
-                  <div className="flex justify-between pb-2">
-                    <span className="font-medium">Domingo</span>
-                    <span>Fechado</span>
-                  </div>
-                </div>
-                
-                <div className="mt-6 bg-primary-50 p-4 rounded">
-                  <p className="text-sm text-primary-800">
-                    <strong>Nota:</strong> Atendimentos fora do horário comercial podem ser agendados previamente.
-                  </p>
-                </div>
-              </div>
             </div>
           </motion.div>
+        </div>
+
+        {/* Horários */}
+        <div className="flex-grow bg-white rounded-lg shadow-custom p-8">
+          <h4 className="text-xl font-medium text-primary-900 mb-6">Horário de Atendimento</h4>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between pb-2 border-b border-neutral-200">
+              <span className="font-medium">Segunda a Sexta</span>
+              <span>9h às 18h</span>
+            </div>
+            <div className="flex justify-between pb-2 border-b border-neutral-200">
+              <span className="font-medium">Sábado</span>
+              <span>Fechado</span>
+            </div>
+            <div className="flex justify-between pb-2">
+              <span className="font-medium">Domingo</span>
+              <span>Fechado</span>
+            </div>
+          </div>
+          
+          <div className="mt-6 bg-primary-50 p-4 rounded">
+            <p className="text-sm text-primary-800">
+              <strong>Nota:</strong> Atendimentos fora do horário comercial podem ser agendados previamente.
+            </p>
+          </div>
         </div>
 
         {/* Map */}
@@ -250,7 +252,8 @@ const Contact = () => {
               ></iframe>
             </div>
           </div>
-        </div>
+              
+        </div>              
       </div>
     </section>
   );

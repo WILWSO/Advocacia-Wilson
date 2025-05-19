@@ -7,13 +7,11 @@ const Hero = () => {
   return (
     <section className="relative h-screen min-h-[600px] flex items-center">
       {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ 
-          backgroundImage: 'url("https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=1920")',
+       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
+        style={{ backgroundImage: 'url("/Banner_Wilson.jpg")', 
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-800/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-800/60"> </div>
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
@@ -34,7 +32,7 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="mt-6 text-lg text-neutral-200 max-w-2xl">
-              Advocacia Integral: comprometidos em oferecer soluções jurídicas personalizadas 
+              <strong className='text-md text-yellow-600'>Advocacia Integral:</strong> comprometidos em oferecer soluções jurídicas personalizadas 
               com ética, dedicação e um olhar humano para cada caso.
             </p>
           </motion.div>
@@ -52,7 +50,7 @@ const Hero = () => {
               Agende uma Consulta
               <ArrowRight size={16} className="ml-2" />
             </Link>
-            
+
             <Link
               to="/areas-de-atuacao"
               className="px-6 py-3 bg-transparent hover:bg-white/10 border border-white text-white rounded text-sm font-medium transition-colors"
