@@ -150,7 +150,7 @@ const AboutPage = () => {
                 </li>
                 <li className="flex items-center">
                   <ArrowRight size={16} className="text-gold-600 mr-2" />
-                  <span>Excelência técnica e atualização constante</span>
+                  <span>Excelência técnica e atualização constante no ramo do Direito</span>
                 </li>
                 <li className="flex items-center">
                   <ArrowRight size={16} className="text-gold-600 mr-2" />
