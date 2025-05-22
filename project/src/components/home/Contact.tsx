@@ -49,7 +49,7 @@ const Contact = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">  {/* container que envolve form y contacto */}
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +57,7 @@ const Contact = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <div className="bg-white rounded-lg shadow-custom p-8">
+            <div className="h-full flex flex-col bg-white rounded-lg shadow-custom p-8">
               <h4 className="text-xl font-medium text-primary-900 mb-6">Envie-nos uma mensagem</h4>
               
               <form onSubmit={handleSubmit}>
@@ -173,9 +173,9 @@ const Contact = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-white">Telefone</h5>
-                      <p className="text-neutral-300 mt-1">{company.email} - Escritório</p>
-                      <p className="text-neutral-300 mt-1">{teamMemberData[0].email} - Dr. Wilson </p>
-                      <p className="text-neutral-300 mt-1">{teamMemberData[1].email} - Dr. Lucas</p>
+                      <p className="text-neutral-300 mt-1">{company.fone} - Escritório</p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[0].phone} - Dr. Wilson </p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[1].phone} - Dr. Lucas</p>
                     </div>
                   </li>
                   
@@ -186,8 +186,8 @@ const Contact = () => {
                     <div>
                       <h5 className="font-medium text-white">E-mail</h5>
                       <p className="text-neutral-300 mt-1">{company.email}</p>
-                      <p className="text-neutral-300">{teamMemberData[0].email}</p>
-                      <p className="text-neutral-300">{teamMemberData[1].email}</p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[0].email}</p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[1].email}</p>
                     </div>
                   </li>
                   
@@ -238,7 +238,7 @@ const Contact = () => {
           <div className="bg-white rounded-lg shadow-custom p-4">
             <div className="aspect-w-16 aspect-h-9">
               <iframe 
-                src={`${company.geolocalizacao}`}
+                src={company.geolocalizacao}
                 width="100%" 
                 height="450" 
                 style={{ border: 0 }} 
@@ -252,7 +252,7 @@ const Contact = () => {
           </div>              
         </div>              
       </div>
-      
+
     </section>
   );
 };

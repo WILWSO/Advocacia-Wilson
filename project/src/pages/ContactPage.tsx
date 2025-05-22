@@ -73,7 +73,7 @@ const ContactPage = () => {
       {/* Contact Info & Form */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8"> {/* div da grid que divide os tamanhos */}
             {/* Contact Info */}
             <motion.div
               initial="hidden"
@@ -81,9 +81,10 @@ const ContactPage = () => {
               viewport={{ once: true }}
               variants={fadeInUp}
               transition={{ duration: 0.6 }}
-              className="lg:col-span-1"
+              className="lg:col-span-1" //tamanho que ocupa o espaco da coluna INFO CONTACTO
+           
             >
-              <div className="bg-primary-900 text-white rounded-lg shadow-custom p-8 sticky top-32">
+              <div className="bg-primary-900 text-white rounded-lg shadow-custom p-8 sticky top-32"> {/* insira border-8 para visualizar o container INFO CONTACTO */}
                 <h2 className="text-2xl font-serif font-bold mb-8">Informações de Contato</h2>
                 
                 <ul className="space-y-8">
@@ -106,8 +107,8 @@ const ContactPage = () => {
                     <div>
                       <h3 className="font-medium text-white">E-mail</h3>
                       <p className="text-neutral-300 mt-1"> {company.email} </p>
-                      <p className="text-neutral-300"> {teamMemberData[0].email} </p>
-                      <p className="text-neutral-300"> {teamMemberData[1].email} </p>
+                      <p className="text-neutral-300 mt-1"> {teamMemberData[0].email} </p>
+                      <p className="text-neutral-300 mt-1 "> {teamMemberData[1].email} </p>
                     </div>
                   </li>
                   
@@ -148,9 +149,9 @@ const ContactPage = () => {
               viewport={{ once: true }}
               variants={fadeInUp}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:col-span-2"
+              className="lg:col-span-1,2" //determina a largura da coluna
             >
-              <div className="bg-white rounded-lg shadow-custom p-8">
+              <div className="bg-white rounded-lg shadow-custom p-8"> {/* div que envolve o Form */}
                 <h2 className="text-2xl font-serif font-bold text-primary-900 mb-6">Envie-nos uma mensagem</h2>
                 
                 {formSubmitted ? (
@@ -305,7 +306,7 @@ const ContactPage = () => {
         </div>
       </section>
 
-      {/* Map */}
+      {/* Geolocalizacao */}
       <section className="py-16 bg-neutral-50">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-12">
