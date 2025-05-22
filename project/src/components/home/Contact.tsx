@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { company } from '../shared/DataCompany';
+import { teamMemberData } from '../shared/DataTeam';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -171,9 +173,9 @@ const Contact = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-white">Telefone</h5>
-                      <p className="text-neutral-300 mt-1">(63) 3214-3886 - Escritório</p>
-                      <p className="text-neutral-300 mt-1">(63) 98417-3391 - Dr. Wilsom</p>
-                      <p className="text-neutral-300 mt-1">(63) 99207-4376 - Dr. Lucas</p>
+                      <p className="text-neutral-300 mt-1">{company.email} - Escritório</p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[0].email} - Dr. Wilson </p>
+                      <p className="text-neutral-300 mt-1">{teamMemberData[1].email} - Dr. Lucas</p>
                     </div>
                   </li>
                   
@@ -183,9 +185,9 @@ const Contact = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-white">E-mail</h5>
-                      <p className="text-neutral-300 mt-1">contato@advocaciaintegral.com</p>
-                      <p className="text-neutral-300">Wil.oliv.advogados@gmail.com</p>
-                      <p className="text-neutral-300">Lucas@advocaciaintegral.com</p>
+                      <p className="text-neutral-300 mt-1">{company.email}</p>
+                      <p className="text-neutral-300">{teamMemberData[0].email}</p>
+                      <p className="text-neutral-300">{teamMemberData[1].email}</p>
                     </div>
                   </li>
                   
@@ -195,11 +197,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-white">Endereço</h5>
-                      <p className="text-neutral-300 mt-1">
-                        Quadra 104 Sul, Rua SE 06, Lote 32, Sala 1<br />
-                        Palmas - Tocantins<br />
-                        CEP 777.000-000
-                      </p>
+                      <p className="text-neutral-300 mt-1"> {company.endereco} </p>
                     </div>
                   </li>
                 </ul>
@@ -235,12 +233,12 @@ const Contact = () => {
           </div>
         </div>
 
-        {/* Map */}
+        {/* Geolocalizacao */}
         <div className="mt-16">
           <div className="bg-white rounded-lg shadow-custom p-4">
             <div className="aspect-w-16 aspect-h-9">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.0976132600824!2d-46.6555431!3d-23.5646162!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59c7f895c915%3A0x6bd71858382f31fc!2sAv.%20Paulista%2C%201000%20-%20Bela%20Vista%2C%20S%C3%A3o%20Paulo%20-%20SP!5e0!3m2!1sen!2sbr!4v1658932596754!5m2!1sen!2sbr" 
+                src={`${company.geolocalizacao}`}
                 width="100%" 
                 height="450" 
                 style={{ border: 0 }} 
@@ -251,10 +249,10 @@ const Contact = () => {
                 className="rounded"
               ></iframe>
             </div>
-          </div>
-              
+          </div>              
         </div>              
       </div>
+      
     </section>
   );
 };

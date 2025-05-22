@@ -61,7 +61,7 @@ const Header = () => {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className={`md:hidden flex items-center ${isScrolled ? 'text-primary-800' : 'text-white'}`}>
+          <div className={`sm:px-4 py-5 md:hidden flex items-center ${isScrolled ? 'text-primary-800' : 'text-white'}`}>
             <LoginButton />
             <button
               className="ml-4 p-2 focus:outline-none"
@@ -81,9 +81,17 @@ const Header = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-white border-t mt-2"
+            className="sm:px-4 py-5 md:hidden bg-white border-t mt-2" //melhoria nas telas menores
           >
             <nav className= {`container mx-auto px-4 py-4 flex flex-col`}>
+             {/* inclui essa div do logo */}
+              <div className="flex items-center justify-between px-4">
+                <Link to="/" className="flex items-center w-full">
+                  <Logo className="h-10 md:h-12 max-w-full" />
+                </Link>
+              </div>
+              {/* ...restante do código... */}
+
               <NavLink
                 to="/"
                 className="py-3 border-b border-neutral-100 text-primary-800"

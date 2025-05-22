@@ -27,7 +27,7 @@ interface LogoProps {
         {/*Estilizaçáo do logotipo*/}
         <div className="px-1 py-1 flex items-center bg-white bg-opacity-80 rounded hover:bg-slate-100">
           <div className="px-1 rounded text-sm font-medium transition-colors flex items-center">
-            <img className='h-10' //tamanho do logo
+            <img className='h-10' //tamanho do logo//
               src={company.icoLogo[1]} //acessa a imagen do logo no array 
               alt={company.alias} 
             />
