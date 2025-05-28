@@ -7,7 +7,9 @@ import {
   Scale, 
   Briefcase, 
   FileText, 
-  Users 
+  Users, 
+  UsersRoundIcon,
+  Users2
 } from 'lucide-react';
 
 const practiceAreas = [
@@ -51,6 +53,13 @@ const practiceAreas = [
     icon: <Users size={32} className="text-gold-600" />,
     title: 'Direito do Consumidor',
     description: 'Defesa de direitos em relações de consumo, para consumidores e fornecedores.',
+    link: '/areas-de-atuacao'
+  },
+  {
+    id: 7,
+    icon: <Users2 size={32} className="text-gold-600" />,
+    title: 'Direito de família e sucessões',
+    description: 'Atuação em divórcios, guarda de filhos, inventários e testamentos, sempre buscando soluções amigáveis.',
     link: '/areas-de-atuacao'
   }
 ];

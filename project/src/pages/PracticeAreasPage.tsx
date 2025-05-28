@@ -10,7 +10,12 @@ import {
   Gavel,
   Shield,
   Landmark,
-  HeartPulse
+  HeartPulse,
+  UserPlus2,
+  User2,
+  UserCog,
+  UserRound,
+  Users2
 } from 'lucide-react';
 import { company } from '../components/shared/DataCompany';
 
@@ -88,7 +93,9 @@ const PracticeAreasPage = () => {
         'Due diligence imobiliária',
         'Regularização de imóveis',
         'Usucapião',
-        'Condomínios e loteamentos'
+        'Condomínios e loteamentos', 
+        'Ações possessórias',
+        'Regularização fundiária'
       ]
     },
     {
@@ -153,7 +160,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 10,
-      icon: <HeartPulse size={40} className="text-gold-600" />,
+      icon: <Users size={40} className="text-gold-600" />,
       title: 'Direito Previdenciário',
       description: 'Assistência em questões relacionadas à aposentadoria, benefícios e planejamento previdenciário.',
       services: [
@@ -165,7 +172,22 @@ const PracticeAreasPage = () => {
         'Recursos administrativos',
         'Ações judiciais previdenciárias'
       ]
-    }
+    },
+     {
+      id: 11,
+      icon: <Users2 size={40} className="text-gold-600" />,
+      title: 'Direito de família e sucessões',
+      description: 'Assistência em questões relacionadas a divórcios, guarda de filhos, inventários e testamentos.',
+      services: [
+        'Divórcios consensuais e litigiosos',
+        'Guarda de filhos e pensão alimentícia',
+        'Inventários e partilhas',
+        'Testamentos e planejamento sucessório',
+        'Reconhecimento de paternidade',
+        'Adoção',
+        'Mediação familiar'
+      ]
+    },     
   ];
 
   const fadeInUp = {
