@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Award, Scale, Users, Clock, Building } from 'lucide-react';
 import { company } from '../components/shared/DataCompany';
-import { teamMemberData } from '../components/shared/DataTeam';
+import { teamMemberData } from '../components/shared/DataTeamMember';
 
 const AboutPage = () => {
   const fadeInUp = {

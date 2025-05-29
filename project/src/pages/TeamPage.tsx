@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Linkedin, Mail, PhoneCall, FileText, Award, BookOpen, Instagram } from 'lucide-react';
-import { teamMemberData } from '../components/shared/DataTeam';
+import { teamMemberData } from '../components/shared/DataTeamMember';
 import { company } from '../components/shared/DataCompany';
 
 
@@ -55,7 +55,10 @@ const TeamPage = () => {
       <section className="py-16 bg-neutral-50">
         <div className="container mx-auto px-4">
           <div className="space-y-16">
-            {teamMemberData.map((member, index) => (
+            
+            {teamMemberData
+            .filter(member => member.status === 'activo') //verifica se o membro está activo
+            .map((member, index) => ( 
               <motion.div
                 key={member.id}
                 initial="hidden"
@@ -188,6 +191,7 @@ const TeamPage = () => {
                 </div>
               </motion.div>
             ))}
+
           </div>
         </div>
       </section>

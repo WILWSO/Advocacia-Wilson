@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Linkedin, Mail } from 'lucide-react';
-import { teamMemberData } from '../shared/DataTeam';
+import { teamMemberData } from '../shared/DataTeamMember';
 
 const teamHome = [
   {

@@ -2,6 +2,7 @@ export const teamMemberData = [
   { //Em uma aplicação real, esse dados devem vim do banco de dados.
     id: 1,
     name: 'Dr. Wilson Santos',
+    status: 'activo',
     position: 'Sócio',
     image: ['/Wilson5.jpg', '/Wilson8.jpg'],
     education: [
@@ -20,6 +21,7 @@ export const teamMemberData = [
   {
     id: 2,
     name: 'Dr. Lucas Nascimento',
+    status: 'activo',
     position: 'Sócio',
     image: ['/Lucas5.jpg', '/Lucas6.jpg'],
     education: [
@@ -37,6 +39,7 @@ export const teamMemberData = [
   {
     id: 3,
     name: 'Dra. Rosimeire Albuquerque',
+    status: 'activo',
     position: 'Associada',
     image: ['/Rosimeire2.jpg', '/Rosimeire5.jpg'],
     education: [
@@ -49,5 +52,24 @@ export const teamMemberData = [
     instagram: 'https://www.instagram.com/33rosimeire/?igsh=NHJseGdzeWd2d2F1&utm_source=qr#',
     email: 'Rosiomeire@advocaciaintegral.com',
     phone: '(63) 9269-7835'
+  },
+  { 
+    id: 4,
+    name: 'Rosilene Santos de Oliveira',
+    status: 'activo',
+    position: 'Assessoria Contábil',
+    image: ['/Rosilene1.jpg', '/Rosilene2.jpg'],
+    education: [
+      'Bacharel em Ciencias Contábeis - Universidade Norte do Paraná (UNOPAR)',
+      'Bacharel em Administração - Instituto de Ensino e Pesquisa Objetivo (IEP)',
+      'Especialização em Controladoria e Finanças'
+    ],
+    specialties: ['Controladoria e Finanças'],
+    bio: 'A contadora Rosilene Santos possui ampla experiência em contabilidade comercial e eleitoral,. Com mais de 15 anos de experiência na área de consultoria de negócios e contabilidade fiscal e financeira, atende cada demanda de maneira singular, afim de oferecer suporte adequado que supra a necessidade do cliente.',
+    linkedin: 'https://www.linkedin.com/in/rosilene-santos-4b78a4206/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B1WovH%2BwyQqWjZjl26Cwghg%3D%3D',
+    instagram: 'https://www.instagram.com/alfacontabilidadepalmas/?__pwa=1#',
+    email: 'alfa.contabilsst@gmail.com',
+    phone: '(63) 98425-8508'
   }
+  // Adicione mais membros da equipe conforme necessário
 ];

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Calendar } from 'lucide-react';
 import { company } from '../shared/DataCompany';
-import { teamMemberData } from '../shared/DataTeam';
+import { teamMemberData } from '../shared/DataTeamMember';
 
 const Contact = () => {
   const [formData, setFormData] = useState({

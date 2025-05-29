@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Calendar, Send } from 'lucide-react';
-import { teamMemberData } from '../components/shared/DataTeam';
+import { teamMemberData } from '../components/shared/DataTeamMember';
 import { company } from '../components/shared/DataCompany';
 
 const ContactPage = () => {
