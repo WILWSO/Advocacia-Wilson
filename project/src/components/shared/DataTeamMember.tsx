@@ -55,17 +55,17 @@ export const teamMemberData = [
   },
   { 
     id: 4,
-    name: 'Rosilene Santos de Oliveira',
+    name: 'Rosilene Santos',
     status: 'activo',
     position: 'Assessoria Contábil',
-    image: ['/Rosilene1.jpg', '/Rosilene2.jpg'],
+    image: ['/Rosilene2.jpg', '/Rosilene1.jpg'],
     education: [
       'Bacharel em Ciencias Contábeis - Universidade Norte do Paraná (UNOPAR)',
       'Bacharel em Administração - Instituto de Ensino e Pesquisa Objetivo (IEP)',
       'Especialização em Controladoria e Finanças'
     ],
     specialties: ['Controladoria e Finanças'],
-    bio: 'A contadora Rosilene Santos possui ampla experiência em contabilidade comercial e eleitoral,. Com mais de 15 anos de experiência na área de consultoria de negócios e contabilidade fiscal e financeira, atende cada demanda de maneira singular, afim de oferecer suporte adequado que supra a necessidade do cliente.',
+    bio: 'A contadora Rosilene Santos possui ampla experiência em contabilidade comercial e eleitoral. Com mais de 15 anos de experiência na área de consultoria de negócios e contabilidade fiscal e financeira, atende cada demanda de maneira singular, afim de oferecer suporte adequado que supra a necessidade do cliente.',
     linkedin: 'https://www.linkedin.com/in/rosilene-santos-4b78a4206/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B1WovH%2BwyQqWjZjl26Cwghg%3D%3D',
     instagram: 'https://www.instagram.com/alfacontabilidadepalmas/?__pwa=1#',
     email: 'alfa.contabilsst@gmail.com',
