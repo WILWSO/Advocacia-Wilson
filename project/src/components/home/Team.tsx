@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Linkedin, Mail } from 'lucide-react';
@@ -30,7 +29,7 @@ const teamHome = [
 ];
 
 const Team = () => {
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   const containerVariants = {
     hidden: { opacity: 0 },
