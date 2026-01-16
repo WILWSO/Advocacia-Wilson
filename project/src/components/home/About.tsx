@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Scale, Users, Award } from 'lucide-react';
 import { company } from '../shared/DataCompany';
+import LazyImage from '../shared/LazyImage';
 
 const About = () => {
   const fadeInUp = {
@@ -11,7 +12,7 @@ const About = () => {
   };
 
   return (
-    <section className="py-5 md:py-8 bg-white"> {/* Original:py-16 md:py-24 */}
+    <section className="py-5 md:py-8 bg-white" aria-labelledby="about-heading"> {/* Original:py-16 md:py-24 */}
       <div className="container mx-auto px-4">                  
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Image */}
@@ -22,12 +23,16 @@ const About = () => {
             transition={{ duration: 0.6 }}
             variants={fadeInUp}
             className="relative"
+            role="img"
+            aria-label="Representação visual do escritório Santos & Nascimento"
           >
             <div className="relative z-10 rounded-lg overflow-hidden shadow-xl">
-              <img //IAMGEM QUADRADA DO LOGO NO CORPO DA PÁGINA              
-                src="/logoAzul.jpg" 
-                alt={company.nome} 
-                className="w-full h-auto"             
+              <LazyImage
+                src="/logoAzul.jpg"
+                alt={`Logotipo oficial do escritório ${company.nome} em tons de azul, representando confiança e profissionalismo na advocacia`}
+                className="object-cover"
+                aspectRatio="1/1"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />               
             </div>                   
             <div //QUADRADINHO LARANJA
@@ -45,7 +50,7 @@ const About = () => {
               variants={fadeInUp}
             >
               <h2 className="text-sm font-medium text-gold-600 uppercase tracking-wider">Sobre Nós</h2>
-              <h3 className="mt-2 text-3xl md:text-4xl font-serif font-bold text-primary-900">
+              <h3 id="about-heading" className="mt-2 text-3xl md:text-4xl font-serif font-bold text-primary-900">
                 O que é Advocacia Integral em Serviços Jurídicos?
               </h3>
               <div className="mt-6 space-y-4 text-neutral-700">

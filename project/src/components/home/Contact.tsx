@@ -1,38 +1,39 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, AlertCircle } from 'lucide-react';
 import { company } from '../shared/DataCompany';
 import { teamMemberData } from '../shared/DataTeamMember';
+import { useSecureForm } from '../../hooks/useSecureForm';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  });
+  const { formData, errors, isSubmitting, updateField, submitForm, resetForm } = useSecureForm();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    updateField(e.target.name as any, e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would send the form data to a server
-    console.log(formData);
-    alert('Mensagem enviada com sucesso!');
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
+    
+    const success = await submitForm();
+    
+    if (success) {
+      alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+      resetForm();
+    }
+  };
+
+  // Componente para mostrar errores de campo
+  const FieldError: React.FC<{ fieldName: string }> = ({ fieldName }) => {
+    const fieldErrors = errors[fieldName];
+    if (!fieldErrors || fieldErrors.length === 0) return null;
+    
+    return (
+      <div className="mt-1 flex items-center text-red-600 text-sm">
+        <AlertCircle size={14} className="mr-1 flex-shrink-0" />
+        <span>{fieldErrors[0]}</span>
+      </div>
+    );
   };
 
   return (
@@ -60,7 +61,7 @@ const Contact = () => {
             <div className="bg-white rounded-lg shadow-custom p-8">
               <h4 className="text-xl font-medium text-primary-900 mb-6">Envie-nos uma mensagem</h4>
               
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} id="contact-form">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">
@@ -73,8 +74,13 @@ const Contact = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      disabled={isSubmitting}
+                      className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
+                        errors.name ? 'border-red-300 bg-red-50' : 'border-neutral-300'
+                      } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      autoComplete="name"
                     />
+                    <FieldError fieldName="name" />
                   </div>
                   
                   <div>
@@ -88,8 +94,13 @@ const Contact = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      disabled={isSubmitting}
+                      className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
+                        errors.email ? 'border-red-300 bg-red-50' : 'border-neutral-300'
+                      } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      autoComplete="email"
                     />
+                    <FieldError fieldName="email" />
                   </div>
                 </div>
                 
@@ -104,8 +115,13 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      disabled={isSubmitting}
+                      className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
+                        errors.phone ? 'border-red-300 bg-red-50' : 'border-neutral-300'
+                      } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      autoComplete="tel"
                     />
+                    <FieldError fieldName="phone" />
                   </div>
                   
                   <div>
@@ -118,7 +134,10 @@ const Contact = () => {
                       value={formData.subject}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      disabled={isSubmitting}
+                      className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
+                        errors.subject ? 'border-red-300 bg-red-50' : 'border-neutral-300'
+                      } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <option value="">Selecione</option>
                       <option value="Consulta">Consulta Jurídica</option>
@@ -126,10 +145,11 @@ const Contact = () => {
                       <option value="Dúvida">Dúvidas Gerais</option>
                       <option value="Outro">Outro Assunto</option>
                     </select>
+                    <FieldError fieldName="subject" />
                   </div>
                 </div>
                 
-                <div className="mb-4">
+                <div className="mb-6">
                   <label htmlFor="message" className="block text-sm font-medium text-neutral-700 mb-1">
                     Mensagem *
                   </label>
@@ -140,16 +160,43 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-vertical ${
+                      errors.message ? 'border-red-300 bg-red-50' : 'border-neutral-300'
+                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="Descreva brevemente sua necessidade jurídica..."
                   ></textarea>
+                  <FieldError fieldName="message" />
                 </div>
+
+                {/* Error general de envío */}
+                {errors.submit && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded flex items-center text-red-700">
+                    <AlertCircle size={16} className="mr-2 flex-shrink-0" />
+                    <span className="text-sm">{errors.submit[0]}</span>
+                  </div>
+                )}
                 
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors flex items-center justify-center"
+                  disabled={isSubmitting}
+                  className={`w-full px-6 py-3 text-white rounded text-sm font-medium transition-all flex items-center justify-center ${
+                    isSubmitting 
+                      ? 'bg-neutral-400 cursor-not-allowed' 
+                      : 'bg-primary-800 hover:bg-primary-900 active:transform active:scale-95'
+                  }`}
                 >
-                  <Calendar size={16} className="mr-2" />
-                  Solicitar Atendimento
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar size={16} className="mr-2" />
+                      Solicitar Atendimento
+                    </>
+                  )}
                 </button>
               </form>
             </div>

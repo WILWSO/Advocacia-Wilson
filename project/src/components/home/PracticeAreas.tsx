@@ -9,7 +9,8 @@ import {
   FileText, 
   Users, 
   UsersRoundIcon,
-  Users2
+  Users2,
+  HomeIcon
 } from 'lucide-react';
 
 const practiceAreas = [
@@ -57,7 +58,7 @@ const practiceAreas = [
   },
   {
     id: 7,
-    icon: <Users2 size={32} className="text-gold-600" />,
+    icon: <HomeIcon size={32} className="text-gold-600" />,
     title: 'Direito de família e sucessões',
     description: 'Atuação em divórcios, guarda de filhos, inventários e testamentos, sempre buscando soluções amigáveis.',
     link: '/areas-de-atuacao'

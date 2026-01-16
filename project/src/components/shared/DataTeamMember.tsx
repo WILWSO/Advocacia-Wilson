@@ -2,7 +2,7 @@ export const teamMemberData = [
   { //Em uma aplicação real, esse dados devem vim do banco de dados.
     id: 1,
     name: 'Dr. Wilson Santos',
-    status: 'activo',
+    active: true,
     position: 'Sócio',
     image: ['/Wilson5.jpg', '/Wilson8.jpg'],
     education: [
@@ -21,7 +21,7 @@ export const teamMemberData = [
   {
     id: 2,
     name: 'Dr. Lucas Nascimento',
-    status: 'activo',
+    active: true,
     position: 'Sócio',
     image: ['/Lucas5.jpg', '/Lucas6.jpg'],
     education: [
@@ -39,7 +39,7 @@ export const teamMemberData = [
   {
     id: 3,
     name: 'Dra. Rosimeire Albuquerque',
-    status: 'activo',
+    active: true,
     position: 'Associada',
     image: ['/Rosimeire2.jpg', '/Rosimeire5.jpg'],
     education: [
@@ -56,7 +56,25 @@ export const teamMemberData = [
   { 
     id: 4,
     name: 'Rosilene Santos',
-    status: 'activo',
+    active: true,
+    position: 'Assessoria Contábil',
+    image: ['/Rosilene2.jpg', '/Rosilene1.jpg'],
+    education: [
+      'Bacharel em Ciencias Contábeis - Universidade Norte do Paraná (UNOPAR)',
+      'Bacharel em Administração - Instituto de Ensino e Pesquisa Objetivo (IEP)',
+      'Especialização em Controladoria e Finanças'
+    ],
+    specialties: ['Controladoria e Finanças'],
+    bio: 'A contadora Rosilene Santos possui ampla experiência em contabilidade comercial e eleitoral. Com mais de 15 anos de experiência na área de consultoria de negócios e contabilidade fiscal e financeira, atende cada demanda de maneira singular, afim de oferecer suporte adequado que supra a necessidade do cliente.',
+    linkedin: 'https://www.linkedin.com/in/rosilene-santos-4b78a4206/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B1WovH%2BwyQqWjZjl26Cwghg%3D%3D',
+    instagram: 'https://www.instagram.com/alfacontabilidadepalmas/?__pwa=1#',
+    email: 'alfa.contabilsst@gmail.com',
+    phone: '(63) 98425-8508'
+  },
+   { 
+    id: 5,
+    name: 'Suyane ...',
+    active: false,
     position: 'Assessoria Contábil',
     image: ['/Rosilene2.jpg', '/Rosilene1.jpg'],
     education: [
@@ -71,5 +89,5 @@ export const teamMemberData = [
     email: 'alfa.contabilsst@gmail.com',
     phone: '(63) 98425-8508'
   }
-  // Adicione mais membros da equipe conforme necessário
+  // Adicione mais membros da equipe conforme necessário// Adicione mais membros da equipe conforme necessário
 ];

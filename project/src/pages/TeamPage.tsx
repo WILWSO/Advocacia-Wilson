@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Linkedin, Mail, PhoneCall, FileText, Award, BookOpen, Instagram } from 'lucide-react';
 import { teamMemberData } from '../components/shared/DataTeamMember';
 import { company } from '../components/shared/DataCompany';
+import SEOHead from '../components/shared/SEOHead';
+import LazyImage from '../components/shared/LazyImage';
 
 
 const TeamPage = () => {
@@ -13,6 +15,12 @@ const TeamPage = () => {
 
   return (
     <>
+      <SEOHead
+        title="Nossa Equipe - Advogados Especialistas"
+        description="Conheça os advogados do Santos & Nascimento: Wilson Santos, Lucas Nascimento e Rosimeire Albuquerque. Profissionais qualificados em diversas áreas do Direito em Palmas-TO."
+        keywords="equipe advogados Palmas, Wilson Santos advogado, Lucas Nascimento advogado, Rosimeire Albuquerque advogada, advogados Tocantins, equipe jurídica"
+        canonicalUrl={`${window.location.origin}/equipe`}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">
@@ -57,7 +65,7 @@ const TeamPage = () => {
           <div className="space-y-16">
             
             {teamMemberData
-            .filter(member => member.status === 'activo') //verifica se o membro está activo
+            .filter(member => member.active) //verifica se o membro está activo
             .map((member, index) => ( 
               <motion.div
                 key={member.id}
@@ -71,12 +79,14 @@ const TeamPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3">
                   {/* Image */}
                   <div className="md:col-span-1">
-                    <div className="h-full relative">
-                      <img 
-                        src={member.image[0]} 
-                        alt={member.name} 
-                        className="w-full h-full object-cover object-center"
-                        style={{ minHeight: '300px' }}
+                    <div className="h-full relative overflow-hidden rounded-lg">
+                      <LazyImage
+                        src={member.image[0]}
+                        alt={`Foto profissional do advogado ${member.name}`}
+                        className="object-cover"
+                        aspectRatio="4/5"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        containerClassName="h-full min-h-[300px]"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 to-transparent opacity-0 md:opacity-100 flex items-end p-6">
                         <div className="flex space-x-3">

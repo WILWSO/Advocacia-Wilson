@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Award, Scale, Users, Clock, Building } from 'lucide-react';
 import { company } from '../components/shared/DataCompany';
 import { teamMemberData } from '../components/shared/DataTeamMember';
+import SEOHead from '../components/shared/SEOHead';
+import LazyImage from '../components/shared/LazyImage';
 
 const AboutPage = () => {
   const fadeInUp = {
@@ -12,6 +14,12 @@ const AboutPage = () => {
 
   return (
     <>
+      <SEOHead
+        title="Sobre Nós - Nossa História e Princípios"
+        description="Conheça a história do Santos & Nascimento Advogados. Fundado em 2020, somos referência em advocacia integral em Palmas-TO. Missão, visão e valores do escritório."
+        keywords="história Santos Nascimento, advocacia Palmas história, escritório de advocacia Tocantins, Wilson Santos advogado, Lucas Nascimento advogado"
+        canonicalUrl={`${window.location.origin}/sobre`}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">
@@ -70,10 +78,12 @@ const AboutPage = () => {
               className="relative"
             >
               <div className="relative z-10 rounded-lg overflow-hidden shadow-xl">
-                <img //IMAGEM NOSSA HISTORIA
-                  src="./logoAzul.jpg" 
-                  alt="Nossa História" 
-                  className="w-full h-auto"
+                <LazyImage
+                  src="/logoAzul.jpg"
+                  alt="História do escritório Santos & Nascimento Advogados"
+                  className="object-cover"
+                  aspectRatio="4/3"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
               <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gold-500 rounded-lg z-0"></div>

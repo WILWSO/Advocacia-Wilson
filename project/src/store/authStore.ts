@@ -1,38 +1,119 @@
 import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
+
+interface User {
+  id: string;
+  name?: string;
+  email: string;
+  role: 'admin' | 'editor' | 'user';
+  avatar?: string;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: null | { name: string; email: string };
+  user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
+  isLoading: true,
+  
   login: async (email: string, password: string) => {
     try {
-      // Replace with your actual API call
-      const response = await fetch('your-backend-url/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
+      
+      if (error) {
+        throw error;
       }
-
-      const data = await response.json();
-      set({ isAuthenticated: true, user: data.user });
+      
+      if (data.user) {
+        // Buscar información adicional del usuario en la tabla usuarios
+        const { data: userData, error: userError } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('email', data.user.email)
+          .single();
+          
+        const user: User = {
+          id: data.user.id,
+          name: userData?.nome || data.user.email,
+          email: data.user.email!,
+          role: userData?.role || 'user',
+          avatar: userData?.avatar_url || data.user.user_metadata?.avatar_url
+        };
+        
+        set({ isAuthenticated: true, user, isLoading: false });
+      }
     } catch (error) {
       console.error('Login error:', error);
+      set({ isLoading: false });
       throw error;
     }
   },
-  logout: () => {
-    set({ isAuthenticated: false, user: null });
+  
+  logout: async () => {
+    try {
+      await supabase.auth.signOut();
+      set({ isAuthenticated: false, user: null, isLoading: false });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   },
+  
+  checkAuth: async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (user) {
+        // Buscar información adicional del usuario
+        const { data: userData, error: userError } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+          
+        const userInfo: User = {
+          id: user.id,
+          name: userData?.nome || user.email,
+          email: user.email!,
+          role: userData?.role || 'user',
+          avatar: userData?.avatar_url || user.user_metadata?.avatar_url
+        };
+        
+        set({ isAuthenticated: true, user: userInfo, isLoading: false });
+      } else {
+        set({ isAuthenticated: false, user: null, isLoading: false });
+      }
+    } catch (error: any) {
+      // Silenciar error de sesión faltante (comportamiento esperado sin login)
+      if (error?.message !== 'Auth session missing!') {
+        console.error('Auth check error:', error);
+      }
+      set({ isAuthenticated: false, user: null, isLoading: false });
+    }
+  }
 }));
+
+// Verificar autenticação ao inicializar
+useAuthStore.getState().checkAuth();
+
+// Escuchar cambios de autenticación
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') {
+    useAuthStore.setState({ isAuthenticated: false, user: null, isLoading: false });
+  } else if (event === 'SIGNED_IN' && session?.user) {
+    useAuthStore.getState().checkAuth();
+  }
+});

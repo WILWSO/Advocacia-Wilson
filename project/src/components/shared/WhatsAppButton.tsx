@@ -14,10 +14,11 @@ const WhatsAppButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BD5C] text-white rounded-full p-4 shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#25D366]"
-      aria-label="Contato via WhatsApp"
+      className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BD5C] text-white rounded-full p-4 shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#25D366] focus:scale-110"
+      aria-label="Abrir conversa no WhatsApp para agendar consulta"
+      title="Fale conosco pelo WhatsApp"
     >
-     <FaWhatsapp size={37} /> 
+     <FaWhatsapp size={37} aria-hidden="true" /> 
      {/*  <img
         src="/whatsapp1.png" // Substitua pelo caminho da sua imagem
         alt="WhatsApp"

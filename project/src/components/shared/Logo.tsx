@@ -1,12 +1,14 @@
 import React from 'react';
 import { company } from './DataCompany';
+import LazyImage from './LazyImage';
 
 interface LogoProps {
   className?: string;
+  priority?: boolean;
 }
 
 
-  const Logo: React.FC<LogoProps> = ({ className = 'h-10' }) => {
+  const Logo: React.FC<LogoProps> = ({ className = 'h-10', priority = true }) => {
     return (
       <div className={`flex items-center ${className}`}>
         <div className="mr-3">
@@ -24,13 +26,20 @@ interface LogoProps {
             <path d="M11 10h3" className="text-gold-600"/>
           </svg>
         </div>
-        {/*Estilizaçáo do logotipo*/}
+        {/*Estilização do logotipo*/}
         <div className="px-1 py-1 flex items-center bg-white bg-opacity-80 rounded hover:bg-slate-100">
           <div className="px-1 rounded text-sm font-medium transition-colors flex items-center">
-            <img className='h-10' //tamanho do logo//
-              src={company.icoLogo[1]} //acessa a imagen do logo no array 
-              alt={company.alias} 
-            />
+            <div className="h-10 w-10 overflow-hidden rounded">
+              <LazyImage
+                src={company.icoLogo[1]}
+                alt={`Logotipo ${company.alias}`}
+                className="object-contain"
+                aspectRatio="1/1"
+                sizes="40px"
+                priority={priority}
+                placeholder="empty"
+              />
+            </div>
           </div>
           <div className="flex flex-col px-1">
             <span className="text-lg font-serif font-bold text-primary-800 leading-tight">{company.alias}</span>

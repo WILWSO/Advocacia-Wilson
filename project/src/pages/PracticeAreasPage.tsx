@@ -5,19 +5,20 @@ import {
   LandPlot, 
   Scale, 
   Briefcase, 
-  FileText, 
-  Users,
-  Gavel,
-  Shield,
   Landmark,
-  HeartPulse,
-  UserPlus2,
-  User2,
-  UserCog,
-  UserRound,
-  Users2
+  HomeIcon,
+  VoteIcon,
+  ShoppingBagIcon,
+  GavelIcon,
+  Globe2Icon,
+  LeafyGreenIcon,
+  CoinsIcon,
+  FileSignatureIcon,
+  ShieldCheckIcon,
+  HeartPulseIcon,
 } from 'lucide-react';
 import { company } from '../components/shared/DataCompany';
+import SEOHead from '../components/shared/SEOHead';
 
 const PracticeAreasPage = () => {
   const practiceAreas = [
@@ -68,7 +69,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 4,
-      icon: <FileText size={40} className="text-gold-600" />,
+      icon: <CoinsIcon size={40} className="text-gold-600" />,
       title: 'Direito Tributário',
       description: 'Planejamento tributário, defesa em autuações fiscais e recuperação de créditos tributários.',
       services: [
@@ -100,7 +101,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 6,
-      icon: <Users size={40} className="text-gold-600" />,
+      icon: <ShoppingBagIcon size={40} className="text-gold-600" />,
       title: 'Direito do Consumidor',
       description: 'Defesa de direitos em relações de consumo, para consumidores e fornecedores.',
       services: [
@@ -115,7 +116,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 7,
-      icon: <Gavel size={40} className="text-gold-600" />,
+      icon: <FileSignatureIcon size={40} className="text-gold-600" />,
       title: 'Direito Contratual',
       description: 'Elaboração, análise e negociação de contratos de diversos tipos e complexidades.',
       services: [
@@ -130,7 +131,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 8,
-      icon: <Shield size={40} className="text-gold-600" />,
+      icon: <ShieldCheckIcon size={40} className="text-gold-600" />,
       title: 'Direito Digital',
       description: 'Assessoria jurídica em questões relacionadas à tecnologia, internet e proteção de dados.',
       services: [
@@ -160,7 +161,7 @@ const PracticeAreasPage = () => {
     },
     {
       id: 10,
-      icon: <Users size={40} className="text-gold-600" />,
+      icon: <HeartPulseIcon size={40} className="text-gold-600" />,
       title: 'Direito Previdenciário',
       description: 'Assistência em questões relacionadas à aposentadoria, benefícios e planejamento previdenciário.',
       services: [
@@ -175,7 +176,7 @@ const PracticeAreasPage = () => {
     },
      {
       id: 11,
-      icon: <Users2 size={40} className="text-gold-600" />,
+      icon: <HomeIcon size={40} className="text-gold-600" />,
       title: 'Direito de família e sucessões',
       description: 'Assistência em questões relacionadas a divórcios, guarda de filhos, inventários e testamentos.',
       services: [
@@ -187,7 +188,69 @@ const PracticeAreasPage = () => {
         'Adoção',
         'Mediação familiar'
       ]
-    },     
+    },   
+     {
+      id: 12,
+      icon: <LeafyGreenIcon size={40} className="text-gold-600" />,
+      title: 'Direito Ambiental',
+      description: 'Consultoria e contencioso em questões ambientais, licenciamento e responsabilidade ambiental.',
+      services: [
+        'Licenciamento ambiental',
+        'Consultoria em normas ambientais',
+        'Defesa em ações civis públicas',
+        'Recuperação de áreas degradadas',
+        'Responsabilidade civil ambiental',
+        'Planejamento ambiental empresarial',
+        'Compliance ambiental'
+      ]
+     },
+     {
+      id: 13,
+      icon: <Globe2Icon size={40} className="text-gold-600" />,
+      title: 'Direito Internacional',
+      description: 'Assessoria em questões de direito internacional público e privado, incluindo contratos internacionais.',
+      services: [
+        'Contratos internacionais',
+        'Arbitragem internacional',
+        'Direitos humanos',
+        'Imigração e naturalização',
+        'Litígios internacionais',
+        'Compliance internacional',
+        'Consultoria em comércio exterior'
+      ]
+     },
+    {
+      id: 14,
+      icon: <GavelIcon size={40} className="text-gold-600" />,
+      title: 'Direito Penal',
+      description: 'Defesa criminal em diversas áreas do direito penal, incluindo crimes contra a pessoa e o patrimônio.',
+      services: [
+        'Defesa em processos criminais',
+        'Crimes contra a pessoa',
+        'Crimes contra o patrimônio',
+        'Crimes ambientais',
+        'Crimes digitais',
+        'Recursos penais',
+        'Consultoria preventiva'
+      ]
+    }, 
+    {
+      id: 15,
+      icon: <VoteIcon size={40} className="text-gold-600" />,
+      title: 'Direto Eleitoral',
+      description: 'Assessoria jurídica em questões eleitorais, incluindo candidaturas, campanhas e contencioso eleitoral.',
+      services: [
+        'Assessoria a candidatos',
+        'Registro de candidaturas',
+        'Campanhas eleitorais',
+        'Contencioso eleitoral',
+        'Consultoria em legislação eleitoral',
+        'Recursos eleitorais',
+        'Direitos políticos'
+      ]
+    },
+
+     
   ];
 
   const fadeInUp = {
@@ -197,6 +260,12 @@ const PracticeAreasPage = () => {
 
   return (
     <>
+      <SEOHead
+        title="Áreas de Atuação - Serviços Jurídicos Especializados"
+        description="Conheça todas as áreas de atuação do Santos & Nascimento Advogados: Direito Civil, Empresarial, Trabalhista, Tributário, Imobiliário, Família, Consumidor e mais em Palmas-TO."
+        keywords="áreas de atuação advocacia, direito civil Palmas, direito empresarial Tocantins, direito trabalhista, direito tributário, direito imobiliário, direito de família"
+        canonicalUrl={`${window.location.origin}/areas-de-atuacao`}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">

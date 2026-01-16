@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Calendar, Send } from 'lucide-react';
 import { teamMemberData } from '../components/shared/DataTeamMember';
 import { company } from '../components/shared/DataCompany';
+import SEOHead from '../components/shared/SEOHead';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -48,6 +49,12 @@ const ContactPage = () => {
 
   return (
     <>
+      <SEOHead
+        title="Contato - Agende sua Consulta Jurídica"
+        description="Entre em contato com Santos & Nascimento Advogados em Palmas-TO. Telefone: (63) 3214-3886. Endereço: Qd. 104 Sul, Rua SE 07, Lote 32, Sala 1. Agende sua consulta."
+        keywords="contato advogado Palmas, consulta jurídica Tocantins, telefone Santos Nascimento, endereço advogado Palmas, agendar consulta advocacia"
+        canonicalUrl={`${window.location.origin}/contato`}
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">
@@ -158,88 +165,107 @@ const ContactPage = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg text-center"
+                    role="status"
+                    aria-live="polite"
                   >
                     <div className="flex justify-center mb-4">
                       <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                        <Send size={24} className="text-green-600" />
+                        <Send size={24} className="text-green-600" aria-hidden="true" />
                       </div>
                     </div>
                     <h3 className="text-xl font-medium mb-2">Mensagem Enviada!</h3>
                     <p>Agradecemos pelo seu contato. Retornaremos em breve.</p>
                   </motion.div>
                 ) : (
-                  <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">
-                          Nome completo *
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
+                  <form onSubmit={handleSubmit} noValidate>
+                    <fieldset>
+                      <legend className="sr-only">Informações pessoais</legend>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Nome completo <span className="text-red-500" aria-label="campo obrigatório">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            aria-required="true"
+                            aria-describedby="name-error"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          />
+                          <div id="name-error" className="sr-only" aria-live="polite"></div>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
+                            E-mail <span className="text-red-500" aria-label="campo obrigatório">*</span>
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            aria-required="true"
+                            aria-describedby="email-error"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          />
+                          <div id="email-error" className="sr-only" aria-live="polite"></div>
+                        </div>
                       </div>
-                      
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-                          E-mail *
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
+                    </fieldset>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-neutral-700 mb-1">
-                          Telefone
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
+                    <fieldset>
+                      <legend className="sr-only">Informações de contato</legend>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <label htmlFor="phone" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Telefone
+                          </label>
+                          <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            aria-describedby="phone-help"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          />
+                          <div id="phone-help" className="text-xs text-neutral-500 mt-1">Formato: (XX) XXXXX-XXXX</div>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="subject" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Assunto <span className="text-red-500" aria-label="campo obrigatório">*</span>
+                          </label>
+                          <select
+                            id="subject"
+                            name="subject"
+                            value={formData.subject}
+                            onChange={handleChange}
+                            required
+                            aria-required="true"
+                            aria-describedby="subject-error"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          >
+                            <option value="">Selecione um assunto</option>
+                            <option value="Consulta">Consulta Jurídica</option>
+                            <option value="Contratação">Contratação de Serviços</option>
+                            <option value="Dúvida">Dúvidas Gerais</option>
+                            <option value="Outro">Outro Assunto</option>
+                          </select>
+                          <div id="subject-error" className="sr-only" aria-live="polite"></div>
+                        </div>
                       </div>
-                      
-                      <div>
-                        <label htmlFor="subject" className="block text-sm font-medium text-neutral-700 mb-1">
-                          Assunto *
-                        </label>
-                        <select
-                          id="subject"
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        >
-                          <option value="">Selecione</option>
-                          <option value="Consulta">Consulta Jurídica</option>
-                          <option value="Contratação">Contratação de Serviços</option>
-                          <option value="Dúvida">Dúvidas Gerais</option>
-                          <option value="Outro">Outro Assunto</option>
-                        </select>
-                      </div>
-                    </div>
+                    </fieldset>
                     
                     <div className="mb-6">
                       <label htmlFor="message" className="block text-sm font-medium text-neutral-700 mb-1">
-                        Mensagem *
+                        Mensagem <span className="text-red-500" aria-label="campo obrigatório">*</span>
                       </label>
                       <textarea
                         id="message"
@@ -247,30 +273,45 @@ const ContactPage = () => {
                         value={formData.message}
                         onChange={handleChange}
                         required
+                        aria-required="true"
+                        aria-describedby="message-help message-error"
                         rows={6}
                         className="w-full px-4 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Descreva sua necessidade jurídica ou dúvida..."
                       ></textarea>
+                      <div id="message-help" className="text-xs text-neutral-500 mt-1">
+                        Seja o mais detalhado possível para que possamos ajudá-lo melhor.
+                      </div>
+                      <div id="message-error" className="sr-only" aria-live="polite"></div>
                     </div>
                     
-                    <div className="flex items-center mb-6">
+                    <div className="flex items-start mb-6">
                       <input
                         type="checkbox"
                         id="privacy"
                         required
-                        className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
+                        aria-required="true"
+                        aria-describedby="privacy-error"
+                        className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded mt-0.5"
                       />
                       <label htmlFor="privacy" className="ml-2 block text-sm text-neutral-700">
-                        Concordo com a <a href="#" className="text-primary-700 hover:text-primary-900">Política de Privacidade</a> *
+                        Concordo com a <a href="#" className="text-primary-700 hover:text-primary-900 underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded" aria-describedby="privacy-link-help">Política de Privacidade</a> <span className="text-red-500" aria-label="aceitação obrigatória">*</span>
+                        <div id="privacy-link-help" className="sr-only">Link para a política de privacidade</div>
                       </label>
+                      <div id="privacy-error" className="sr-only" aria-live="polite"></div>
                     </div>
                     
                     <button
                       type="submit"
-                      className="w-full px-6 py-3 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors flex items-center justify-center"
+                      className="w-full px-6 py-3 bg-primary-800 hover:bg-primary-900 focus:bg-primary-900 text-white rounded text-sm font-medium transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                      aria-describedby="submit-help"
                     >
-                      <Calendar size={16} className="mr-2" />
+                      <Calendar size={16} className="mr-2" aria-hidden="true" />
                       Solicitar Atendimento
                     </button>
+                    <div id="submit-help" className="text-xs text-neutral-500 mt-2 text-center">
+                      Ao enviar, você será contatado em até 24 horas úteis.
+                    </div>
                   </form>
                 )}
               </div>

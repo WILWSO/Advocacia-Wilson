@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { company } from '../shared/DataCompany';
+import LazyImage from '../shared/LazyImage';
 
 const testimonials = [
   {
@@ -16,7 +17,7 @@ const testimonials = [
     content: `Profissionalismo e excelência definem o trabalho do  ${company.alias}. Eles nos forneceram orientação clara e estratégica para questões jurídicas complexas que nossa empresa enfrentava.`,
     author: "Ruberval França",
     company: "Sub-Secretário de Estado, Tocantins",
-    image: "public/Ruberval.jpg"
+    image: "/Ruberval.jpg"
   },
   {
     id: 3,
@@ -69,11 +70,15 @@ const Testimonials = () => {
             </p>
             
             <div className="mt-8 flex items-center">
-              <img
-                src={testimonials[currentIndex].image}
-                alt={testimonials[currentIndex].author}
-                className="w-14 h-14 rounded-full object-cover mr-4"
-              />
+              <div className="w-14 h-14 rounded-full overflow-hidden mr-4">
+                <LazyImage
+                  src={testimonials[currentIndex].image}
+                  alt={`Foto de ${testimonials[currentIndex].author}`}
+                  className="object-cover"
+                  aspectRatio="1/1"
+                  sizes="56px"
+                />
+              </div>
               <div>
                 <h4 className="font-medium text-white">{testimonials[currentIndex].author}</h4>
                 <p className="text-sm text-neutral-300">{testimonials[currentIndex].company}</p>

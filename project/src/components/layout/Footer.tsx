@@ -1,138 +1,273 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Clock, 
+  Facebook, 
+  Instagram, 
+  Linkedin 
+} from 'lucide-react';
 import Logo from '../shared/Logo';
 import { company } from '../shared/DataCompany';
+import { ResponsiveGrid, ResponsiveContainer } from '../shared/ResponsiveGrid';
+import { useResponsive } from '../../hooks/useResponsive';
+import { cn } from '../../utils/cn';
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const Footer: React.FC = () => {
+  const { isMobile, isTablet } = useResponsive();
+
+  const socialMediaLinks = [
+    { 
+      name: 'Facebook', 
+      icon: Facebook, 
+      url: company.facebook,
+      color: 'hover:text-blue-400' 
+    },
+    { 
+      name: 'Instagram', 
+      icon: Instagram, 
+      url: company.instagram,
+      color: 'hover:text-pink-400' 
+    },
+    { 
+      name: 'LinkedIn', 
+      icon: Linkedin, 
+      url: company.linkedin,
+      color: 'hover:text-blue-600' 
+    }
+  ];
+
+  const quickLinks = [
+    { name: 'Início', path: '/' },
+    { name: 'Sobre Nós', path: '/sobre' },
+    { name: 'Áreas de Atuação', path: '/areas-atuacao' },
+    { name: 'Equipe', path: '/equipe' },
+    { name: 'Contato', path: '/contato' }
+  ];
 
   return (
-    <footer className="bg-primary-900 text-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Logo and About */}
-          <div className='flex flex-col items-start'>
-            <Logo className="h-12 text-white" />
-            <p className="mt-8 text-sm text-neutral-300 leading-relaxed">
-              Advocacia Integral: mais que fazer justiça, amar pessoas. Oferecemos assessoria jurídica 
-              especializada com excelência, compromisso e dedicação.
-            </p>
-            <div className="mt-6 flex space-x-4">
-              <a href={company.facebook} target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href={company.instagram} target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href={company.linkedin} target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-                <Linkedin size={20} />
-              </a>
-            </div>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h3 className="text-lg font-medium mb-4">Links Rápidos</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="https://www.oab.org.br/" 
-                className="text-neutral-300 hover:text-white transition-colors"
-                target="_blank" 
-                rel="noopener noreferrer" >Oab</Link>
-              </li> 
-              <li>
-                <Link to="https://www.trf1.jus.br/sjto/home/" 
-                className="text-neutral-300 hover:text-white transition-colors"
-                target="_blank" 
-                rel="noopener noreferrer" >Justiça Federal</Link>
-              </li>
-              <li>
-                <Link to="https://sso.acesso.gov.br/login?client_id=www.gov.br&authorization_id=196e1231d25" 
-                className="text-neutral-300 hover:text-white transition-colors"
-                target="_blank" 
-                rel="noopener noreferrer" >Gov.br</Link>
-              </li>
-              <li>
-                <Link to="https://www.planalto.gov.br" 
-                className="text-neutral-300 hover:text-white transition-colors"
-                target="_blank" 
-                rel="noopener noreferrer" >Palácio do Planalto</Link>
-              </li>
-              <li>
-                <Link to="/contato" 
-                className="text-neutral-300 hover:text-white transition-colors"
-                target="_blank" 
-                rel="noopener noreferrer" >Contato</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Areas de Atuação */}
-          <div>
-            <h3 className="text-lg font-medium mb-4">Áreas de Atuação</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/areas-de-atuacao"
-                className="text-neutral-300 hover:text-white transition-colors">Direito Civil</Link>
-              </li>
-              <li>
-                <Link to="/areas-de-atuacao" 
-                className="text-neutral-300 hover:text-white transition-colors">Direito Empresarial</Link>
-              </li>
-              <li>
-                <Link to="/areas-de-atuacao" 
-                className="text-neutral-300 hover:text-white transition-colors">Direito Tributário</Link>
-              </li>
-              <li>
-                <Link to="/areas-de-atuacao" 
-                className="text-neutral-300 hover:text-white transition-colors">Direito Trabalhista</Link>
-              </li>
-              <li>
-                <Link to="/areas-de-atuacao" 
-                className="text-neutral-300 hover:text-white transition-colors">Direito Imobiliário</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-medium mb-4">Contato</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <Phone size={18} className="mr-2 mt-0.5 text-gold-400" />
-                <span className="text-neutral-300"> {company.fone} </span>
-              </li>
-              <li className="flex items-start">
-                <Mail size={18} className="mr-2 mt-0.5 text-gold-400" />
-                  <span className="text-neutral-300" > {company.email} </span>
-              </li>
-              <li className="flex items-start">
-                <MapPin size={18} className="mr-2 mt-0.5 text-gold-400" />
-                <span className="text-neutral-300"> 
-                  {company.endereco} <br />
-                </span>
-              </li>
-              <li className="flex items-start">
-                <Clock size={18} className="mr-2 mt-0.5 text-gold-400" />
-                <span className="text-neutral-300"> {company.horarios} </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <hr className="my-8 border-primary-800" />
-
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-neutral-400">
-            &copy; {currentYear} Advocacia Integral. Todos os direitos reservados.
-          </p>
-          <div className="mt-4 md:mt-0 text-sm text-neutral-400">
-            <span>Desenvolvido por </span>
-            <a href="#" className="hover:text-white transition-colors">Wilton Santos de Oliveira (WSO Soluções)</a>
-          </div>
-        </div>
+    <footer className="bg-primary-900 text-white relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-gold-400/20 via-transparent to-primary-800/20" />
       </div>
+
+      <ResponsiveContainer className="relative">
+        {/* Main Footer Content */}
+        <div className={cn(
+          "border-b border-primary-800",
+          isMobile ? "pt-12 pb-8" : "pt-16 lg:pt-20 pb-12"
+        )}>
+          <ResponsiveGrid
+            cols={{ xs: 1, md: 2, lg: 4 }}
+            gap={{ xs: 8, md: 10, lg: 12 }}
+            className={isMobile ? "text-center" : "text-left"}
+          >
+            {/* Logo e Descrição */}
+            <div className={cn(
+              "space-y-6",
+              !isMobile && "lg:space-y-8"
+            )}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className={!isMobile ? "mb-8 lg:mb-10" : ""}
+              >
+                <Logo className={isMobile ? "h-12" : "h-16 lg:h-20"} />
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="space-y-4"
+              >
+                <p className="text-neutral-300 leading-relaxed text-sm">
+                  {company.descricao}
+                </p>
+                
+                {/* Social Media */}
+                <div className="flex gap-4 justify-center md:justify-start">
+                  {socialMediaLinks.map((social, index) => {
+                    const Icon = social.icon;
+                    return (
+                      <motion.a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "p-2 rounded-full bg-primary-800 text-neutral-300 transition-all duration-300",
+                          social.color,
+                          "hover:bg-primary-700 hover:scale-110 hover:shadow-lg"
+                        )}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                      >
+                        <Icon size={18} />
+                      </motion.a>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Links Rápidos */}
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h3 className="text-lg font-semibold text-gold-400 border-b-2 border-gold-400 pb-2 inline-block">
+                Links Rápidos
+              </h3>
+              <ul className="space-y-3">
+                {quickLinks.map((link, index) => (
+                  <motion.li
+                    key={link.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                  >
+                    <Link 
+                      to={link.path}
+                      className="text-neutral-300 hover:text-gold-400 transition-colors duration-200 text-sm hover:underline"
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Áreas de Atuação */}
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <h3 className="text-lg font-semibold text-gold-400 border-b-2 border-gold-400 pb-2 inline-block">
+                Áreas de Atuação
+              </h3>
+              <ul className="space-y-3">
+                {company.areasAtuacao.slice(0, 5).map((area, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                  >
+                    <span className="text-neutral-300 text-sm hover:text-gold-400 transition-colors duration-200">
+                      {area}
+                    </span>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Informações de Contato */}
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <h3 className="text-lg font-semibold text-gold-400 border-b-2 border-gold-400 pb-2 inline-block">
+                Contato
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <Phone size={18} className="mr-3 mt-0.5 text-gold-400 flex-shrink-0" />
+                  <span className="text-neutral-300 text-sm">{company.fone}</span>
+                </li>
+                <li className="flex items-start">
+                  <Mail size={18} className="mr-3 mt-0.5 text-gold-400 flex-shrink-0" />
+                  <span className="text-neutral-300 text-sm">{company.email}</span>
+                </li>
+                <li className="flex items-start">
+                  <MapPin size={18} className="mr-3 mt-0.5 text-gold-400 flex-shrink-0" />
+                  <span className="text-neutral-300 text-sm leading-relaxed">
+                    {company.endereco}
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <Clock size={18} className="mr-3 mt-0.5 text-gold-400 flex-shrink-0" />
+                  <span className="text-neutral-300 text-sm">{company.horarios}</span>
+                </li>
+              </ul>
+            </motion.div>
+          </ResponsiveGrid>
+        </div>
+
+        {/* Separador y Copyright */}
+        <div className={cn(
+          "border-t border-primary-800 pt-8",
+          isMobile ? "mt-8" : "mt-12"
+        )}>
+          <ResponsiveGrid
+            cols={{ xs: 1, md: 2 }}
+            gap={{ xs: 4, md: 8 }}
+            className={cn(
+              "items-center",
+              isMobile ? "text-center space-y-4" : "text-left"
+            )}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <p className="text-neutral-400 text-sm">
+                © {new Date().getFullYear()} {company.nome}. 
+                <br className={isMobile ? "block" : "hidden"} />
+                <span className="ml-1">Todos os direitos reservados.</span>
+              </p>
+            </motion.div>
+
+            <motion.div
+              className={cn(
+                "flex gap-6 text-neutral-400 text-xs",
+                isMobile ? "justify-center" : "justify-end"
+              )}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Link 
+                to="/privacidade" 
+                className="hover:text-gold-400 transition-colors duration-200"
+              >
+                Política de Privacidade
+              </Link>
+              <Link 
+                to="/termos" 
+                className="hover:text-gold-400 transition-colors duration-200"
+              >
+                Termos de Uso
+              </Link>
+            </motion.div>
+          </ResponsiveGrid>
+        </div>
+      </ResponsiveContainer>
     </footer>
   );
 };
