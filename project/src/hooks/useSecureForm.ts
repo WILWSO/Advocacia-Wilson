@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { FormValidator, ValidationResult, ContactFormData } from '../utils/FormValidator';
+import { FormValidator, ContactFormData } from '../utils/FormValidator';
 import { InputSanitizer } from '../utils/InputSanitizer';
 import { formRateLimiter } from '../utils/RateLimiter';
 

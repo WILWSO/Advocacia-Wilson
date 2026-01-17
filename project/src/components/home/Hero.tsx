@@ -8,9 +8,21 @@ import useResponsive from '../../hooks/useResponsive';
 import { ResponsiveContainer, ResponsiveStack } from '../shared/ResponsiveGrid';
 import { cn } from '../../utils/cn';
 
+interface Post {
+  id: string;
+  titulo: string;
+  conteudo: string;
+  tipo_midia: string;
+  url_midia?: string;
+  likes: number;
+  comentarios: number;
+  data_publicacao: string;
+  status: string;
+}
+
 const Hero = () => {
   const { isMobile, isTablet } = useResponsive();
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [direction, setDirection] = useState(0); // 1 para siguiente, -1 para anterior
@@ -57,7 +69,7 @@ const Hero = () => {
   const currentPost = posts[currentPostIndex];
 
   // Obtener imagen de fondo (image_url o thumbnail de YouTube)
-  const getBackgroundImage = (post: any) => {
+  const getBackgroundImage = (post: { image_url?: string; youtube_id?: string }) => {
     if (post?.image_url) {
       return post.image_url;
     }

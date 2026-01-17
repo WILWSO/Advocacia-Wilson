@@ -17,7 +17,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { cn } from '../../utils/cn';
 
 const Footer: React.FC = () => {
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   const socialMediaLinks = [
     { 

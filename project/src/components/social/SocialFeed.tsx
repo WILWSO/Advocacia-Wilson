@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
   Heart, 
-  MessageCircle, 
-  Share2, 
+  MessageCircle,
   Play, 
   ExternalLink,
   FileText,
@@ -14,7 +13,6 @@ import {
   Tag
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useResponsive } from '../../hooks/useResponsive';
 import { cn } from '../../utils/cn';
 
 interface Post {
@@ -46,8 +44,6 @@ const PostPreview: React.FC<{
   onLike?: (id: string) => void;
   isLiked?: boolean;
 }> = ({ post, compact = false, onLike, isLiked = false }) => {
-  const { isMobile } = useResponsive();
-
   const getTypeIcon = (type: Post['type']) => {
     const icons = {
       article: <FileText size={16} />,
@@ -244,7 +240,6 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const { isMobile } = useResponsive();
 
   // Mock data - substituir por dados reais
   useEffect(() => {

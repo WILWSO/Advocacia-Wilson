@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Home, Users, Scale, Briefcase, Share2, Phone } from 'lucide-react';
 import Logo from '../shared/Logo';
 import LoginButton from '../auth/LoginButton';
-import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../utils/cn';
 
 const Header = () => {

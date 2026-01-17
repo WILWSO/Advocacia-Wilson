@@ -10,6 +10,7 @@ export class InputSanitizer {
     return input
       .trim()
       // Remover caracteres de control
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x1f\x7f-\x9f]/g, '')
       // Escapar caracteres HTML básicos
       .replace(/&/g, '&amp;')
@@ -57,6 +58,7 @@ export class InputSanitizer {
     return text
       .trim()
       // Remover caracteres de control excepto line breaks
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/g, '')
       // Escapar HTML básico pero preservar line breaks
       .replace(/&/g, '&amp;')

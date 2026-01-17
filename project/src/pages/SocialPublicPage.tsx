@@ -59,7 +59,6 @@ const PostCard: React.FC<{
   onShare?: (id: string) => void;
   isLiked?: boolean;
 }> = ({ post, onLike, onComment, onShare, isLiked = false }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.likes);
@@ -712,7 +711,7 @@ const SocialPublicPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       <SEOHead
-        title="Social - Notícias e Conteúdos Jurídicos"
+        title="Social - Responsabilidade Social e Conteúdos Jurídicos"
         description="Acompanhe as últimas notícias, artigos e vídeos sobre direito. Mantenha-se informado com conteúdo jurídico de qualidade do escritório Santos & Nascimento."
         keywords="noticias juridicas, artigos direito, videos juridicos, atualizacoes legislacao, Santos Nascimento advogados"
       />
@@ -726,7 +725,7 @@ const SocialPublicPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4"
             >
-              Notícias e Conteúdos Jurídicos
+              Responsabilidade Social e Conteúdos Jurídicos
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}

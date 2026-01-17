@@ -7,9 +7,7 @@ import {
   Scale, 
   Briefcase, 
   FileText, 
-  Users, 
-  UsersRoundIcon,
-  Users2,
+  Users,
   HomeIcon
 } from 'lucide-react';
 

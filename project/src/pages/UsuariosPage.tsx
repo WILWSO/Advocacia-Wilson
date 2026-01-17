@@ -258,31 +258,6 @@ const UsuariosPage: React.FC = () => {
     }
   }
 
-  const handleEditUsuario = (usuario: Usuario) => {
-    setEditingUsuario(usuario)
-    setFormData({
-      titulo: usuario.titulo || '',
-      nome: usuario.nome,
-      nome_completo: usuario.nome_completo || '',
-      email: usuario.email,
-      password: '',
-      role: usuario.role,
-      ativo: usuario.ativo,
-      foto_perfil_url: usuario.foto_perfil_url || '',
-      data_nascimento: usuario.data_nascimento || '',
-      tipo_documento: usuario.tipo_documento || '',
-      numero_documento: usuario.numero_documento || '',
-      whatsapp: usuario.whatsapp || '',
-      redes_sociais: usuario.redes_sociais || {},
-      endereco: usuario.endereco || '',
-      numero: usuario.numero || '',
-      localidade: usuario.localidade || '',
-      estado: usuario.estado || '',
-      cep: usuario.cep || '',
-      pais: usuario.pais || 'Brasil'
-    })
-  }
-
   const handleUpdateUsuario = async (e: React.FormEvent) => {
     e.preventDefault()
     

@@ -5,7 +5,7 @@
 
 type ClassValue = string | number | boolean | undefined | null | ClassArray | ClassObject;
 type ClassArray = ClassValue[];
-type ClassObject = Record<string, any>;
+type ClassObject = Record<string, boolean | undefined | null>;
 
 /**
  * Función para combinar classNames de manera condicional

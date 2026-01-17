@@ -93,7 +93,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   // Generar srcSet para responsive images
-  const generateSrcSet = (baseSrc: string, format: string) => {
+  const generateSrcSet = (baseSrc: string) => {
     if (!baseSrc || typeof baseSrc !== 'string') return '';
     
     // Para URLs externas o archivos locales, usar la imagen tal como está
@@ -122,9 +122,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setIsError(true);
     onError?.();
   };
-
-  // Placeholder blur data URL
-  const defaultBlurDataURL = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
 
   // Componente de placeholder loading
   const LoadingPlaceholder = () => (

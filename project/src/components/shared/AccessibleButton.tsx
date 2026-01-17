@@ -1,5 +1,9 @@
 import React from 'react';
 
+/**
+ * Interface que define las propiedades del componente AccessibleButton
+ * Extiende las propiedades nativas del elemento HTML button
+ */
 interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -10,6 +14,10 @@ interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEle
   rightIcon?: React.ReactNode;
 }
 
+/**
+ * Componente de botón accesible con soporte completo de ARIA
+ * Incluye estados de carga, variantes de estilo, iconos, y optimizaciones de accesibilidad
+ */
 const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   children,
   variant = 'primary',
@@ -23,6 +31,10 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   'aria-label': ariaLabel,
   ...props
 }) => {
+  /**
+   * Clases base del botón: layout flex, transiciones, estados de focus y disabled
+   * Incluye animación de escala al hacer clic (active:scale-95)
+   */
   const baseClasses = `
     inline-flex items-center justify-center font-medium rounded transition-all duration-200
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
@@ -30,6 +42,13 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
     active:scale-95
   `;
 
+  /**
+   * Mapeo de variantes de color del botón
+   * - primary: Azul principal del brand
+   * - secondary: Dorado/gold del brand
+   * - outline: Borde sin relleno
+   * - ghost: Transparente con hover sutil
+   */
   const variantClasses = {
     primary: 'bg-primary-800 hover:bg-primary-900 text-white focus:ring-primary-500',
     secondary: 'bg-gold-600 hover:bg-gold-700 text-white focus:ring-gold-500',
@@ -37,13 +56,26 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
     ghost: 'text-primary-800 hover:bg-primary-50 focus:ring-primary-500'
   };
 
+  /**
+   * Mapeo de tamaños del botón con padding y texto
+   * sm: Pequeño, md: Mediano (default), lg: Grande
+   */
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2 text-sm',
     lg: 'px-6 py-3 text-base'
   };
 
+  /**
+   * Determina si el botón debe estar deshabilitado
+   * Se deshabilita si está explícitamente disabled O si está en estado de carga
+   */
   const isDisabled = disabled || isLoading;
+  
+  /**
+   * Determina el texto a mostrar en el botón
+   * Si está cargando, muestra el texto de carga; caso contrario, muestra el children
+   */
   const buttonText = isLoading ? loadingText : children;
 
   return (
@@ -54,6 +86,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       aria-describedby={isLoading ? 'loading-state' : undefined}
       {...props}
     >
+      {/* Spinner de carga animado - solo visible cuando isLoading es true */}
       {isLoading && (
         <svg
           className="animate-spin -ml-1 mr-2 h-4 w-4"
@@ -79,20 +112,24 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
         </svg>
       )}
       
+      {/* Icono izquierdo - se muestra solo si leftIcon existe y NO está cargando */}
       {leftIcon && !isLoading && (
         <span className="mr-2" aria-hidden="true">
           {leftIcon}
         </span>
       )}
       
+      {/* Texto principal del botón */}
       <span>{buttonText}</span>
       
+      {/* Icono derecho - se muestra solo si rightIcon existe y NO está cargando */}
       {rightIcon && !isLoading && (
         <span className="ml-2" aria-hidden="true">
           {rightIcon}
         </span>
       )}
       
+      {/* Texto accesible para lectores de pantalla durante el estado de carga */}
       {isLoading && (
         <span id="loading-state" className="sr-only">
           Processando sua solicitação, por favor aguarde.

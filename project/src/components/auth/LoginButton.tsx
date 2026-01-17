@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { LogIn, LogOut, User } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { cn } from '../../utils/cn';
 
 const LoginButton = () => {
   const { isAuthenticated, user, login, logout } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +26,7 @@ const LoginButton = () => {
       setError('');
       // Redirecionar automaticamente para o dashboard
       navigate('/admin');
-    } catch (error) {
+    } catch {
       setError('Login falhou. Verifique suas credenciais.');
     } finally {
       setLoading(false);

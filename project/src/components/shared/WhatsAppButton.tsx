@@ -1,5 +1,4 @@
 import React from 'react';
-import { MessageCircle, MessageCircleIcon, Phone } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 const WhatsAppButton = () => {
