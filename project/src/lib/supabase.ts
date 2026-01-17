@@ -10,6 +10,15 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Tipo para documentos almacenados en Storage
+export interface DocumentoArquivo {
+  nome: string
+  url: string
+  tipo: string
+  tamanho?: number
+  data_upload?: string
+}
+
 // Tipos TypeScript para las tablas
 export interface ProcessoJuridico {
   id?: string
@@ -23,6 +32,12 @@ export interface ProcessoJuridico {
   cliente_email?: string
   cliente_telefone?: string
   numero_processo?: string
+  cliente_id?: string
+  area_direito?: string
+  prioridade?: string
+  valor_causa?: string
+  data_vencimento?: string
+  documentos_processo?: DocumentoArquivo[]
 }
 
 export interface PostSocial {
@@ -54,8 +69,57 @@ export interface ComentarioProcesso {
 export interface Usuario {
   id?: string
   email: string
+  titulo?: string
   nome: string
-  role: 'admin' | 'advogado' | 'assistente'
+  nome_completo?: string
+  foto_perfil_url?: string
+  data_nascimento?: string
+  role: 'admin' | 'advogado' | 'usuario'
   ativo: boolean
+  tipo_documento?: string
+  numero_documento?: string
+  whatsapp?: string
+  redes_sociais?: {
+    [key: string]: string
+  }
+  endereco?: string
+  numero?: string
+  localidade?: string
+  estado?: string
+  cep?: string
+  pais?: string
   data_criacao?: string
+  data_atualizacao?: string
+}
+
+export interface Cliente {
+  id?: string
+  nome_completo: string
+  cpf_cnpj?: string
+  rg?: string
+  data_nascimento?: string
+  nacionalidade?: string
+  estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel'
+  profissao?: string
+  email?: string
+  telefone?: string
+  celular: string
+  telefone_alternativo?: string
+  cep?: string
+  endereco?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  pais?: string
+  observacoes?: string
+  como_conheceu?: string
+  indicado_por?: string
+  status?: 'ativo' | 'inativo' | 'potencial'
+  categoria?: string
+  documentos_cliente?: DocumentoArquivo[]
+  data_cadastro?: string
+  data_atualizacao?: string
+  ultimo_contato?: string
 }

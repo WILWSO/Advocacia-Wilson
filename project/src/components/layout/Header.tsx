@@ -1,25 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Home, Users, Scale, Briefcase, Share2, Phone } from 'lucide-react';
 import Logo from '../shared/Logo';
 import LoginButton from '../auth/LoginButton';
-import useResponsive from '../../hooks/useResponsive';
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../utils/cn';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isMenuAnimating, setIsMenuAnimating] = useState(false);
-  const { isMobile, isTablet } = useResponsive();
-  const { isAuthenticated } = useAuthStore();
   const location = useLocation();
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Detectar si estamos en el dashboard o áreas administrativas
-  const isDashboard = location.pathname === '/admin';
   const isAdminArea = location.pathname.startsWith('/admin');
   const isSocialPage = location.pathname === '/social';
 
@@ -134,6 +129,16 @@ const Header = () => {
                 aria-label="Gestão de clientes"
               >
                 Clientes
+              </NavLink>
+              <NavLink 
+                to="/admin/usuarios" 
+                className={({ isActive }) => cn(
+                  navLinkClasses({ isActive }),
+                  "flex items-center gap-2"
+                )}
+                aria-label="Gestão de usuários"
+              >
+                Usuários
               </NavLink>
               <NavLink 
                 to="/admin" 

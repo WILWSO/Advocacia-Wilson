@@ -16,9 +16,15 @@ import {
   Save,
   FileText,
   Star,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  Upload,
+  Download,
+  Building2,
+  MessageSquare,
+  UserCheck
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, DocumentoArquivo } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import Header from '../components/layout/Header';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
@@ -49,7 +55,9 @@ interface Cliente {
   indicado_por?: string;
   status: 'ativo' | 'inativo' | 'potencial';
   categoria?: string;
+  documentos_cliente?: DocumentoArquivo[];
   data_cadastro?: string;
+  data_atualizacao?: string;
   ultimo_contato?: string;
 }
 
@@ -59,12 +67,16 @@ const ClientesPage = () => {
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [showModal, setShowModal] = useState(false);
+  const [viewingCliente, setViewingCliente] = useState<Cliente | null>(null);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [formData, setFormData] = useState<Cliente>({
     nome_completo: '',
     celular: '',
     status: 'ativo',
-    pais: 'Brasil'
+    pais: 'Brasil',
+    documentos_cliente: []
   });
 
   // Carregar clientes
@@ -151,9 +163,201 @@ const ClientesPage = () => {
       nome_completo: '',
       celular: '',
       status: 'ativo',
-      pais: 'Brasil'
+      pais: 'Brasil',
+      documentos_cliente: []
     });
     setShowModal(true);
+  };
+
+  // Abrir modal para visualizar
+  const handleView = (cliente: Cliente) => {
+    setViewingCliente(cliente);
+  };
+
+  // Función para subir archivo a Supabase Storage
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, clienteId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamaño (50MB máximo)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('O arquivo é muito grande. Tamanho máximo: 50MB');
+      return;
+    }
+
+    // Validar tipo de archivo
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png',
+      'image/jpg'
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Tipo de arquivo não permitido. Use: PDF, DOC, DOCX, JPG, PNG');
+      return;
+    }
+
+    setUploadingFile(true);
+    setUploadProgress(0);
+
+    try {
+      // Usar ID temporal si estamos creando un nuevo cliente
+      const targetId = clienteId || editingCliente?.id || `temp-${Date.now()}`;
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filePath = `${targetId}/${fileName}`;
+
+      // Subir archivo al bucket
+      const { error: uploadError } = await supabase.storage
+        .from('documentos_cliente')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Obtener URL pública
+      const { data: urlData } = supabase.storage
+        .from('documentos_cliente')
+        .getPublicUrl(filePath);
+
+      // Crear objeto documento
+      const novoDocumento: DocumentoArquivo = {
+        nome: file.name,
+        url: urlData.publicUrl,
+        tipo: file.type,
+        tamanho: file.size,
+        data_upload: new Date().toISOString()
+      };
+
+      // Agregar a la lista de documentos
+      setFormData(prev => ({
+        ...prev,
+        documentos_cliente: [...(prev.documentos_cliente || []), novoDocumento]
+      }));
+
+      setUploadProgress(100);
+      alert('Documento enviado com sucesso!');
+      
+      // Reset input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao enviar documento. Tente novamente.');
+    } finally {
+      setUploadingFile(false);
+      setTimeout(() => setUploadProgress(0), 1000);
+    }
+  };
+
+  // Función para visualizar documento (abrir en nueva pestaña)
+  const handleViewDocument = async (doc: DocumentoArquivo) => {
+    try {
+      // Extraer path del URL
+      const urlParts = doc.url.split('/documentos_cliente/');
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        
+        // Obtener URL firmada con mayor tiempo de expiración
+        const { data, error } = await supabase.storage
+          .from('documentos_cliente')
+          .createSignedUrl(filePath, 3600); // 1 hora
+
+        if (error) throw error;
+        
+        if (data?.signedUrl) {
+          window.open(data.signedUrl, '_blank');
+        } else {
+          throw new Error('No se pudo generar la URL');
+        }
+      } else {
+        // Si es URL pública directa, abrirla
+        window.open(doc.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Erro ao visualizar documento:', error);
+      alert('Erro ao visualizar documento');
+    }
+  };
+
+  // Función para descargar documento
+  const handleDownloadDocument = async (doc: DocumentoArquivo) => {
+    try {
+      // Extraer path del URL
+      const urlParts = doc.url.split('/documentos_cliente/');
+      let downloadUrl = doc.url;
+      
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        
+        // Obtener URL firmada
+        const { data, error } = await supabase.storage
+          .from('documentos_cliente')
+          .createSignedUrl(filePath, 60); // 1 minuto es suficiente para descarga
+
+        if (error) throw error;
+        
+        if (data?.signedUrl) {
+          downloadUrl = data.signedUrl;
+        }
+      }
+      
+      // Descargar usando fetch y blob para forzar descarga real
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Error al obtener el archivo');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.nome;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar después de un pequeño delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+      
+      alert('Download iniciado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao baixar documento:', error);
+      alert('Erro ao baixar documento. Tente novamente.');
+    }
+  };
+
+  // Función para eliminar documento
+  const handleDeleteDocument = async (doc: DocumentoArquivo, index: number) => {
+    if (!confirm(`Deseja realmente remover o documento "${doc.nome}"?`)) return;
+
+    try {
+      // Extraer path del URL
+      const urlParts = doc.url.split('/documentos_cliente/');
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        
+        // Eliminar del storage
+        const { error } = await supabase.storage
+          .from('documentos_cliente')
+          .remove([filePath]);
+
+        if (error) throw error;
+      }
+
+      // Remover de la lista
+      const newDocs = (formData.documentos_cliente || []).filter((_, i) => i !== index);
+      setFormData({...formData, documentos_cliente: newDocs});
+      
+      alert('Documento removido com sucesso!');
+    } catch (error) {
+      console.error('Erro ao remover documento:', error);
+      alert('Erro ao remover documento');
+    }
   };
 
   // Fechar modal
@@ -318,6 +522,13 @@ const ClientesPage = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <button
+                        onClick={() => handleView(cliente)}
+                        className="p-2 text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                        title="Visualizar"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
                         onClick={() => handleEdit(cliente)}
                         className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                         title="Editar"
@@ -473,7 +684,7 @@ const ClientesPage = () => {
                         </label>
                         <select
                           value={formData.estado_civil || ''}
-                          onChange={(e) => setFormData({...formData, estado_civil: e.target.value as any})}
+                          onChange={(e) => setFormData({...formData, estado_civil: e.target.value as Cliente['estado_civil']})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         >
                           <option value="">Selecione</option>
@@ -690,7 +901,7 @@ const ClientesPage = () => {
                         <select
                           required
                           value={formData.status}
-                          onChange={(e) => setFormData({...formData, status: e.target.value as any})}
+                          onChange={(e) => setFormData({...formData, status: e.target.value as Cliente['status']})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         >
                           <option value="ativo">Ativo</option>
@@ -752,6 +963,105 @@ const ClientesPage = () => {
                     </div>
                   </div>
 
+                  {/* Seção: Documentos */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                      <FileText size={20} />
+                      Documentos do Cliente
+                    </h3>
+                    <div className="space-y-4">
+                      {/* Botão de Upload */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <Upload size={20} className="text-blue-600 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-sm text-blue-900 font-medium mb-2">
+                              Adicionar Documentos
+                            </p>
+                            <label className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md cursor-pointer transition-colors">
+                              <Upload size={16} className="mr-2" />
+                              {uploadingFile ? 'Enviando...' : 'Selecionar Arquivo'}
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                onChange={(e) => handleFileUpload(e, editingCliente?.id)}
+                                disabled={uploadingFile}
+                              />
+                            </label>
+                            {uploadingFile && (
+                              <div className="mt-2">
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${uploadProgress}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-gray-600 mt-1">{uploadProgress}% enviado</p>
+                              </div>
+                            )}
+                            <p className="text-xs text-blue-700 mt-2">
+                              Formatos aceitos: PDF, DOC, DOCX, JPG, PNG • Tamanho máximo: 50MB
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lista de Documentos */}
+                      {formData.documentos_cliente && formData.documentos_cliente.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">
+                            Documentos Anexados ({formData.documentos_cliente.length})
+                          </h4>
+                          <div className="space-y-2">
+                            {formData.documentos_cliente.map((doc: DocumentoArquivo, index: number) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <FileText size={18} className="text-gray-600 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-gray-900 truncate" title={doc.nome}>
+                                      {doc.nome}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {doc.tamanho ? `${(doc.tamanho / 1024 / 1024).toFixed(2)} MB` : 'Tamanho desconhecido'}
+                                      {doc.data_upload && ` • ${new Date(doc.data_upload).toLocaleDateString('pt-BR')}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-1 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleViewDocument(doc)}
+                                    className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                                    title="Visualizar documento"
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(doc)}
+                                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                                    title="Baixar documento"
+                                  >
+                                    <Download size={16} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDocument(doc, index)}
+                                    className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                                    title="Remover documento"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Botões */}
                   <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
                     <button
@@ -770,6 +1080,316 @@ const ClientesPage = () => {
                     </button>
                   </div>
                 </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Modal de Visualização */}
+        <AnimatePresence>
+          {viewingCliente && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+              >
+                {/* Cabeçalho */}
+                <div className="p-4 sm:p-6 border-b border-neutral-200 flex items-center justify-between sticky top-0 bg-white z-10">
+                  <h2 className="text-xl sm:text-2xl font-bold text-neutral-800">
+                    Detalhes do Cliente
+                  </h2>
+                  <button
+                    onClick={() => setViewingCliente(null)}
+                    className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                {/* Conteúdo */}
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Seção 1: Informações Pessoais */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                      <User size={20} />
+                      Informações Pessoais
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Nome Completo</h4>
+                        <p className="text-gray-900 font-medium">{viewingCliente.nome_completo}</p>
+                      </div>
+
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Status</h4>
+                        <span className={cn(
+                          "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                          viewingCliente.status === 'ativo' && 'bg-green-100 text-green-800',
+                          viewingCliente.status === 'potencial' && 'bg-blue-100 text-blue-800',
+                          viewingCliente.status === 'inativo' && 'bg-gray-100 text-gray-800'
+                        )}>
+                          {viewingCliente.status === 'ativo' && 'Ativo'}
+                          {viewingCliente.status === 'potencial' && 'Potencial'}
+                          {viewingCliente.status === 'inativo' && 'Inativo'}
+                        </span>
+                      </div>
+
+                      {viewingCliente.cpf_cnpj && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">CPF/CNPJ</h4>
+                          <p className="text-gray-900 font-medium">{viewingCliente.cpf_cnpj}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.rg && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">RG</h4>
+                          <p className="text-gray-900 font-medium">{viewingCliente.rg}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.data_nascimento && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                            <Calendar size={14} />
+                            Data de Nascimento
+                          </h4>
+                          <p className="text-gray-900 font-medium">
+                            {new Date(viewingCliente.data_nascimento).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+
+                      {viewingCliente.nacionalidade && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Nacionalidade</h4>
+                          <p className="text-gray-900 font-medium">{viewingCliente.nacionalidade}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.estado_civil && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Estado Civil</h4>
+                          <p className="text-gray-900 font-medium capitalize">{viewingCliente.estado_civil.replace('_', ' ')}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.profissao && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                            <Building2 size={14} />
+                            Profissão
+                          </h4>
+                          <p className="text-gray-900 font-medium">{viewingCliente.profissao}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Seção 2: Contato */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                      <Phone size={20} />
+                      Informações de Contato
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {viewingCliente.email && (
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
+                            <Mail size={14} />
+                            Email
+                          </h4>
+                          <a href={`mailto:${viewingCliente.email}`} className="text-blue-900 font-medium hover:underline">
+                            {viewingCliente.email}
+                          </a>
+                        </div>
+                      )}
+
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
+                          <Phone size={14} />
+                          Celular
+                        </h4>
+                        <a href={`tel:${viewingCliente.celular}`} className="text-blue-900 font-medium hover:underline">
+                          {viewingCliente.celular}
+                        </a>
+                      </div>
+
+                      {viewingCliente.telefone && (
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
+                            <Phone size={14} />
+                            Telefone Fixo
+                          </h4>
+                          <p className="text-blue-900 font-medium">{viewingCliente.telefone}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.telefone_alternativo && (
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
+                            <Phone size={14} />
+                            Telefone Alternativo
+                          </h4>
+                          <p className="text-blue-900 font-medium">{viewingCliente.telefone_alternativo}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Seção 3: Endereço */}
+                  {(viewingCliente.endereco || viewingCliente.cidade || viewingCliente.estado) && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                        <MapPin size={20} />
+                        Endereço
+                      </h3>
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div className="space-y-2 text-gray-900">
+                          {viewingCliente.endereco && (
+                            <p>
+                              {viewingCliente.endereco}
+                              {viewingCliente.numero && `, ${viewingCliente.numero}`}
+                              {viewingCliente.complemento && ` - ${viewingCliente.complemento}`}
+                            </p>
+                          )}
+                          {viewingCliente.bairro && <p>{viewingCliente.bairro}</p>}
+                          {(viewingCliente.cidade || viewingCliente.estado) && (
+                            <p>
+                              {viewingCliente.cidade}
+                              {viewingCliente.estado && ` - ${viewingCliente.estado}`}
+                            </p>
+                          )}
+                          {viewingCliente.cep && <p>CEP: {viewingCliente.cep}</p>}
+                          {viewingCliente.pais && <p>{viewingCliente.pais}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Seção 4: Informações de Gestão */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                      <UserCheck size={20} />
+                      Informações de Gestão
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {viewingCliente.categoria && (
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1 flex items-center gap-1">
+                            <Star size={14} />
+                            Categoria
+                          </h4>
+                          <p className="text-purple-900 font-medium">{viewingCliente.categoria}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.como_conheceu && (
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1">Como Conheceu</h4>
+                          <p className="text-purple-900 font-medium">{viewingCliente.como_conheceu}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.indicado_por && (
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1">Indicado Por</h4>
+                          <p className="text-purple-900 font-medium">{viewingCliente.indicado_por}</p>
+                        </div>
+                      )}
+
+                      {viewingCliente.data_cadastro && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                            <Calendar size={14} />
+                            Data de Cadastro
+                          </h4>
+                          <p className="text-gray-900 font-medium">
+                            {new Date(viewingCliente.data_cadastro).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {viewingCliente.observacoes && (
+                      <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-1">
+                          <MessageSquare size={14} />
+                          Observações
+                        </h4>
+                        <p className="text-gray-900 whitespace-pre-wrap">{viewingCliente.observacoes}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Seção 5: Documentos */}
+                  {viewingCliente.documentos_cliente && viewingCliente.documentos_cliente.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                        <FileText size={20} />
+                        Documentos do Cliente
+                      </h3>
+                      <div className="space-y-2">
+                        {viewingCliente.documentos_cliente.map((doc, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <FileText size={18} className="text-primary-600 flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-900 truncate" title={doc.nome}>
+                                  {doc.nome}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {doc.tamanho && `${(doc.tamanho / 1024 / 1024).toFixed(2)} MB`}
+                                  {doc.data_upload && ` • ${new Date(doc.data_upload).toLocaleDateString('pt-BR')}`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleViewDocument(doc)}
+                                className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                                title="Visualizar documento"
+                              >
+                                <Eye size={18} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadDocument(doc)}
+                                className="p-2 text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
+                                title="Baixar documento"
+                              >
+                                <Download size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Rodapé */}
+                <div className="p-4 sm:p-6 border-t border-gray-200 flex justify-between">
+                  <button
+                    onClick={() => {
+                      setViewingCliente(null);
+                      handleEdit(viewingCliente);
+                    }}
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <Edit3 size={16} />
+                    Editar Cliente
+                  </button>
+                  <button
+                    onClick={() => setViewingCliente(null)}
+                    className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
               </motion.div>
             </div>
           )}
