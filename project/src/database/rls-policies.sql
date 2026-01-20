@@ -39,6 +39,7 @@ WITH CHECK (
 );
 
 -- UPDATE: Admin pode editar todos, outros usuários apenas seus próprios dados
+-- IMPORTANTE: Usuários NÃO-ADMIN não podem mudar seu próprio ROLE ou STATUS ATIVO
 CREATE POLICY "usuarios_update_policy" 
 ON usuarios FOR UPDATE 
 USING (
@@ -60,7 +61,7 @@ WITH CHECK (
     AND usuarios.role = 'admin'
   )
   OR
-  -- Usuário não-admin não pode mudar seu próprio role ou status ativo
+  -- Usuário não-admin NÃO pode mudar seu próprio role ou status ativo
   (
     id = auth.uid()
     AND role = (SELECT role FROM usuarios WHERE id = auth.uid())
@@ -99,32 +100,75 @@ USING (
   auth.role() = 'authenticated'
 );
 
--- INSERT: Apenas admin e advogado podem criar processos
+-- INSERT: Admin, advogado y assistente podem criar processos
 CREATE POLICY "processos_insert_policy" 
 ON processos_juridicos FOR INSERT 
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM usuarios
     WHERE usuarios.id = auth.uid()
-    AND usuarios.role IN ('admin', 'advogado')
+    AND usuarios.role IN ('admin', 'advogado', 'assistente')
   )
 );
 
--- UPDATE: Apenas admin e advogado podem editar processos
+-- UPDATE: Admin, advogado y assistente podem editar processos
+-- RESTRICCIONES:
+-- 1. assistente y advogado NO pueden editar 'numero_processo'
+-- 2. assistente y advogado NO pueden editar 'titulo'
+-- 3. assistente y advogado NO pueden editar 'advogado_responsavel'
+-- 4. assistente NO puede editar 'status' (solo admin y advogado)
 CREATE POLICY "processos_update_policy" 
 ON processos_juridicos FOR UPDATE 
 USING (
   EXISTS (
     SELECT 1 FROM usuarios
     WHERE usuarios.id = auth.uid()
-    AND usuarios.role IN ('admin', 'advogado')
+    AND usuarios.role IN ('admin', 'advogado', 'assistente')
   )
 )
 WITH CHECK (
+  -- Admin pode fazer qualquer mudança
   EXISTS (
     SELECT 1 FROM usuarios
     WHERE usuarios.id = auth.uid()
-    AND usuarios.role IN ('admin', 'advogado')
+    AND usuarios.role = 'admin'
+  )
+  OR
+  -- Advogado puede editar todo EXCEPTO numero_processo, titulo y advogado_responsavel
+  (
+    EXISTS (
+      SELECT 1 FROM usuarios
+      WHERE usuarios.id = auth.uid()
+      AND usuarios.role = 'advogado'
+    )
+    AND (
+      numero_processo IS NULL 
+      OR numero_processo = (SELECT numero_processo FROM processos_juridicos WHERE id = processos_juridicos.id)
+    )
+    AND titulo = (SELECT titulo FROM processos_juridicos WHERE id = processos_juridicos.id)
+    AND (
+      advogado_responsavel IS NULL
+      OR advogado_responsavel = (SELECT advogado_responsavel FROM processos_juridicos WHERE id = processos_juridicos.id)
+    )
+  )
+  OR
+  -- Assistente NO puede cambiar numero_processo, titulo, advogado_responsavel ni status
+  (
+    EXISTS (
+      SELECT 1 FROM usuarios
+      WHERE usuarios.id = auth.uid()
+      AND usuarios.role = 'assistente'
+    )
+    AND (
+      numero_processo IS NULL 
+      OR numero_processo = (SELECT numero_processo FROM processos_juridicos WHERE id = processos_juridicos.id)
+    )
+    AND titulo = (SELECT titulo FROM processos_juridicos WHERE id = processos_juridicos.id)
+    AND (
+      advogado_responsavel IS NULL
+      OR advogado_responsavel = (SELECT advogado_responsavel FROM processos_juridicos WHERE id = processos_juridicos.id)
+    )
+    AND status = (SELECT status FROM processos_juridicos WHERE id = processos_juridicos.id)
   )
 );
 
@@ -159,26 +203,26 @@ USING (
   auth.role() = 'authenticated'
 );
 
--- INSERT: Apenas admin e advogado podem criar clientes
+-- INSERT: Admin, advogado y assistente podem criar clientes
 CREATE POLICY "clientes_insert_policy" 
 ON clientes FOR INSERT 
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM usuarios
     WHERE usuarios.id = auth.uid()
-    AND usuarios.role IN ('admin', 'advogado')
+    AND usuarios.role IN ('admin', 'advogado', 'assistente')
   )
 );
 
--- UPDATE: Apenas admin e advogado podem editar clientes
--- Admin pode cambiar status, outros não
+-- UPDATE: Admin, advogado y assistente podem editar clientes
+-- IMPORTANTE: assistente y advogado NO pueden editar nome_completo
 CREATE POLICY "clientes_update_policy" 
 ON clientes FOR UPDATE 
 USING (
   EXISTS (
     SELECT 1 FROM usuarios
     WHERE usuarios.id = auth.uid()
-    AND usuarios.role IN ('admin', 'advogado')
+    AND usuarios.role IN ('admin', 'advogado', 'assistente')
   )
 )
 WITH CHECK (
@@ -189,14 +233,14 @@ WITH CHECK (
     AND usuarios.role = 'admin'
   )
   OR
-  -- Advogado não pode mudar status (ativo/inativo)
+  -- Advogado y assistente NO pueden cambiar nome_completo
   (
     EXISTS (
       SELECT 1 FROM usuarios
       WHERE usuarios.id = auth.uid()
-      AND usuarios.role = 'advogado'
+      AND usuarios.role IN ('advogado', 'assistente')
     )
-    AND status = (SELECT status FROM clientes WHERE id = clientes.id)
+    AND nome_completo = (SELECT nome_completo FROM clientes WHERE id = clientes.id)
   )
 );
 
@@ -383,8 +427,8 @@ USING (
 -- ========================================
 -- 1. auth.uid() retorna o ID do usuário autenticado do Supabase Auth
 -- 2. auth.role() retorna 'authenticated' para usuários logados ou 'anon' para anônimos
--- 3. O campo 'role' na tabla usuarios define: 'admin', 'advogado', 'usuario'
+-- 3. O campo 'role' na tabla usuarios define: 'admin', 'advogado', 'assistente'
 -- 4. Admin tem controle total (CRUD completo)
 -- 5. Advogado pode criar/editar processos e clientes, mas não deletar
--- 6. Usuário só pode editar seus próprios dados
+-- 6. Assistente só pode editar seus próprios dados
 -- 7. Solo admin pode mudar status (ativo/inativo) de usuários e clientes

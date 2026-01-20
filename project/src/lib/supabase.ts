@@ -33,11 +33,42 @@ export interface ProcessoJuridico {
   cliente_telefone?: string
   numero_processo?: string
   cliente_id?: string
+  polo?: 'ativo' | 'passivo'
   area_direito?: string
   prioridade?: string
   valor_causa?: string
-  data_vencimento?: string
+  atividade_pendente?: string
+  competencia?: string
+  // Campos JSONB
+  jurisdicao?: {
+    uf?: string
+    municipio?: string
+    vara?: string
+    juiz?: string
+  }
+  honorarios?: {
+    valor_honorarios?: number
+    detalhes?: string
+  }
+  audiencias?: Array<{
+    data: string
+    horario: string
+    tipo: string
+    forma: string
+    lugar: string
+  }>
   documentos_processo?: DocumentoArquivo[]
+  links_processo?: Array<{
+    titulo: string
+    link: string
+  }>
+  jurisprudencia?: Array<{
+    ementa: string
+    link: string
+  }>
+  // Campos de auditoría
+  creado_por?: string
+  atualizado_por?: string
 }
 
 export interface PostSocial {
@@ -74,7 +105,7 @@ export interface Usuario {
   nome_completo?: string
   foto_perfil_url?: string
   data_nascimento?: string
-  role: 'admin' | 'advogado' | 'usuario'
+  role: 'admin' | 'advogado' | 'assistente'
   ativo: boolean
   tipo_documento?: string
   numero_documento?: string
@@ -90,6 +121,9 @@ export interface Usuario {
   pais?: string
   data_criacao?: string
   data_atualizacao?: string
+  // Campos de auditoría
+  creado_por?: string
+  atualizado_por?: string
 }
 
 export interface Cliente {
@@ -122,4 +156,7 @@ export interface Cliente {
   data_cadastro?: string
   data_atualizacao?: string
   ultimo_contato?: string
+  // Campos de auditoría
+  creado_por?: string
+  atualizado_por?: string
 }

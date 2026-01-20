@@ -23,7 +23,9 @@ import { useAuthStore } from '../store/authStore';
 import { usePostsPublicos } from '../hooks/useSupabase';
 import { cn } from '../utils/cn';
 import SEOHead from '../components/shared/SEOHead';
+import PostModal from '../components/social/PostModal';
 import { supabase } from '../lib/supabase';
+import { useSearchParams } from 'react-router-dom';
 
 interface Post {
   id: string;
@@ -58,8 +60,10 @@ const PostCard: React.FC<{
   onComment?: (id: string) => void;
   onShare?: (id: string) => void;
   isLiked?: boolean;
-}> = ({ post, onLike, onComment, onShare, isLiked = false }) => {
-  const [showModal, setShowModal] = useState(false);
+  initialShowModal?: boolean;
+}> = ({ post, onLike, onComment, onShare, isLiked = false, initialShowModal = false }) => {
+  const [showModal, setShowModal] = useState(initialShowModal);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.likes);
   const [localComments, setLocalComments] = useState(post.comentarios);
@@ -71,6 +75,13 @@ const PostCard: React.FC<{
 
   const MAX_CONTENT_LENGTH = 150; // Caracteres máximos para mostrar
   const MAX_TITLE_LENGTH = 60; // Caracteres máximos para el título
+
+  // Abrir modal cuando initialShowModal cambia a true
+  useEffect(() => {
+    if (initialShowModal) {
+      setShowModal(true);
+    }
+  }, [initialShowModal, post.id]);
 
   // Cargar comentarios del post
   const loadComments = async () => {
@@ -196,11 +207,14 @@ const PostCard: React.FC<{
   };
 
   return (
+    <>
     <motion.article
+      id={`post-${post.id}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      onClick={() => setShowModal(true)}
       className={cn(
-        "bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-neutral-200 group overflow-hidden",
+        "bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-neutral-200 group overflow-hidden cursor-pointer",
         "h-auto md:h-[600px] flex flex-col", // Altura auto en móvil, fija en desktop
         post.destaque && "ring-2 ring-gold-200 border-gold-300"
       )}
@@ -279,14 +293,6 @@ const PostCard: React.FC<{
         <div className="flex-1 flex flex-col">
           <div className="text-neutral-600 mb-3 text-xs sm:text-sm leading-relaxed flex-1">
             {displayContent}
-            {shouldShowReadMore && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="ml-2 text-primary-600 hover:text-primary-700 font-medium transition-colors underline"
-              >
-                Ler mais...
-              </button>
-            )}
           </div>
           
           {/* Tags */}
@@ -316,6 +322,7 @@ const PostCard: React.FC<{
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
+          onClick={(e) => e.stopPropagation()}
           className="px-4 sm:px-6 pb-4"
         >
           <div className="border-t border-neutral-200 pt-4">
@@ -325,7 +332,10 @@ const PostCard: React.FC<{
                 Comentários ({localComments})
               </h4>
               <button
-                onClick={() => setShowComments(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowComments(false);
+                }}
                 className="p-1 hover:bg-neutral-100 rounded-full transition-colors"
                 aria-label="Fechar comentários"
               >
@@ -334,12 +344,20 @@ const PostCard: React.FC<{
             </div>
 
             {/* Formulário para novo comentário */}
-            <form onSubmit={handleSubmitComment} className="mb-4">
+            <form 
+              onSubmit={(e) => {
+                e.stopPropagation();
+                handleSubmitComment(e);
+              }} 
+              className="mb-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="space-y-3">
                 <input
                   type="text"
                   value={commentAuthor}
                   onChange={(e) => setCommentAuthor(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
                   placeholder="Seu nome"
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
                   required
@@ -349,6 +367,7 @@ const PostCard: React.FC<{
                   <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                     placeholder="Escreva seu comentário..."
                     className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm"
                     rows={3}
@@ -361,6 +380,7 @@ const PostCard: React.FC<{
                 </div>
                 <button
                   type="submit"
+                  onClick={(e) => e.stopPropagation()}
                   disabled={submittingComment || !newComment.trim() || !commentAuthor.trim()}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                 >
@@ -437,7 +457,8 @@ const PostCard: React.FC<{
             {/* Botones de interacción */}
             <div className="flex items-center justify-center sm:justify-start gap-6">
               <button
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.stopPropagation(); // Prevenir que abra el modal
                   if (onLike) {
                     await onLike(post.id);
                     setLocalLikes(prev => isLiked ? prev - 1 : prev + 1);
@@ -461,7 +482,8 @@ const PostCard: React.FC<{
               </button>
               
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevenir que abra el modal
                   setShowComments(!showComments);
                   onComment?.(post.id);
                 }}
@@ -475,7 +497,10 @@ const PostCard: React.FC<{
               </button>
 
               <button 
-                onClick={() => onShare?.(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevenir que abra el modal
+                  onShare?.(post.id);
+                }}
                 className="flex items-center gap-2 text-neutral-500 hover:text-primary-600 text-sm transition-colors"
               >
                 <Share2 size={18} />
@@ -499,113 +524,16 @@ const PostCard: React.FC<{
           </div>
       </div> {/* Fim do footer mt-auto */}
     </div> {/* Fim do container p-6 flex flex-col flex-1 */}
-
-    {/* Modal para contenido completo */}
-    {showModal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-          {/* Header del modal */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-neutral-200">
-            <div className="flex items-center gap-3">
-              <span className={cn(
-                "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border",
-                getTypeColor(post.tipo)
-              )}>
-                {getTypeIcon(post.tipo)}
-                {post.tipo === 'article' && 'Artigo'}
-                {post.tipo === 'video' && 'Vídeo'}
-                {post.tipo === 'image' && 'Imagem'}
-                {post.tipo === 'announcement' && 'Anúncio'}
-              </span>
-              {post.destaque && (
-                <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-gold-100 to-gold-200 text-gold-800 text-xs font-medium rounded-full border border-gold-300">
-                  ⭐ Destaque
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
-              aria-label="Fechar modal"
-            >
-              <X size={20} className="text-neutral-600" />
-            </button>
-          </div>
-          {/* Contenido del modal */}
-          <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-            <div className="p-6">
-              {/* Imagen/Video si existe */}
-              {post.image_url && post.tipo !== 'video' && (
-                <div className="aspect-video bg-neutral-100 overflow-hidden rounded-lg mb-6">
-                  <img
-                    src={post.image_url}
-                    alt={post.titulo}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              {post.tipo === 'video' && post.video_url && (
-                <div className="aspect-video bg-neutral-900 overflow-hidden rounded-lg mb-6">
-                  {post.youtube_id || extractYouTubeId(post.video_url) ? (
-                    <iframe
-                      src={getYouTubeEmbedUrl(post.youtube_id || extractYouTubeId(post.video_url)!)}
-                      title={post.titulo}
-                      className="w-full h-full border-0"
-                      allowFullScreen
-                      loading="lazy"
-                      sandbox="allow-scripts allow-same-origin allow-presentation"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center relative group">
-                      <Play size={48} className="text-white opacity-80" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      <p className="absolute bottom-4 left-4 text-white text-sm opacity-80">Vídeo não disponível</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* Título */}
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-800 mb-4">
-                {post.titulo}
-              </h2>
-              {/* Contenido completo */}
-              <div className="prose prose-neutral max-w-none">
-                <p className="text-neutral-700 text-base leading-relaxed whitespace-pre-line">
-                  {post.conteudo}
-                </p>
-              </div>
-              {/* Tags */}
-              {post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-neutral-200">
-                  {post.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 text-sm rounded-md transition-colors cursor-pointer"
-                    >
-                      <Tag size={12} className="mr-1" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {/* Autor y fecha */}
-              <div className="mt-6 pt-6 border-t border-neutral-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <p className="text-sm text-neutral-600">
-                  <span className="font-medium">Por:</span> {typeof post.autor === 'string' ? post.autor : post.autor.nome}
-                </p>
-                <div className="text-sm text-neutral-500">
-                  <Calendar size={14} className="inline mr-1" />
-                  {formatDate(post.data_criacao)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
     
     </motion.article>
+
+    {/* Modal usando componente reutilizable */}
+    <PostModal 
+      post={post}
+      isOpen={showModal}
+      onClose={() => setShowModal(false)}
+    />
+    </>
   );
 };
 
@@ -618,6 +546,29 @@ const SocialPublicPage: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [shareTitle, setShareTitle] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+
+  // Detectar postId en URL y abrir modal automáticamente
+  useEffect(() => {
+    const postIdFromUrl = searchParams.get('postId');
+    
+    if (postIdFromUrl && posts.length > 0) {
+      const postExists = posts.find(p => p.id === postIdFromUrl);
+      
+      if (postExists) {
+        setSelectedPostId(postIdFromUrl);
+        
+        // Scroll al post después de un pequeño delay
+        setTimeout(() => {
+          const element = document.getElementById(`post-${postIdFromUrl}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+      }
+    }
+  }, [searchParams, posts]);
 
   // Los posts ya vienen filtrados (solo publicados) del hook usePostsPublicos
 
@@ -664,7 +615,6 @@ const SocialPublicPage: React.FC = () => {
   };
 
   const handleComment = (postId: string) => {
-    console.log('Abrir comentarios para post:', postId);
     // La funcionalidad de expandir comentarios se maneja en el PostCard
   };
 
@@ -682,8 +632,7 @@ const SocialPublicPage: React.FC = () => {
         title: post.titulo,
         text: post.conteudo.substring(0, 100) + '...',
         url: url
-      }).catch(err => {
-        console.log('Error sharing:', err);
+      }).catch(() => {
         setShareModalOpen(true);
       });
     } else {
@@ -866,6 +815,7 @@ const SocialPublicPage: React.FC = () => {
                     onComment={handleComment}
                     onShare={handleShare}
                     isLiked={likedPosts.has(post.id)}
+                    initialShowModal={post.id === selectedPostId}
                   />
                 </motion.div>
               ))}

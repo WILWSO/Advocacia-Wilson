@@ -12,8 +12,9 @@ import {
   ArrowRight,
   Tag
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
+import { supabase } from '../../lib/supabase';
 
 interface Post {
   id: string;
@@ -44,6 +45,8 @@ const PostPreview: React.FC<{
   onLike?: (id: string) => void;
   isLiked?: boolean;
 }> = ({ post, compact = false, onLike, isLiked = false }) => {
+  const navigate = useNavigate();
+  
   const getTypeIcon = (type: Post['type']) => {
     const icons = {
       article: <FileText size={16} />,
@@ -80,8 +83,9 @@ const PostPreview: React.FC<{
     <motion.article
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      onClick={() => navigate(`/social?postId=${post.id}`)}
       className={cn(
-        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-neutral-200 group overflow-hidden",
+        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-neutral-200 group overflow-hidden cursor-pointer",
         post.featured && "ring-2 ring-gold-200 border-gold-300",
         compact ? "p-3" : "p-0"
       )}
@@ -188,7 +192,11 @@ const PostPreview: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => onLike?.(post.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onLike?.(post.id);
+              }}
               className={cn(
                 "flex items-center gap-1 text-sm transition-colors",
                 isLiked 
@@ -208,13 +216,6 @@ const PostPreview: React.FC<{
               {post.comments}
             </span>
           </div>
-
-          {!compact && (
-            <button className="flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors">
-              Ler mais
-              <ArrowRight size={14} />
-            </button>
-          )}
         </div>
 
         {/* Autor */}
@@ -241,86 +242,49 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
-  // Mock data - substituir por dados reais
+  // Carregar posts reais de Supabase
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       
-      // Simulando API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockPosts: Post[] = [
-        {
-          id: '1',
-          title: 'Novas Mudanças no Código Civil 2024',
-          content: 'Confira as principais alterações que entram em vigor este ano e como elas podem impactar seus direitos. Novas regras sobre contratos, propriedade e responsabilidade civil.',
-          type: 'article',
-          imageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=450&fit=crop',
-          tags: ['direito civil', 'legislação', '2024'],
-          author: 'Dr. Wilson Santos',
-          createdAt: new Date('2024-01-10'),
-          published: true,
-          likes: 45,
-          comments: 12,
-          featured: true
-        },
-        {
-          id: '2',
-          title: 'Direitos do Trabalhador em 2024',
-          content: 'Webinar exclusivo sobre as principais mudanças na legislação trabalhista e como proteger seus direitos no ambiente de trabalho.',
-          type: 'video',
-          videoUrl: 'https://youtube.com/watch?v=example',
-          imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=450&fit=crop',
-          tags: ['direito trabalhista', 'webinar'],
-          author: 'Dra. Maria Nascimento',
-          createdAt: new Date('2024-01-05'),
-          published: true,
-          likes: 78,
-          comments: 23,
-          featured: false
-        },
-        {
-          id: '3',
-          title: 'Consultas Gratuitas em Janeiro',
-          content: 'Durante todo o mês de janeiro, oferecemos consultas jurídicas gratuitas para novos clientes. Agende já a sua consulta!',
-          type: 'announcement',
-          imageUrl: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=450&fit=crop',
-          tags: ['consulta', 'promoção', 'gratuito'],
-          author: 'Equipe Santos & Nascimento',
-          createdAt: new Date('2024-01-01'),
-          published: true,
-          likes: 34,
-          comments: 8,
-          featured: true
-        },
-        {
-          id: '4',
-          title: 'Guia Completo: Como Agir em Acidentes de Trânsito',
-          content: 'Passo a passo detalhado sobre o que fazer em caso de acidente de trânsito, documentos necessários e seus direitos.',
-          type: 'article',
-          imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=450&fit=crop',
-          tags: ['trânsito', 'acidentes', 'direitos'],
-          author: 'Dr. Carlos Silva',
-          createdAt: new Date('2023-12-28'),
-          published: true,
-          likes: 67,
-          comments: 15,
-          featured: false
+      try {
+        const { data, error } = await supabase
+          .from('posts_sociais')
+          .select('*')
+          .eq('publicado', true)
+          .order('data_criacao', { ascending: false })
+          .limit(maxPosts);
+
+        if (error) throw error;
+
+        const formattedPosts: Post[] = (data || []).map(post => ({
+          id: post.id,
+          title: post.titulo,
+          content: post.conteudo,
+          type: post.tipo as 'article' | 'video' | 'image' | 'announcement',
+          imageUrl: post.image_url,
+          videoUrl: post.video_url,
+          tags: post.tags || [],
+          author: post.autor || 'Santos & Nascimento',
+          createdAt: new Date(post.data_criacao),
+          published: post.publicado,
+          likes: post.likes || 0,
+          comments: post.comentarios || 0,
+          featured: post.destaque || false
+        }));
+
+        let filteredPosts = formattedPosts;
+        
+        if (showFeaturedOnly) {
+          filteredPosts = filteredPosts.filter(post => post.featured);
         }
-      ];
-      
-      let filteredPosts = mockPosts.filter(post => post.published);
-      
-      if (showFeaturedOnly) {
-        filteredPosts = filteredPosts.filter(post => post.featured);
+
+        setPosts(filteredPosts);
+      } catch (error) {
+        console.error('Error loading posts:', error);
+      } finally {
+        setLoading(false);
       }
-      
-      filteredPosts = filteredPosts
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, maxPosts);
-      
-      setPosts(filteredPosts);
-      setLoading(false);
     };
 
     fetchPosts();
@@ -454,13 +418,13 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
             transition={{ delay: 0.5 }}
             className="text-center mt-12"
           >
-            <Link
-              to="/social"
+            <button
+              onClick={() => navigate('/social')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
             >
               Ver mais conteúdos
               <ArrowRight size={16} />
-            </Link>
+            </button>
           </motion.div>
         )}
       </div>

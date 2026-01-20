@@ -5,11 +5,29 @@
 CREATE TABLE usuarios (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
+    titulo TEXT,
     nome VARCHAR(255) NOT NULL,
+    nome_completo TEXT,
+    foto_perfil_url TEXT,
+    data_nascimento DATE,
     role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'advogado', 'assistente')),
     ativo BOOLEAN DEFAULT true,
+    tipo_documento TEXT,
+    numero_documento TEXT,
+    whatsapp TEXT,
+    redes_sociais JSONB,
+    endereco TEXT,
+    numero TEXT,
+    localidade TEXT,
+    estado TEXT,
+    cep TEXT,
+    pais TEXT DEFAULT 'Brasil',
     data_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- Campos de auditoría
+    creado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    atualizado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL
 );
 
 -- 2. Tabela de Processos Jurídicos
@@ -26,6 +44,9 @@ CREATE TABLE processos_juridicos (
     -- Referencia al cliente (normalizado)
     cliente_id UUID REFERENCES clientes(id) ON DELETE SET NULL,
     
+    -- Polo do cliente no processo
+    polo VARCHAR(20) CHECK (polo IN ('ativo', 'passivo')),
+    
     -- Dados adicionais del cliente (opcional, para referencia rápida)
     cliente_email VARCHAR(255),
     cliente_telefone VARCHAR(20),
@@ -33,11 +54,34 @@ CREATE TABLE processos_juridicos (
     -- Número do processo (opcional)
     numero_processo VARCHAR(100) UNIQUE,
     
+    -- Informação de jurisdição (JSONB: {uf, municipio, vara, juiz})
+    jurisdicao JSONB DEFAULT '{}'::jsonb,
+    
+    -- Competência do processo (texto livre)
+    competencia VARCHAR(100),
+    
+    -- Atividade pendente
+    atividade_pendente TEXT,
+    
     -- Metadados adicionais
     prioridade VARCHAR(10) DEFAULT 'media' CHECK (prioridade IN ('baixa', 'media', 'alta', 'urgente')),
     area_direito VARCHAR(100),
     valor_causa DECIMAL(15,2),
-    data_vencimento DATE
+    
+    -- Documentos e links (JSONB)
+    documentos_processo JSONB DEFAULT '[]'::jsonb,
+    links_processo JSONB DEFAULT '[]'::jsonb,
+    jurisprudencia JSONB DEFAULT '[]'::jsonb,
+    
+    -- Honorários (JSONB: {valor_honorarios, detalhes})
+    honorarios JSONB DEFAULT '{}'::jsonb,
+    
+    -- Audiências (JSONB array: [{data, horario, tipo, forma, lugar}])
+    audiencias JSONB DEFAULT '[]'::jsonb,
+    
+    -- Campos de auditoría
+    creado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    atualizado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL
 );
 
 -- 3. Tabela de Comentários/Atualizações dos Processos
@@ -72,15 +116,48 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_usuarios_data_atualizacao
+-- FUNCIONES DE AUDITORÍA
+-- Función para establecer creado_por en INSERT
+CREATE OR REPLACE FUNCTION audit_creado_por()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.creado_por = auth.uid();
+    NEW.atualizado_por = auth.uid();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Función para actualizar atualizado_por en UPDATE
+CREATE OR REPLACE FUNCTION audit_atualizado_por()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.atualizado_por = auth.uid();
+    NEW.data_atualizacao = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- TRIGGERS DE AUDITORÍA PARA USUARIOS
+CREATE TRIGGER usuarios_audit_insert
+    BEFORE INSERT ON usuarios
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_creado_por();
+
+CREATE TRIGGER usuarios_audit_update
     BEFORE UPDATE ON usuarios
     FOR EACH ROW
-    EXECUTE FUNCTION update_data_atualizacao();
+    EXECUTE FUNCTION audit_atualizado_por();
 
-CREATE TRIGGER update_processos_data_atualizacao
+-- TRIGGERS DE AUDITORÍA PARA PROCESSOS
+CREATE TRIGGER processos_audit_insert
+    BEFORE INSERT ON processos_juridicos
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_creado_por();
+
+CREATE TRIGGER processos_audit_update
     BEFORE UPDATE ON processos_juridicos
     FOR EACH ROW
-    EXECUTE FUNCTION update_data_atualizacao();
+    EXECUTE FUNCTION audit_atualizado_por();
 
 -- ÍNDICES para melhor performance
 CREATE INDEX idx_processos_status ON processos_juridicos(status);
@@ -90,13 +167,38 @@ CREATE INDEX idx_processos_data_criacao ON processos_juridicos(data_criacao);
 CREATE INDEX idx_comentarios_processo ON comentarios_processos(processo_id);
 CREATE INDEX idx_documentos_processo ON documentos_processos(processo_id);
 
+-- Índices para novos campos
+CREATE INDEX idx_processos_competencia ON processos_juridicos(competencia);
+CREATE INDEX idx_processos_polo ON processos_juridicos(polo);
+
+-- Índices GIN para campos JSONB
+CREATE INDEX idx_processos_jurisdicao ON processos_juridicos USING GIN (jurisdicao);
+CREATE INDEX idx_processos_honorarios ON processos_juridicos USING GIN (honorarios);
+CREATE INDEX idx_processos_audiencias ON processos_juridicos USING GIN (audiencias);
+CREATE INDEX idx_processos_links ON processos_juridicos USING GIN (links_processo);
+CREATE INDEX idx_processos_jurisprudencia ON processos_juridicos USING GIN (jurisprudencia);
+
+-- Índices de auditoría
+CREATE INDEX idx_usuarios_creado_por ON usuarios(creado_por);
+CREATE INDEX idx_usuarios_atualizado_por ON usuarios(atualizado_por);
+CREATE INDEX idx_processos_creado_por ON processos_juridicos(creado_por);
+CREATE INDEX idx_processos_atualizado_por ON processos_juridicos(atualizado_por);
+
 -- POLÍTICAS RLS (Row Level Security) - Configurar conforme necessário
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE processos_juridicos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comentarios_processos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documentos_processos ENABLE ROW LEVEL SECURITY;
 
--- Exemplo de política básica (ajustar conforme suas regras de negócio)
+-- =====================================================
+-- NOTA: Para políticas RLS completas y actualizadas,
+-- execute el archivo: src/database/rls-policies.sql
+-- Este archivo contiene las políticas actualizadas que permiten:
+-- - assistente y advogado: crear, leer y editar clientes y processos
+-- - Restricciones: NO pueden editar nome_completo (clientes) ni numero_processo (processos_juridicos)
+-- =====================================================
+
+-- Ejemplo de política básica (ajustar conforme suas regras de negócio)
 CREATE POLICY "Usuários podem ver seus próprios dados" ON usuarios
     FOR SELECT USING (auth.uid()::text = id::text);
 
@@ -139,6 +241,16 @@ COMMENT ON TABLE usuarios IS 'Tabela de usuários do sistema (advogados, assiste
 COMMENT ON TABLE processos_juridicos IS 'Tabela principal de processos jurídicos';
 COMMENT ON TABLE comentarios_processos IS 'Comentários e atualizações dos processos';
 COMMENT ON TABLE documentos_processos IS 'Documentos anexados aos processos';
+
+-- COMENTÁRIOS DOS CAMPOS DE AUDITORIA
+COMMENT ON COLUMN usuarios.creado_por IS 'Usuario que creó este registro';
+COMMENT ON COLUMN usuarios.atualizado_por IS 'Usuario que realizó la última actualización';
+COMMENT ON COLUMN processos_juridicos.creado_por IS 'Usuario que creó este registro';
+COMMENT ON COLUMN processos_juridicos.atualizado_por IS 'Usuario que realizó la última actualización';
+
+-- NOTA: Los campos creado_por y atualizado_por se llenan automáticamente
+-- mediante triggers. No es necesario enviarlos desde el frontend.
+-- Los triggers usan auth.uid() para obtener el usuario autenticado actual.
 
 -- 5. Tabela de Posts Sociais (Nova funcionalidade)
 CREATE TABLE posts_sociais (

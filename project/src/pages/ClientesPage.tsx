@@ -28,6 +28,8 @@ import { supabase, DocumentoArquivo } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import Header from '../components/layout/Header';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
+import { AuditInfo } from '../components/shared/AuditInfo';
+import { useAuth } from '../hooks/useSupabase';
 
 interface Cliente {
   id?: string;
@@ -62,6 +64,13 @@ interface Cliente {
 }
 
 const ClientesPage = () => {
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'admin';
+  const isAdvogado = currentUser?.role === 'advogado';
+  const isAssistente = currentUser?.role === 'assistente';
+  const canEdit = isAdmin || isAdvogado || isAssistente;
+  const canDelete = isAdmin;
+  
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busca, setBusca] = useState('');
@@ -105,12 +114,26 @@ const ClientesPage = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Verificar permisos
+    if (!canEdit) {
+      alert('Você não tem permissão para editar clientes');
+      return;
+    }
+    
     try {
       if (editingCliente?.id) {
+        // Preparar dados para atualização
+        const updates: Partial<Cliente> = { ...formData };
+        
+        // Solo admin puede cambiar status
+        if (!isAdmin) {
+          delete updates.status;
+        }
+        
         // Atualizar
         const { error } = await supabase
           .from('clientes')
-          .update(formData)
+          .update(updates)
           .eq('id', editingCliente.id);
 
         if (error) throw error;
@@ -133,6 +156,12 @@ const ClientesPage = () => {
 
   // Deletar cliente
   const handleDelete = async (id: string) => {
+    // Verificar permisos
+    if (!canDelete) {
+      alert('Apenas administradores podem excluir clientes');
+      return;
+    }
+    
     if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
 
     try {
@@ -403,15 +432,17 @@ const ClientesPage = () => {
                 </p>
               </div>
               
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCreate}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-                >
-                  <Plus size={20} />
-                  Novo Cliente
-                </button>
-              </div>
+              {canEdit && (
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleCreate}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                  >
+                    <Plus size={20} />
+                    Novo Cliente
+                  </button>
+                </div>
+              )}
             </div>
           </ResponsiveContainer>
         </div>
@@ -528,20 +559,24 @@ const ClientesPage = () => {
                       >
                         <Eye size={16} />
                       </button>
-                      <button
-                        onClick={() => handleEdit(cliente)}
-                        className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-                        title="Editar"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(cliente.id!)}
-                        className="p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Excluir"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleEdit(cliente)}
+                          className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                          title="Editar"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(cliente.id!)}
+                          className="p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Excluir"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -632,13 +667,20 @@ const ClientesPage = () => {
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
                           Nome Completo *
+                          {!isAdmin && editingCliente && (
+                            <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
+                          )}
                         </label>
                         <input
                           type="text"
                           required
                           value={formData.nome_completo}
                           onChange={(e) => setFormData({...formData, nome_completo: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          disabled={!isAdmin && editingCliente !== null}
+                          className={cn(
+                            "w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent",
+                            !isAdmin && editingCliente && "bg-neutral-100 cursor-not-allowed opacity-75"
+                          )}
                         />
                       </div>
                       
@@ -896,13 +938,17 @@ const ClientesPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Status *
+                          Status * {!isAdmin && <span className="text-xs text-amber-600">(Somente Admin pode alterar)</span>}
                         </label>
                         <select
                           required
                           value={formData.status}
                           onChange={(e) => setFormData({...formData, status: e.target.value as Cliente['status']})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          disabled={!isAdmin}
+                          className={cn(
+                            "w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent",
+                            !isAdmin && "bg-neutral-100 cursor-not-allowed opacity-60"
+                          )}
                         >
                           <option value="ativo">Ativo</option>
                           <option value="potencial">Potencial</option>
@@ -1062,6 +1108,16 @@ const ClientesPage = () => {
                     </div>
                   </div>
 
+                  {/* Información de Auditoría */}
+                  {editingCliente && (
+                    <AuditInfo
+                      creadoPor={editingCliente.creado_por}
+                      atualizadoPor={editingCliente.atualizado_por}
+                      dataCriacao={editingCliente.data_cadastro}
+                      dataAtualizacao={editingCliente.data_atualizacao}
+                    />
+                  )}
+
                   {/* Botões */}
                   <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
                     <button
@@ -1073,7 +1129,9 @@ const ClientesPage = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                      disabled={!canEdit}
+                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+                      title={!canEdit ? 'Você não tem permissão para criar ou editar clientes' : ''}
                     >
                       <Save size={20} />
                       {editingCliente ? 'Atualizar' : 'Cadastrar'}
@@ -1373,16 +1431,18 @@ const ClientesPage = () => {
 
                 {/* Rodapé */}
                 <div className="p-4 sm:p-6 border-t border-gray-200 flex justify-between">
-                  <button
-                    onClick={() => {
-                      setViewingCliente(null);
-                      handleEdit(viewingCliente);
-                    }}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    <Edit3 size={16} />
-                    Editar Cliente
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setViewingCliente(null);
+                        handleEdit(viewingCliente);
+                      }}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <Edit3 size={16} />
+                      Editar Cliente
+                    </button>
+                  )}
                   <button
                     onClick={() => setViewingCliente(null)}
                     className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"

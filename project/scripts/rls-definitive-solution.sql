@@ -34,9 +34,25 @@ CREATE POLICY "users_can_read_all_users" ON usuarios
     );
 
 -- Usuários podem atualizar apenas seus próprios dados
+-- IMPORTANTE: Usuários NÃO-ADMIN não podem mudar seu próprio ROLE ou STATUS ATIVO
 CREATE POLICY "users_can_update_own_data" ON usuarios
     FOR UPDATE USING (
         auth.uid()::text = id::text
+    )
+    WITH CHECK (
+        -- Admin pode fazer qualquer mudança
+        EXISTS (
+            SELECT 1 FROM usuarios 
+            WHERE id::text = auth.uid()::text 
+            AND role = 'admin'
+        )
+        OR
+        -- Usuário não-admin NÃO pode mudar seu próprio role ou status ativo
+        (
+            auth.uid()::text = id::text
+            AND role = (SELECT role FROM usuarios WHERE id::text = auth.uid()::text)
+            AND ativo = (SELECT ativo FROM usuarios WHERE id::text = auth.uid()::text)
+        )
     );
 
 -- Apenas admins podem inserir novos usuários

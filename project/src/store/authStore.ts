@@ -5,7 +5,7 @@ interface User {
   id: string;
   name?: string;
   email: string;
-  role: 'admin' | 'editor' | 'user';
+  role: 'admin' | 'advogado' | 'assistente';
   avatar?: string;
 }
 
@@ -18,7 +18,7 @@ interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   user: null,
   isLoading: true,
@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (data.user) {
         // Buscar información adicional del usuario en la tabla usuarios
-        const { data: userData, error: userError } = await supabase
+        const { data: userData } = await supabase
           .from('usuarios')
           .select('*')
           .eq('email', data.user.email)
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           id: data.user.id,
           name: userData?.nome || data.user.email,
           email: data.user.email!,
-          role: userData?.role || 'user',
+          role: userData?.role || 'assistente',
           avatar: userData?.avatar_url || data.user.user_metadata?.avatar_url
         };
         
@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (user) {
         // Buscar información adicional del usuario
-        const { data: userData, error: userError } = await supabase
+        const { data: userData } = await supabase
           .from('usuarios')
           .select('*')
           .eq('email', user.email)
@@ -88,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           id: user.id,
           name: userData?.nome || user.email,
           email: user.email!,
-          role: userData?.role || 'user',
+          role: userData?.role || 'assistente',
           avatar: userData?.avatar_url || user.user_metadata?.avatar_url
         };
         
@@ -96,9 +96,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } else {
         set({ isAuthenticated: false, user: null, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Silenciar error de sesión faltante (comportamiento esperado sin login)
-      if (error?.message !== 'Auth session missing!') {
+      if (error && typeof error === 'object' && 'message' in error && error.message !== 'Auth session missing!') {
         console.error('Auth check error:', error);
       }
       set({ isAuthenticated: false, user: null, isLoading: false });

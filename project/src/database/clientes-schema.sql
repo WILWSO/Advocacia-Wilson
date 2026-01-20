@@ -39,10 +39,17 @@ CREATE TABLE clientes (
     status VARCHAR(20) DEFAULT 'ativo' CHECK (status IN ('ativo', 'inativo', 'potencial')),
     categoria VARCHAR(50), -- VIP, Regular, etc.
     
+    -- Documentos
+    documentos_cliente JSONB DEFAULT '[]'::jsonb,
+    
     -- Metadata
     data_cadastro TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     ultimo_contato TIMESTAMP WITH TIME ZONE,
+    
+    -- Campos de auditoría
+    creado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    atualizado_por UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Búsqueda y SEO
     search_vector tsvector
@@ -55,6 +62,10 @@ CREATE INDEX idx_clientes_nome ON clientes(nome_completo);
 CREATE INDEX idx_clientes_status ON clientes(status);
 CREATE INDEX idx_clientes_search ON clientes USING gin(search_vector);
 
+-- Índices de auditoría
+CREATE INDEX idx_clientes_creado_por ON clientes(creado_por);
+CREATE INDEX idx_clientes_atualizado_por ON clientes(atualizado_por);
+
 -- Trigger para actualizar data_atualizacao
 CREATE OR REPLACE FUNCTION update_clientes_data_atualizacao()
 RETURNS TRIGGER AS $$
@@ -64,6 +75,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- FUNCIONES DE AUDITORÍA
+-- Función para establecer creado_por en INSERT
+CREATE OR REPLACE FUNCTION audit_creado_por()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.creado_por = auth.uid();
+    NEW.atualizado_por = auth.uid();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Función para actualizar atualizado_por en UPDATE  
+CREATE OR REPLACE FUNCTION audit_atualizado_por()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.atualizado_por = auth.uid();
+    NEW.data_atualizacao = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- TRIGGERS DE AUDITORÍA
+CREATE TRIGGER clientes_audit_insert
+    BEFORE INSERT ON clientes
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_creado_por();
+
+CREATE TRIGGER clientes_audit_update
+    BEFORE UPDATE ON clientes
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_atualizado_por();
+
+-- Trigger para actualizar data_atualizacao (legacy, ahora manejado por audit_atualizado_por)
 CREATE TRIGGER trigger_update_clientes_data_atualizacao
     BEFORE UPDATE ON clientes
     FOR EACH ROW
@@ -92,22 +136,53 @@ CREATE TRIGGER trigger_update_clientes_search_vector
 -- Políticas RLS (Row Level Security)
 ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
 
--- Política: Los usuarios autenticados pueden ver todos los clientes
+-- Política SELECT: Los usuarios autenticados pueden ver todos los clientes
 CREATE POLICY "Usuarios autenticados podem ver clientes" 
     ON clientes FOR SELECT 
     USING (auth.role() = 'authenticated');
 
--- Política: Los usuarios autenticados pueden insertar clientes
-CREATE POLICY "Usuarios autenticados podem criar clientes" 
+-- Política INSERT: Admin, advogado y assistente podem criar clientes
+CREATE POLICY "Admin advogado assistente podem criar clientes" 
     ON clientes FOR INSERT 
-    WITH CHECK (auth.role() = 'authenticated');
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM usuarios
+            WHERE usuarios.id = auth.uid()
+            AND usuarios.role IN ('admin', 'advogado', 'assistente')
+        )
+    );
 
--- Política: Los usuarios autenticados pueden actualizar clientes
-CREATE POLICY "Usuarios autenticados podem atualizar clientes" 
+-- Política UPDATE: Admin, advogado y assistente podem editar clientes
+-- IMPORTANTE: assistente y advogado NO pueden editar nome_completo
+CREATE POLICY "Admin advogado assistente podem atualizar clientes" 
     ON clientes FOR UPDATE 
-    USING (auth.role() = 'authenticated');
+    USING (
+        EXISTS (
+            SELECT 1 FROM usuarios
+            WHERE usuarios.id = auth.uid()
+            AND usuarios.role IN ('admin', 'advogado', 'assistente')
+        )
+    )
+    WITH CHECK (
+        -- Admin pode fazer qualquer mudança
+        EXISTS (
+            SELECT 1 FROM usuarios
+            WHERE usuarios.id = auth.uid()
+            AND usuarios.role = 'admin'
+        )
+        OR
+        -- Advogado y assistente NO pueden cambiar nome_completo
+        (
+            EXISTS (
+                SELECT 1 FROM usuarios
+                WHERE usuarios.id = auth.uid()
+                AND usuarios.role IN ('advogado', 'assistente')
+            )
+            AND nome_completo = (SELECT nome_completo FROM clientes WHERE id = clientes.id)
+        )
+    );
 
--- Política: Solo admin puede eliminar clientes
+-- Política DELETE: Solo admin puede eliminar clientes
 CREATE POLICY "Apenas admin pode deletar clientes" 
     ON clientes FOR DELETE 
     USING (
@@ -124,6 +199,12 @@ COMMENT ON COLUMN clientes.cpf_cnpj IS 'CPF para persona física o CNPJ para per
 COMMENT ON COLUMN clientes.status IS 'Status del cliente: ativo (cliente actual), inativo (ex-cliente), potencial (lead)';
 COMMENT ON COLUMN clientes.categoria IS 'Categoría del cliente para segmentación (VIP, Regular, etc.)';
 COMMENT ON COLUMN clientes.search_vector IS 'Vector de búsqueda full-text optimizado';
+COMMENT ON COLUMN clientes.creado_por IS 'Usuario que creó este registro';
+COMMENT ON COLUMN clientes.atualizado_por IS 'Usuario que realizó la última actualización';
+
+-- NOTA: Los campos creado_por y atualizado_por se llenan automáticamente
+-- mediante triggers. No es necesario enviarlos desde el frontend.
+-- Los triggers usan auth.uid() para obtener el usuario autenticado actual.
 
 -- Datos de ejemplo (opcional)
 INSERT INTO clientes (

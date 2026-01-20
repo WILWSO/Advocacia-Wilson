@@ -7,6 +7,7 @@ import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
 import { useResponsive } from '../hooks/useResponsive'
 import { cn } from '../utils/cn'
 import Header from '../components/layout/Header'
+import { AuditInfo } from '../components/shared/AuditInfo'
 
 // Skeleton Card
 const SkeletonCard: React.FC = () => {
@@ -47,7 +48,7 @@ const UsuarioCard: React.FC<{
     switch (role) {
       case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'advogado': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'usuario': return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'assistente': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -56,7 +57,7 @@ const UsuarioCard: React.FC<{
     switch (role) {
       case 'admin': return 'Administrador'
       case 'advogado': return 'Advogado'
-      case 'usuario': return 'Usuário'
+      case 'assistente': return 'Assistente'
       default: return role
     }
   }
@@ -174,7 +175,7 @@ const UsuariosPage: React.FC = () => {
     nome_completo: '',
     email: '',
     password: '',
-    role: 'usuario' as 'admin' | 'advogado' | 'usuario',
+    role: 'assistente' as 'admin' | 'advogado' | 'assistente',
     ativo: true,
     foto_perfil_url: '',
     data_nascimento: '',
@@ -216,7 +217,8 @@ const UsuariosPage: React.FC = () => {
     total: usuarios.length,
     ativos: usuarios.filter(u => u.ativo).length,
     admins: usuarios.filter(u => u.role === 'admin').length,
-    advogados: usuarios.filter(u => u.role === 'advogado').length
+    advogados: usuarios.filter(u => u.role === 'advogado').length,
+    assistentes: usuarios.filter(u => u.role === 'assistente').length
   }), [usuarios])
 
   const handleCreateUsuario = async (e: React.FormEvent) => {
@@ -275,7 +277,6 @@ const UsuariosPage: React.FC = () => {
       nome: formData.nome,
       nome_completo: formData.nome_completo,
       email: formData.email,
-      role: formData.role,
       foto_perfil_url: formData.foto_perfil_url,
       data_nascimento: formData.data_nascimento,
       tipo_documento: formData.tipo_documento,
@@ -290,8 +291,9 @@ const UsuariosPage: React.FC = () => {
       pais: formData.pais
     }
 
-    // Solo admin puede cambiar status
+    // Solo admin puede cambiar role y status
     if (isAdmin) {
+      updates.role = formData.role
       updates.ativo = formData.ativo
     }
 
@@ -548,6 +550,16 @@ const UsuariosPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center">
+                <Shield className="h-8 w-8 text-gray-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Assistentes</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.assistentes}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Filters */}
@@ -581,7 +593,7 @@ const UsuariosPage: React.FC = () => {
                   <option value="">Todos</option>
                   <option value="admin">Administrador</option>
                   <option value="advogado">Advogado</option>
-                  <option value="usuario">Usuário</option>
+                  <option value="assistente">Assistente</option>
                 </select>
               </div>
 
@@ -734,20 +746,22 @@ const UsuariosPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Role *
-                    </label>
-                    <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value as 'admin' | 'advogado' | 'usuario'})}
-                    >
-                      <option value="usuario">Usuário</option>
-                      <option value="advogado">Advogado</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                  </div>
+                  {isAdmin && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Role *
+                      </label>
+                      <select
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                        value={formData.role}
+                        onChange={(e) => setFormData({...formData, role: e.target.value as 'admin' | 'advogado' | 'assistente'})}
+                      >
+                        <option value="assistente">Assistente</option>
+                        <option value="advogado">Advogado</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -966,18 +980,20 @@ const UsuariosPage: React.FC = () => {
               </div>
 
               {/* Status */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="ativo"
-                  checked={formData.ativo}
-                  onChange={(e) => setFormData({...formData, ativo: e.target.checked})}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <label htmlFor="ativo" className="ml-2 block text-sm text-gray-900">
-                  Usuário ativo
-                </label>
-              </div>
+              {isAdmin && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="ativo"
+                    checked={formData.ativo}
+                    onChange={(e) => setFormData({...formData, ativo: e.target.checked})}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="ativo" className="ml-2 block text-sm text-gray-900">
+                    Usuário ativo
+                  </label>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -989,7 +1005,9 @@ const UsuariosPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-md"
+                  disabled={!isAdmin}
+                  className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+                  title={!isAdmin ? 'Apenas administradores podem criar usuários' : ''}
                 >
                   Criar Usuário
                 </button>
@@ -1085,9 +1103,9 @@ const UsuariosPage: React.FC = () => {
                       <select
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                         value={formData.role}
-                        onChange={(e) => setFormData({...formData, role: e.target.value as 'admin' | 'advogado' | 'usuario'})}
+                        onChange={(e) => setFormData({...formData, role: e.target.value as 'admin' | 'advogado' | 'assistente'})}
                       >
-                        <option value="usuario">Usuário</option>
+                        <option value="assistente">Assistente</option>
                         <option value="advogado">Advogado</option>
                         <option value="admin">Administrador</option>
                       </select>
@@ -1325,6 +1343,16 @@ const UsuariosPage: React.FC = () => {
                 </div>
               )}
 
+              {/* Información de Auditoría */}
+              {editingUsuario && (
+                <AuditInfo
+                  creadoPor={editingUsuario.creado_por}
+                  atualizadoPor={editingUsuario.atualizado_por}
+                  dataCriacao={editingUsuario.data_criacao}
+                  dataAtualizacao={editingUsuario.data_atualizacao}
+                />
+              )}
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
@@ -1335,7 +1363,9 @@ const UsuariosPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-md"
+                  disabled={!isAdmin && editingUsuario?.id !== currentUser?.id}
+                  className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+                  title={!isAdmin && editingUsuario?.id !== currentUser?.id ? 'Você só pode editar seu próprio perfil' : ''}
                 >
                   Salvar
                 </button>
@@ -1477,12 +1507,12 @@ const UsuariosPage: React.FC = () => {
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium",
                       viewingUsuario.role === 'admin' && 'bg-purple-100 text-purple-800',
                       viewingUsuario.role === 'advogado' && 'bg-blue-100 text-blue-800',
-                      viewingUsuario.role === 'usuario' && 'bg-gray-100 text-gray-800'
+                      viewingUsuario.role === 'assistente' && 'bg-gray-100 text-gray-800'
                     )}>
                       <Shield size={14} />
                       {viewingUsuario.role === 'admin' && 'Administrador'}
                       {viewingUsuario.role === 'advogado' && 'Advogado'}
-                      {viewingUsuario.role === 'usuario' && 'Usuário'}
+                      {viewingUsuario.role === 'assistente' && 'Assistente'}
                     </span>
 
                     {/* Status Badge */}

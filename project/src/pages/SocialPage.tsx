@@ -128,7 +128,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
     onSave({
       ...formData,
       tags: tagsArray,
-      youtube_id: youtube_id,
+      youtube_id: youtube_id || undefined,
       ...(editingPost ? { id: editingPost.id } : { 
         likes: 0,
         comentarios: 0
@@ -422,7 +422,7 @@ const PostCard: React.FC<{
               <Edit3 size={14} />
             </button>
             <button
-              onClick={() => onTogglePublished(post.id || '', post.publicado)}
+              onClick={() => post.id && onTogglePublished(post.id)}
               className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               title={post.publicado ? "Despublicar" : "Publicar"}
             >
@@ -574,8 +574,11 @@ const AdminSocialPage: React.FC = () => {
     }
   };
 
-  const handleTogglePublished = async (id: string, publicado: boolean) => {
-    await togglePublished(id, !publicado);
+  const handleTogglePublished = async (id: string) => {
+    const post = posts.find(p => p.id === id);
+    if (post) {
+      await togglePublished(id, !post.publicado);
+    }
   };
 
   const filteredPosts = posts.filter(post => {
@@ -661,7 +664,7 @@ const AdminSocialPage: React.FC = () => {
               <div className="flex gap-3">
                 <select
                   value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as any)}
+                  onChange={(e) => setFilterType(e.target.value as Post['tipo'] | 'all')}
                   className="px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">Todos os tipos</option>
@@ -673,7 +676,7 @@ const AdminSocialPage: React.FC = () => {
 
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
+                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'published' | 'draft')}
                   className="px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">Todos os status</option>
