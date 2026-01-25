@@ -1,0 +1,27 @@
+nome completo:
+
+email: 
+
+telefone: 		
+ 
+imagem: Duas fotos de boa qualidade do corpo inteiro e sorridente. Obs: a foto precisa ser frontal e com roupas mais formais possível. Reafirmo, deve estar sorrindo de frente (Nenhuma foto de lateral ou perfil). 
+
+educação: 
+Exwmplo: [Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
+      'Especialização em Direito do trabalho],
+
+especialidades: 
+Exemplo: ['Direito Trabalhista', 'Direito eleitoral'],
+ 
+bio: 
+Exemplo: Dra. Rosimeire Albuquerque possui vasta experiencia em Direito eleitoral, especialmente no ramo de assessoria política. Com a excelência e atendimento humanizado, seus problemas serão resolvidos com clareza e transparencia.',
+
+linkedin:
+cole aqui o link de acesso
+
+instagram: 
+cole aqui o link de acesso
+
+    
+
+
