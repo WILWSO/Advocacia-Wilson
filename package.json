@@ -8,7 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "sonar": "sonar-scanner"
+    "sonar": "sonar-scanner",
+    "type-check": "tsc --noEmit",
+    "prebuild": "npm run type-check",
+    "build:analyze": "vite build --mode analyze",
+    "check-security": "npm audit --production",
+    "clean": "rm -rf dist node_modules/.vite"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",

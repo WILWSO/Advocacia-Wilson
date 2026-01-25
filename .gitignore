@@ -7,14 +7,27 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+bower_components
+
+# Build outputs
 dist
 dist-ssr
+build
+.cache
+
+# Environment variables (NUNCA subir credenciales)
+.env
+.env.local
+.env.production
+.env.development
 *.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -22,6 +35,29 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.env
+
+# Testing & Quality
+coverage
+.nyc_output
 .scannerwork
-.github\instructions
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.temp
+.tmp
+
+# Git instructions (keep private)
+.github/instructions
+
+# Backup files
+*.bak
+*.backup
+
+# Database files (if any)
+*.db
+*.sqlite
