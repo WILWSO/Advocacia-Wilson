@@ -28,10 +28,12 @@ dist/
    - Vercel detectará automáticamente Vite
    - Agrega variables de entorno:
      ```
-     VITE_SUPABASE_URL=https://xsdvhabwnvrfeoyharob.supabase.co
+     VITE_SUPABASE_URL=tu_url_de_supabase
      VITE_SUPABASE_ANON_KEY=tu_anon_key
      ```
    - Click "Deploy"
+   
+   **⚠️ Obtén estos valores**: Supabase Dashboard → Settings → API
 
 2. **Via CLI**
    ```bash
@@ -99,9 +101,12 @@ Ejecuta: `src/database/rls-policies.sql`
 ### 4. Verificar Variables de Entorno
 En tu archivo `.env` (o en el panel del hosting):
 ```env
-VITE_SUPABASE_URL=https://xsdvhabwnvrfeoyharob.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_URL=tu_url_de_supabase
+VITE_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
 ```
+
+**⚠️ NUNCA subas el archivo .env al repositorio**
+**ℹ️ Valores reales**: Copia desde tu panel de Supabase → Settings → API
 
 ## 📋 Checklist Pre-Deploy
 

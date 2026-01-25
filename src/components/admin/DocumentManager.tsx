@@ -127,7 +127,6 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       
       if (match && match[1]) {
         const filePath = match[1]
-        console.log('Attempting to download:', { bucketName, filePath, fullUrl: doc.url })
 
         const { data: fileBlob, error } = await supabase.storage
           .from(bucketName)

@@ -1,0 +1,30 @@
+# robots.txt para Advocacia Wilson
+# https://www.robotstxt.org/
+
+# Permitir acceso a todos los bots de búsqueda
+User-agent: *
+Allow: /
+
+# Permitir específicamente a los principales bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Desalentar (pero no bloquear) el acceso a rutas de administración
+# Nota: La verdadera seguridad está en la autenticación, no en robots.txt
+User-agent: *
+Disallow: /admin
+Disallow: /login
+
+# Páginas permitidas explícitamente (buenas para SEO)
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /team
+Allow: /practice-areas
+Allow: /social
+
+# Información del sitemap (actualizar con la URL real después del deploy)
+# Sitemap: https://tu-dominio.com/sitemap.xml

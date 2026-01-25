@@ -24,9 +24,13 @@
 Asegúrate de configurar estas variables en tu plataforma de hosting:
 
 ```env
-VITE_SUPABASE_URL=https://xsdvhabwnvrfeoyharob.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_URL=tu_url_de_supabase_aqui
+VITE_SUPABASE_ANON_KEY=tu_anon_key_de_supabase_aqui
 ```
+
+**⚠️ IMPORTANTE**: Obtén estos valores de tu panel de Supabase:
+- URL: Settings → API → Project URL
+- Anon Key: Settings → API → Project API keys → anon/public
 
 ### 4. Configuración de Hosting (Vercel/Netlify)
 

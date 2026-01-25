@@ -115,10 +115,6 @@ export const useSecureForm = (): UseSecureFormReturn => {
 
       // Limpiar errores si la validación pasó
       setErrors({});
-
-      // Aquí iría la llamada al servidor
-      // Por ahora simulamos un envío exitoso
-      console.log('Formulário validado e sanitizado:', formData);
       
       // Simular delay de red
       await new Promise(resolve => setTimeout(resolve, 1000));
