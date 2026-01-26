@@ -19,57 +19,25 @@ export interface DocumentoArquivo {
   data_upload?: string
 }
 
-// Tipos TypeScript para las tablas
-export interface ProcessoJuridico {
-  id?: string
-  titulo: string
-  descricao: string
-  status: 'em_aberto' | 'em_andamento' | 'fechado'
-  advogado_responsavel: string
-  data_criacao?: string
-  data_atualizacao?: string
-  cliente_nome?: string
-  cliente_email?: string
-  cliente_telefone?: string
-  numero_processo?: string
-  cliente_id?: string
-  polo?: 'ativo' | 'passivo'
-  area_direito?: string
-  prioridade?: string
-  valor_causa?: string
-  atividade_pendente?: string
-  competencia?: string
-  // Campos JSONB
-  jurisdicao?: {
-    uf?: string
-    municipio?: string
-    vara?: string
-    juiz?: string
-  }
-  honorarios?: {
-    valor_honorarios?: number
-    detalhes?: string
-  }
-  audiencias?: Array<{
-    data: string
-    horario: string
-    tipo: string
-    forma: string
-    lugar: string
-  }>
-  documentos_processo?: DocumentoArquivo[]
-  links_processo?: Array<{
-    titulo: string
-    link: string
-  }>
-  jurisprudencia?: Array<{
-    ementa: string
-    link: string
-  }>
-  // Campos de auditoría
-  creado_por?: string
-  atualizado_por?: string
-}
+// Re-exportar tipos de proceso desde types/processo.ts
+export type { 
+  ProcessoJuridico,
+  ProcessoWithRelations,
+  ProcessoFormData,
+  ProcessoLink,
+  Jurisprudencia,
+  Jurisdicao,
+  Honorarios,
+  Audiencia,
+  ProcessoStatus,
+  ProcessoPolo,
+  ProcessoPrioridade,
+  ProcessoCompetencia,
+  AudienciaTipo,
+  AudienciaForma,
+  ClienteSimple,
+  NewClienteForm
+} from '../types/processo'
 
 export interface PostSocial {
   id?: string
