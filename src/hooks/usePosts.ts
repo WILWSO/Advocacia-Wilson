@@ -1,141 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase, PostSocial } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
+import { Post } from '../types/post';
+import { usePosts as usePostsBase } from './useSupabase';
 
 /**
  * Hook para gestionar posts sociais (administración)
  * Requiere autenticación
- * Extraído de useSupabase.ts para mejor modularidad CDMF
+ * Ahora usa el hook base usePosts() de useSupabase.ts
  */
 export const usePostsSociais = () => {
-  const [posts, setPosts] = useState<PostSocial[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchPosts = async (publicadosOnly = false) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      let query = supabase
-        .from('posts_sociais')
-        .select(`
-          *,
-          autor:usuarios(nome, email)
-        `)
-        .order('data_criacao', { ascending: false });
-
-      if (publicadosOnly) {
-        query = query.eq('publicado', true);
-      }
-
-      const { data, error: supabaseError } = await query;
-
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      setPosts(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar posts');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createPost = async (postData: Omit<PostSocial, 'id' | 'data_criacao' | 'data_atualizacao'>) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: supabaseError } = await supabase
-        .from('posts_sociais')
-        .insert([postData])
-        .select();
-
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      await fetchPosts();
-      return { data, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar post';
-      setError(errorMessage);
-      return { data: null, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updatePost = async (id: string, postData: Partial<PostSocial>) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: supabaseError } = await supabase
-        .from('posts_sociais')
-        .update(postData)
-        .eq('id', id)
-        .select();
-
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      await fetchPosts();
-      return { data, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar post';
-      setError(errorMessage);
-      return { data: null, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deletePost = async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { error: supabaseError } = await supabase
-        .from('posts_sociais')
-        .delete()
-        .eq('id', id);
-
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      await fetchPosts();
-      return { error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao deletar post';
-      setError(errorMessage);
-      return { error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const togglePublished = async (id: string, publicado: boolean) => {
-    return await updatePost(id, { publicado });
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  return {
-    posts,
-    loading,
-    error,
-    fetchPosts,
-    createPost,
-    updatePost,
-    deletePost,
-    togglePublished
-  };
+  return usePostsBase();
 };
 
 /**
@@ -144,7 +18,7 @@ export const usePostsSociais = () => {
  * Extraído de useSupabase.ts para mejor modularidad CDMF
  */
 export const usePostsPublicos = () => {
-  const [posts, setPosts] = useState<PostSocial[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);

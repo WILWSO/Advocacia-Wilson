@@ -25,24 +25,7 @@ import { usePostsSociais } from '../hooks/usePosts';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal';
 import { useNotification } from '../components/shared/notifications/NotificationContext';
-
-interface Post {
-  id?: string;
-  titulo: string;
-  conteudo: string;
-  tipo: 'article' | 'video' | 'image' | 'announcement';
-  image_url?: string;
-  video_url?: string;
-  youtube_id?: string;
-  tags: string[];
-  autor: string | { nome: string; email: string };
-  data_criacao?: string;
-  data_atualizacao?: string;
-  publicado: boolean;
-  likes: number;
-  comentarios: number;
-  destaque: boolean;
-}
+import type { Post, PostType } from '../types/post';
 
 interface CreatePostModalProps {
   isOpen: boolean;

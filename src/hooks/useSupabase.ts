@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, ProcessoJuridico, ComentarioProcesso, Usuario } from '../lib/supabase'
 import { Cliente } from '../types/cliente'
+import { Post } from '../types/post'
 
 // Hook para autenticação
 export const useAuth = () => {
@@ -593,5 +594,143 @@ export const useUsuarios = () => {
     updateUsuario,
     updatePassword,
     deleteUsuario
+  }
+}
+
+// Hook para gerenciar posts sociais
+export const usePosts = () => {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPosts = useCallback(async (publicadosOnly = false) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      let query = supabase
+        .from('posts_sociais')
+        .select(`
+          *,
+          autor:usuarios(nome, email)
+        `)
+        .order('data_criacao', { ascending: false })
+
+      if (publicadosOnly) {
+        query = query.eq('publicado', true)
+      }
+
+      const { data, error: supabaseError } = await query
+
+      if (supabaseError) throw supabaseError
+
+      // Transformar datos para mantener compatibilidad con tipo Post
+      const postsTransformados = (data || []).map((post: any) => ({
+        ...post,
+        autor: post.autor || post.autor_id // Manejar autor como objeto o string
+      }))
+
+      setPosts(postsTransformados)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar posts')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const createPost = useCallback(async (post: Omit<Post, 'id' | 'data_criacao' | 'data_atualizacao'>) => {
+    setError(null)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const { data, error: supabaseError } = await supabase
+        .from('posts_sociais')
+        .insert([post])
+        .select()
+
+      if (supabaseError) {
+        console.error('Erro Supabase ao criar post:', supabaseError)
+        throw new Error(`Erro ao criar post: ${supabaseError.message}`)
+      }
+
+      await fetchPosts()
+      return { data: data?.[0], error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao criar post'
+      setError(errorMsg)
+      return { data: null, error: errorMsg }
+    }
+  }, [fetchPosts])
+
+  const updatePost = useCallback(async (id: string, updates: Partial<Post>) => {
+    setError(null)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const { data, error: supabaseError } = await supabase
+        .from('posts_sociais')
+        .update(updates)
+        .eq('id', id)
+        .select()
+
+      if (supabaseError) {
+        console.error('Erro Supabase ao atualizar post:', supabaseError)
+        throw new Error(`Erro ao atualizar post: ${supabaseError.message}`)
+      }
+
+      await fetchPosts()
+      return { data: data?.[0], error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar post'
+      setError(errorMsg)
+      return { data: null, error: errorMsg }
+    }
+  }, [fetchPosts])
+
+  const deletePost = useCallback(async (id: string) => {
+    setError(null)
+    
+    try {
+      const { error: supabaseError } = await supabase
+        .from('posts_sociais')
+        .delete()
+        .eq('id', id)
+
+      if (supabaseError) throw supabaseError
+
+      await fetchPosts()
+      return { error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao excluir post'
+      setError(errorMsg)
+      return { error: errorMsg }
+    }
+  }, [fetchPosts])
+
+  const togglePublished = useCallback(async (id: string, publicado: boolean) => {
+    return await updatePost(id, { publicado })
+  }, [updatePost])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
+
+  return {
+    posts,
+    loading,
+    error,
+    fetchPosts,
+    createPost,
+    updatePost,
+    deletePost,
+    togglePublished
   }
 }

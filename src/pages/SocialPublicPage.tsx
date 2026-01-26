@@ -27,33 +27,7 @@ import { formatDate, getTypeIcon, getTypeColor } from '../utils/postUtils';
 import { extractYouTubeId, getYouTubeEmbedUrl } from '../utils/youtubeUtils';
 import { useNotification } from '../components/shared/notifications/NotificationContext';
 import { useSearchParams } from 'react-router-dom';
-
-interface Post {
-  id: string;
-  titulo: string;
-  conteudo: string;
-  tipo: 'article' | 'video' | 'image' | 'announcement';
-  image_url?: string;
-  video_url?: string;
-  youtube_id?: string;
-  tags: string[];
-  autor: string | { nome: string; email: string };
-  data_criacao: string;
-  publicado: boolean;
-  likes: number;
-  comentarios: number;
-  destaque: boolean;
-}
-
-interface Comentario {
-  id: string;
-  post_id: string;
-  autor_nome: string;
-  autor_email?: string;
-  comentario: string;
-  data_criacao: string;
-  aprovado: boolean;
-}
+import type { Post, Comentario, PostType } from '../types/post';
 
 const PostCard: React.FC<{ 
   post: Post; 

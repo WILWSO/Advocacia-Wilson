@@ -9,16 +9,16 @@
 export type PostType = 'article' | 'video' | 'image' | 'announcement';
 
 /**
- * Autor del post (puede ser string simple o objeto con nombre)
+ * Autor del post (puede ser string simple o objeto con nombre y email)
  */
-export type PostAuthor = string | { nome: string };
+export type PostAuthor = string | { nome: string; email?: string };
 
 /**
  * Interface principal para posts
  * Usa nomenclatura portuguesa para coincidir con schema de Supabase
  */
 export interface Post {
-  id: string;
+  id?: string;
   titulo: string;
   conteudo: string;
   tipo: PostType;
@@ -27,11 +27,28 @@ export interface Post {
   youtube_id?: string;
   tags: string[];
   destaque: boolean;
-  data_criacao: string;
+  publicado: boolean;
+  data_criacao?: string;
+  data_atualizacao?: string;
   data_publicacao?: string;
   autor: PostAuthor;
   likes: number;
   comentarios: number;
+}
+
+/**
+ * Interface para crear/editar posts (sin campos autogenerados)
+ */
+export interface PostFormData {
+  titulo: string;
+  conteudo: string;
+  tipo: PostType;
+  image_url?: string;
+  video_url?: string;
+  youtube_id?: string;
+  tags: string[];
+  destaque: boolean;
+  publicado: boolean;
 }
 
 /**
@@ -41,9 +58,29 @@ export interface Comentario {
   id: string;
   post_id: string;
   autor_nome: string;
+  autor_email?: string;
   comentario: string;
   data_criacao: string;
   aprovado: boolean;
+}
+
+/**
+ * Estadísticas de posts para filtros
+ */
+export interface PostStats {
+  total: number;
+  publicados: number;
+  rascunhos: number;
+  destacados: number;
+}
+
+/**
+ * Filtros para posts
+ */
+export interface PostFilters {
+  searchTerm: string;
+  filterType: 'all' | PostType;
+  filterStatus: 'all' | 'published' | 'draft';
 }
 
 /**

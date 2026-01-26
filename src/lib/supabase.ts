@@ -59,23 +59,21 @@ export type {
   UsuarioFilters
 } from '../types/usuario'
 
-export interface PostSocial {
-  id?: string
-  titulo: string
-  conteudo: string
-  tipo: 'article' | 'video' | 'image' | 'announcement'
-  image_url?: string
-  video_url?: string
-  youtube_id?: string
-  tags: string[]
-  autor: string | { nome: string; email: string }
-  publicado: boolean
-  destaque: boolean
-  likes: number
-  comentarios: number
-  data_criacao?: string
-  data_atualizacao?: string
-}
+// Re-exportar tipos de post desde types/post.ts
+export type {
+  Post,
+  PostType,
+  PostAuthor,
+  PostFormData,
+  Comentario,
+  PostStats,
+  PostFilters,
+  PostModalProps,
+  PostPreviewProps
+} from '../types/post'
+
+// Alias para compatibilidad con código existente
+export type PostSocial = import('../types/post').Post
 
 export interface ComentarioProcesso {
   id?: string
