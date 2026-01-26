@@ -21,10 +21,10 @@ import { useAuthStore } from '../components/auth/authStore';
 import { cn } from '../utils/cn';
 import { formatDate, getTypeIcon, getTypeColor } from '../utils/postUtils';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
-import { usePostsSociais } from '../hooks/usePosts';
+import { usePostForm } from '../hooks/usePostForm';
+import { usePostFilters } from '../hooks/usePostFilters';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal';
-import { useNotification } from '../components/shared/notifications/NotificationContext';
 import type { Post, PostType } from '../types/post';
 
 interface CreatePostModalProps {
