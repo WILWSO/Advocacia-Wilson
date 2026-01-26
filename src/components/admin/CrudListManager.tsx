@@ -13,11 +13,12 @@ import { useNotification } from '../shared/notifications/NotificationContext';
 export interface FieldConfig<T> {
   name: keyof T;
   label: string;
-  type?: 'text' | 'url' | 'date' | 'time' | 'textarea';
+  type?: 'text' | 'url' | 'date' | 'time' | 'textarea' | 'select';
   placeholder?: string;
   required?: boolean;
   className?: string;
   fullWidth?: boolean;
+  options?: Array<{ value: string; label: string }>; // Para campos tipo select
 }
 
 /**
@@ -301,6 +302,25 @@ export function CrudListManager<T extends Record<string, any>>({
                           field.className
                         )}
                       />
+                    ) : field.type === 'select' ? (
+                      <select
+                        value={String(tempItem[field.name] || '')}
+                        onChange={(e) =>
+                          setTempItem({ ...tempItem, [field.name]: e.target.value })
+                        }
+                        className={cn(
+                          "w-full px-3 py-2 border border-gray-300 rounded-lg bg-white",
+                          colors.ring,
+                          field.className
+                        )}
+                      >
+                        <option value="">{field.placeholder || 'Selecione...'}</option>
+                        {field.options?.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type={field.type || 'text'}

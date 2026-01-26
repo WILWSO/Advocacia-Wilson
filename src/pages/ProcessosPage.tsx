@@ -19,6 +19,7 @@ import { DocumentManager, DocumentItem } from '../components/admin/DocumentManag
 import { useInlineNotification } from '../hooks/useInlineNotification'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
 import { useNotification } from '../components/shared/notifications/NotificationContext'
+import { Accordion } from '../components/shared/Accordion'
 
 // Tipos para los nuevos campos JSONB
 interface ProcessoLink {
@@ -1229,8 +1230,29 @@ const ProcessosPage: React.FC = () => {
                 fields={[
                   { name: 'data', label: 'Data da Audiência', type: 'date', required: true },
                   { name: 'horario', label: 'Horário', type: 'time', required: true },
-                  { name: 'tipo', label: 'Tipo', type: 'text', placeholder: 'Ex: Conciliação, Instrução', required: true },
-                  { name: 'forma', label: 'Forma', type: 'text', placeholder: 'Ex: Presencial, Virtual', required: true },
+                  { 
+                    name: 'tipo', 
+                    label: 'Tipo', 
+                    type: 'select', 
+                    placeholder: 'Selecione o tipo', 
+                    required: true,
+                    options: [
+                      { value: 'Conciliação', label: 'Conciliação' },
+                      { value: 'Instrução', label: 'Instrução' }
+                    ]
+                  },
+                  { 
+                    name: 'forma', 
+                    label: 'Forma', 
+                    type: 'select', 
+                    placeholder: 'Selecione a forma', 
+                    required: true,
+                    options: [
+                      { value: 'Presencial', label: 'Presencial' },
+                      { value: 'Virtual', label: 'Virtual' },
+                      { value: 'Híbrida', label: 'Híbrida' }
+                    ]
+                  },
                   { name: 'lugar', label: 'Local', type: 'text', placeholder: 'Ex: Sala 201 - Forum Cível', required: true, fullWidth: true },
                 ]}
                 renderItem={(audiencia) => (
@@ -1599,166 +1621,174 @@ const ProcessosPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Seção 4: Audiências */}
-                {viewingProcesso.audiencias && viewingProcesso.audiencias.length > 0 && (
-                  <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-indigo-200 p-4 sm:p-5 shadow-sm">
-                    <h3 className="text-base font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                      <Calendar size={18} />
-                      Audiências ({viewingProcesso.audiencias.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {viewingProcesso.audiencias.map((audiencia, index) => (
-                        <div key={index} className="bg-white p-4 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-colors">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar size={16} className="text-indigo-600 flex-shrink-0" />
-                            <div className="flex-1">
-                              <div className="text-sm font-bold text-indigo-900">
-                                {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR')} às {audiencia.horario}
+                {/* Seções colapsables con Accordion */}
+                <Accordion
+                  allowMultiple={true}
+                  defaultOpen={['audiencias', 'documentos']}
+                  items={[
+                    // Audiências
+                    ...(viewingProcesso.audiencias && viewingProcesso.audiencias.length > 0 ? [{
+                      id: 'audiencias',
+                      icon: <Calendar size={18} className="text-indigo-600" />,
+                      title: 'Audiências',
+                      count: viewingProcesso.audiencias.length,
+                      color: 'indigo' as const,
+                      content: (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {viewingProcesso.audiencias.map((audiencia, index) => (
+                            <div key={index} className="bg-white p-4 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-colors">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Calendar size={16} className="text-indigo-600 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-bold text-indigo-900">
+                                    {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR')} às {audiencia.horario}
+                                  </div>
+                                  <div className="text-xs text-gray-500 capitalize">
+                                    {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500 capitalize">
-                                {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex">
+                                  <span className="font-semibold text-gray-600 w-16">Tipo:</span>
+                                  <span className="text-gray-900">{audiencia.tipo}</span>
+                                </div>
+                                <div className="flex">
+                                  <span className="font-semibold text-gray-600 w-16">Forma:</span>
+                                  <span className="text-gray-900">{audiencia.forma}</span>
+                                </div>
+                                <div className="flex">
+                                  <span className="font-semibold text-gray-600 w-16">Local:</span>
+                                  <span className="text-gray-900">{audiencia.lugar}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="space-y-1.5 text-xs">
-                            <div className="flex">
-                              <span className="font-semibold text-gray-600 w-16">Tipo:</span>
-                              <span className="text-gray-900">{audiencia.tipo}</span>
-                            </div>
-                            <div className="flex">
-                              <span className="font-semibold text-gray-600 w-16">Forma:</span>
-                              <span className="text-gray-900">{audiencia.forma}</span>
-                            </div>
-                            <div className="flex">
-                              <span className="font-semibold text-gray-600 w-16">Local:</span>
-                              <span className="text-gray-900">{audiencia.lugar}</span>
-                            </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seção 5: Documentos */}
-                {viewingProcesso.documentos_processo && viewingProcesso.documentos_processo.length > 0 && (
-                  <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
-                    <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-                      <FileText size={18} />
-                      Documentos ({viewingProcesso.documentos_processo.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {viewingProcesso.documentos_processo.map((doc, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-sm transition-all group">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <FileText size={16} className="text-primary-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-gray-900 truncate" title={doc.nome}>
-                                {doc.nome}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {doc.tamanho && `${(doc.tamanho / 1024 / 1024).toFixed(2)} MB`}
-                              </p>
+                      )
+                    }] : []),
+                    // Documentos
+                    ...(viewingProcesso.documentos_processo && viewingProcesso.documentos_processo.length > 0 ? [{
+                      id: 'documentos',
+                      icon: <FileText size={18} className="text-gray-700" />,
+                      title: 'Documentos',
+                      count: viewingProcesso.documentos_processo.length,
+                      color: 'gray' as const,
+                      content: (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {viewingProcesso.documentos_processo.map((doc, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-sm transition-all group">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <FileText size={16} className="text-primary-600 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gray-900 truncate" title={doc.nome}>
+                                    {doc.nome}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {doc.tamanho && `${(doc.tamanho / 1024 / 1024).toFixed(2)} MB`}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex gap-1 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewDocument(doc)}
+                                  className="p-1.5 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                                  title="Visualizar"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadDocument(doc)}
+                                  className="p-1.5 text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
+                                  title="Baixar"
+                                >
+                                  <Download size={16} />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex gap-1 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
-                            <button
-                              type="button"
-                              onClick={() => handleViewDocument(doc)}
-                              className="p-1.5 text-green-600 hover:bg-green-100 rounded-md transition-colors"
-                              title="Visualizar"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDownloadDocument(doc)}
-                              className="p-1.5 text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
-                              title="Baixar"
-                            >
-                              <Download size={16} />
-                            </button>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seção 6: Links */}
-                {viewingProcesso.links_processo && viewingProcesso.links_processo.length > 0 && (
-                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-200 p-4 sm:p-5 shadow-sm">
-                    <h3 className="text-base font-bold text-blue-900 mb-3 flex items-center gap-2">
-                      <LinkIcon size={18} />
-                      Links do Processo ({viewingProcesso.links_processo.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {viewingProcesso.links_processo.map((link: ProcessoLink, index: number) => (
-                        <a
-                          key={index}
-                          href={link.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200 hover:border-blue-400 hover:shadow-sm transition-all group"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <LinkIcon size={16} className="text-blue-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-gray-900 truncate">{link.titulo}</p>
-                              <p className="text-xs text-blue-600 truncate">{link.link}</p>
-                            </div>
-                          </div>
-                          <ExternalLink size={16} className="text-blue-600 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seção 7: Jurisprudências */}
-                {viewingProcesso.jurisprudencia && viewingProcesso.jurisprudencia.length > 0 && (
-                  <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl border border-purple-200 p-4 sm:p-5 shadow-sm">
-                    <h3 className="text-base font-bold text-purple-900 mb-3 flex items-center gap-2">
-                      <Scale size={18} />
-                      Jurisprudências ({viewingProcesso.jurisprudencia.length})
-                    </h3>
-                    <div className="space-y-3">
-                      {viewingProcesso.jurisprudencia.map((juris: Jurisprudencia, index: number) => (
-                        <div key={index} className="bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="flex items-center gap-2">
-                              <Scale size={14} className="text-purple-600 flex-shrink-0" />
-                              <span className="text-sm font-bold text-purple-900">Jurisprudência #{index + 1}</span>
-                            </div>
+                      )
+                    }] : []),
+                    // Links
+                    ...(viewingProcesso.links_processo && viewingProcesso.links_processo.length > 0 ? [{
+                      id: 'links',
+                      icon: <LinkIcon size={18} className="text-blue-600" />,
+                      title: 'Links do Processo',
+                      count: viewingProcesso.links_processo.length,
+                      color: 'blue' as const,
+                      content: (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {viewingProcesso.links_processo.map((link: ProcessoLink, index: number) => (
                             <a
-                              href={juris.link}
+                              key={index}
+                              href={link.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 text-purple-600 hover:bg-purple-100 rounded-md transition-colors flex-shrink-0"
-                              title="Abrir link"
+                              className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200 hover:border-blue-400 hover:shadow-sm transition-all group"
                             >
-                              <ExternalLink size={14} />
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <LinkIcon size={16} className="text-blue-600 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gray-900 truncate">{link.titulo}</p>
+                                  <p className="text-xs text-blue-600 truncate">{link.link}</p>
+                                </div>
+                              </div>
+                              <ExternalLink size={16} className="text-blue-600 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                             </a>
-                          </div>
-                          <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                              {juris.ementa}
-                            </p>
-                          </div>
-                          <a
-                            href={juris.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-purple-600 hover:underline flex items-center gap-1 mt-2 break-all"
-                          >
-                            <ExternalLink size={10} />
-                            {juris.link}
-                          </a>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      )
+                    }] : []),
+                    // Jurisprudências
+                    ...(viewingProcesso.jurisprudencia && viewingProcesso.jurisprudencia.length > 0 ? [{
+                      id: 'jurisprudencias',
+                      icon: <Scale size={18} className="text-purple-600" />,
+                      title: 'Jurisprudências',
+                      count: viewingProcesso.jurisprudencia.length,
+                      color: 'purple' as const,
+                      content: (
+                        <div className="space-y-3">
+                          {viewingProcesso.jurisprudencia.map((juris: Jurisprudencia, index: number) => (
+                            <div key={index} className="bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <div className="flex items-center gap-2">
+                                  <Scale size={14} className="text-purple-600 flex-shrink-0" />
+                                  <span className="text-sm font-bold text-purple-900">Jurisprudência #{index + 1}</span>
+                                </div>
+                                <a
+                                  href={juris.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 text-purple-600 hover:bg-purple-100 rounded-md transition-colors flex-shrink-0"
+                                  title="Abrir link"
+                                >
+                                  <ExternalLink size={14} />
+                                </a>
+                              </div>
+                              <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                                  {juris.ementa}
+                                </p>
+                              </div>
+                              <a
+                                href={juris.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-purple-600 hover:underline flex items-center gap-1 mt-2 break-all"
+                              >
+                                <ExternalLink size={10} />
+                                {juris.link}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    }] : [])
+                  ]}
+                />
 
               {/* Informações de Auditoria */}
               <AuditInfo
