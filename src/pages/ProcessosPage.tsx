@@ -1623,7 +1623,7 @@ const ProcessosPage: React.FC = () => {
 
                 {/* Seções colapsables con Accordion */}
                 <Accordion
-                  allowMultiple={true}
+                  allowMultiple={false} // elegir si se permite abrir múltiples secciones al mismo tiempo
                   defaultOpen={['audiencias', 'documentos']}
                   items={[
                     // Audiências
