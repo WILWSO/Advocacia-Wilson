@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -19,7 +18,10 @@ import {
   MessageSquare,
   UserCheck
 } from 'lucide-react';
-import { supabase, DocumentoArquivo } from '../lib/supabase';
+import { DocumentoArquivo } from '../lib/supabase';
+import { Cliente } from '../types/cliente';
+import { useClienteForm } from '../hooks/useClienteForm';
+import { useClienteFilters } from '../hooks/useClienteFilters';
 import { cn } from '../utils/cn';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager';
@@ -27,230 +29,15 @@ import { RestrictedInput, RestrictedSelect } from '../components/admin/Restricte
 import { AuditInfo } from '../components/shared/AuditInfo';
 import { FormModal } from '../components/shared/modales/FormModal';
 import { ViewModal } from '../components/shared/modales/ViewModal';
-import { useNotification } from '../components/shared/notifications/NotificationContext';
-import { useAuth } from '../hooks/useSupabase';
-import { useInlineNotification } from '../hooks/useInlineNotification';
 import { InlineNotification } from '../components/shared/notifications/InlineNotification';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 
-interface Cliente {
-  id?: string;
-  nome_completo: string;
-  cpf_cnpj?: string;
-  rg?: string;
-  data_nascimento?: string;
-  nacionalidade?: string;
-  estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel';
-  profissao?: string;
-  email?: string;
-  telefone?: string;
-  celular: string;
-  telefone_alternativo?: string;
-  cep?: string;
-  endereco?: string;
-  numero?: string;
-  complemento?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  pais?: string;
-  observacoes?: string;
-  como_conheceu?: string;
-  indicado_por?: string;
-  status: 'ativo' | 'inativo' | 'potencial';
-  categoria?: string;
-  documentos_cliente?: DocumentoArquivo[];
-  data_cadastro?: string;
-  data_atualizacao?: string;
-  ultimo_contato?: string;
-}
-
 const ClientesPage = () => {
-  const { user: currentUser } = useAuth();
-  const { notification, error: errorNotif, hide } = useInlineNotification();
-  const { success: successToast, warning, confirm: confirmDialog } = useNotification(); // Toast global para mensajes de éxito
-  const isAdmin = currentUser?.role === 'admin';
-  const isAdvogado = currentUser?.role === 'advogado';
-  const isAssistente = currentUser?.role === 'assistente';
-  const canEdit = isAdmin || isAdvogado || isAssistente;
-  const canDelete = isAdmin;
+  // Hook de formulario (lógica de negocio)
+  const clienteForm = useClienteForm();
   
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [busca, setBusca] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [showModal, setShowModal] = useState(false);
-  const [viewingCliente, setViewingCliente] = useState<Cliente | null>(null);
-  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
-  const [formData, setFormData] = useState<Cliente>({
-    nome_completo: '',
-    celular: '',
-    status: 'ativo',
-    pais: 'Brasil',
-    documentos_cliente: []
-  });
-
-  // Carregar clientes
-  useEffect(() => {
-    fetchClientes();
-  }, []);
-
-  const fetchClientes = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('data_cadastro', { ascending: false });
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Criar ou atualizar cliente
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Verificar permisos
-    if (!canEdit) {
-      warning('Você não tem permissão para editar clientes');
-      return;
-    }
-    
-    try {
-      if (editingCliente?.id) {
-        // Preparar dados para atualização
-        const updates: Partial<Cliente> = { ...formData };
-        
-        // Solo admin puede cambiar status
-        if (!isAdmin) {
-          delete updates.status;
-        }
-        
-        // Atualizar
-        const { error } = await supabase
-          .from('clientes')
-          .update(updates)
-          .eq('id', editingCliente.id);
-
-        if (error) throw error;
-      } else {
-        // Criar
-        const { error } = await supabase
-          .from('clientes')
-          .insert([formData]);
-
-        if (error) throw error;
-      }
-
-      fetchClientes();
-      handleCloseModal();
-      
-      // Mostrar éxito como toast global (fuera del modal)
-      successToast('Cliente salvo com sucesso!');
-    } catch (error: any) {
-      console.error('Erro ao salvar cliente:', error);
-      // Mensaje amigable al usuario, el error técnico queda en la consola
-      errorNotif('Erro ao salvar cliente');
-      // No cerrar el modal para que el usuario vea el error
-    }
-  };
-
-  // Deletar cliente
-  const handleDelete = async (id: string) => {
-    // Verificar permisos
-    if (!canDelete) {
-      warning('Apenas administradores podem excluir clientes');
-      return;
-    }
-    
-    const confirmed = await confirmDialog({
-      title: 'Excluir Cliente',
-      message: 'Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.',
-      confirmText: 'Excluir',
-      cancelText: 'Cancelar',
-      type: 'danger'
-    });
-
-    if (!confirmed) return;
-
-    try {
-      const { error } = await supabase
-        .from('clientes')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchClientes();
-      
-      // Mostrar éxito como toast global
-      successToast('Cliente excluído com sucesso!');
-    } catch (error: any) {
-      console.error('Erro ao deletar cliente:', error);
-      // Mensaje amigable al usuario, el error técnico queda en la consola
-      errorNotif('Erro ao deletar cliente');
-    }
-  };
-
-  // Abrir modal para editar
-  const handleEdit = (cliente: Cliente) => {
-    setEditingCliente(cliente);
-    setFormData(cliente);
-    setShowModal(true);
-  };
-
-  // Abrir modal para criar
-  const handleCreate = () => {
-    setEditingCliente(null);
-    setFormData({
-      nome_completo: '',
-      celular: '',
-      status: 'ativo',
-      pais: 'Brasil',
-      documentos_cliente: []
-    });
-    setShowModal(true);
-  };
-
-  // Abrir modal para visualizar
-  const handleView = (cliente: Cliente) => {
-    setViewingCliente(cliente);
-  };
-
-  // Funciones de gestión de documentos ahora manejadas por DocumentManager
-
-  // Fechar modal
-  const handleCloseModal = () => {
-    hide(); // Limpiar notificaciones al cerrar modal
-    setShowModal(false);
-    setEditingCliente(null);
-  };
-
-  // Filtrar clientes
-  const clientesFiltrados = clientes.filter(cliente => {
-    const matchBusca = 
-      cliente.nome_completo.toLowerCase().includes(busca.toLowerCase()) ||
-      cliente.email?.toLowerCase().includes(busca.toLowerCase()) ||
-      cliente.cpf_cnpj?.includes(busca) ||
-      cliente.celular?.includes(busca);
-
-    const matchStatus = filtroStatus === 'todos' || cliente.status === filtroStatus;
-
-    return matchBusca && matchStatus;
-  });
-
-  // Estatísticas
-  const stats = {
-    total: clientes.length,
-    ativos: clientes.filter(c => c.status === 'ativo').length,
-    potenciais: clientes.filter(c => c.status === 'potencial').length,
-    inativos: clientes.filter(c => c.status === 'inativo').length
-  };
+  // Hook de filtros
+  const filters = useClienteFilters(clienteForm.clientes);
 
   return (
     <div className="bg-neutral-50 min-h-full">
@@ -265,10 +52,10 @@ const ClientesPage = () => {
                 </p>
               </div>
               
-              {canEdit && (
+              {clienteForm.canEdit && (
                 <AccessibleButton
                   category="create"
-                  onClick={handleCreate}
+                  onClick={clienteForm.handleCreate}
                   aria-label="Criar novo cliente"
                   size="lg"
                   className="w-full sm:w-auto"
@@ -285,19 +72,19 @@ const ClientesPage = () => {
           {/* Estatísticas */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg shadow-sm border border-neutral-200">
-              <div className="text-2xl font-bold text-neutral-800">{stats.total}</div>
+              <div className="text-2xl font-bold text-neutral-800">{filters.stats.total}</div>
               <div className="text-sm text-neutral-600">Total de Clientes</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
-              <div className="text-2xl font-bold text-green-700">{stats.ativos}</div>
+              <div className="text-2xl font-bold text-green-700">{filters.stats.ativos}</div>
               <div className="text-sm text-green-600">Ativos</div>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-              <div className="text-2xl font-bold text-blue-700">{stats.potenciais}</div>
+              <div className="text-2xl font-bold text-blue-700">{filters.stats.potenciais}</div>
               <div className="text-sm text-blue-600">Potenciais</div>
             </div>
             <div className="bg-neutral-50 p-4 rounded-lg shadow-sm border border-neutral-300">
-              <div className="text-2xl font-bold text-neutral-700">{stats.inativos}</div>
+              <div className="text-2xl font-bold text-neutral-700">{filters.stats.inativos}</div>
               <div className="text-sm text-neutral-600">Inativos</div>
             </div>
           </div>
@@ -309,8 +96,8 @@ const ClientesPage = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
                 <input
                   type="text"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
+                  value={filters.busca}
+                  onChange={(e) => filters.setBusca(e.target.value)}
                   placeholder="Buscar por nome, email, CPF/CNPJ ou telefone..."
                   className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
@@ -318,8 +105,8 @@ const ClientesPage = () => {
               <div className="flex items-center gap-2">
                 <Filter size={20} className="text-neutral-500" />
                 <select
-                  value={filtroStatus}
-                  onChange={(e) => setFiltroStatus(e.target.value)}
+                  value={filters.filtroStatus}
+                  onChange={(e) => filters.setFiltroStatus(e.target.value)}
                   className="px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="todos">Todos os Status</option>
@@ -332,26 +119,26 @@ const ClientesPage = () => {
           </div>
 
           {/* Lista de Clientes */}
-          {isLoading ? (
+          {clienteForm.isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
             <p className="text-neutral-600 mt-4">Carregando clientes...</p>
           </div>
-        ) : clientesFiltrados.length === 0 ? (
+        ) : filters.clientesFiltrados.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-12 text-center">
             <Users size={48} className="mx-auto text-neutral-300 mb-4" />
             <h3 className="text-lg font-semibold text-neutral-700 mb-2">
               Nenhum cliente encontrado
             </h3>
             <p className="text-neutral-500">
-              {busca || filtroStatus !== 'todos'
-                ? 'Tente ajustar os filtros de busca'
+              {filters.busca || filters.filtroStatus !== 'todos'
+                ? 'Tente ajustar os filtros de filters.busca'
                 : 'Comece cadastrando seu primeiro cliente'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clientesFiltrados.map((cliente) => (
+            {filters.clientesFiltrados.map((cliente) => (
               <div
                 key={cliente.id}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border border-neutral-200 overflow-hidden"
@@ -384,24 +171,24 @@ const ClientesPage = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => handleView(cliente)}
+                        onClick={() => clienteForm.handleView(cliente)}
                         className="p-2 text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                         title="Visualizar"
                       >
                         <Eye size={16} />
                       </button>
-                      {canEdit && (
+                      {clienteForm.canEdit && (
                         <button
-                          onClick={() => handleEdit(cliente)}
+                          onClick={() => clienteForm.handleEdit(cliente)}
                           className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                           title="Editar"
                         >
                           <Edit3 size={16} />
                         </button>
                       )}
-                      {canDelete && (
+                      {clienteForm.canDelete && (
                         <button
-                          onClick={() => handleDelete(cliente.id!)}
+                          onClick={() => clienteForm.handleDelete(cliente.id!)}
                           className="p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                           title="Excluir"
                         >
@@ -451,11 +238,11 @@ const ClientesPage = () => {
                     </div>
                   )}
 
-                  {cliente.data_cadastro && (
+                  {cliente.data_criacao && (
                     <div className="flex items-center gap-2 text-sm text-neutral-500 pt-2 border-t border-neutral-100">
                       <Calendar size={14} />
                       <span>
-                        Cadastrado em {new Date(cliente.data_cadastro).toLocaleDateString('pt-BR')}
+                        Cadastrado em {new Date(cliente.data_criacao).toLocaleDateString('pt-BR')}
                       </span>
                     </div>
                   )}
@@ -467,19 +254,19 @@ const ClientesPage = () => {
 
         {/* Modal de Criar/Editar */}
         <FormModal
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          title={editingCliente ? 'Editar Cliente' : 'Novo Cliente'}
-          onSubmit={handleSave}
+          isOpen={clienteForm.showModal}
+          onClose={clienteForm.handleCloseModal}
+          title={clienteForm.editingCliente ? 'Editar Cliente' : 'Novo Cliente'}
+          onSubmit={clienteForm.handleSave}
           maxWidth="4xl"
         >
                   {/* Notificación inline */}
                   <AnimatePresence mode="wait">
-                    {notification.show && (
+                    {clienteForm.notification.show && (
                       <InlineNotification
-                        type={notification.type}
-                        message={notification.message}
-                        onClose={hide}
+                        type={clienteForm.notification.type}
+                        message={clienteForm.notification.message}
+                        onClose={clienteForm.hide}
                         className="mb-4"
                       />
                     )}
@@ -497,9 +284,9 @@ const ClientesPage = () => {
                           label="Nome Completo"
                           type="text"
                           required
-                          value={formData.nome_completo}
-                          onChange={(e) => setFormData({...formData, nome_completo: e.target.value})}
-                          isRestricted={!isAdmin && editingCliente !== null}
+                          value={clienteForm.formData.nome_completo}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, nome_completo: e.target.value})}
+                          isRestricted={!clienteForm.isAdmin && clienteForm.editingCliente !== null}
                           restrictionMessage="Apenas admin pode editar"
                         />
                       </div>
@@ -510,8 +297,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.cpf_cnpj || ''}
-                          onChange={(e) => setFormData({...formData, cpf_cnpj: e.target.value})}
+                          value={clienteForm.formData.cpf_cnpj || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, cpf_cnpj: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -522,8 +309,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.rg || ''}
-                          onChange={(e) => setFormData({...formData, rg: e.target.value})}
+                          value={clienteForm.formData.rg || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, rg: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -534,8 +321,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="date"
-                          value={formData.data_nascimento || ''}
-                          onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})}
+                          value={clienteForm.formData.data_nascimento || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, data_nascimento: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -545,8 +332,8 @@ const ClientesPage = () => {
                           Estado Civil
                         </label>
                         <select
-                          value={formData.estado_civil || ''}
-                          onChange={(e) => setFormData({...formData, estado_civil: e.target.value as Cliente['estado_civil']})}
+                          value={clienteForm.formData.estado_civil || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, estado_civil: e.target.value as Cliente['estado_civil']})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         >
                           <option value="">Selecione</option>
@@ -564,8 +351,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.profissao || ''}
-                          onChange={(e) => setFormData({...formData, profissao: e.target.value})}
+                          value={clienteForm.formData.profissao || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, profissao: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -576,8 +363,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.nacionalidade || ''}
-                          onChange={(e) => setFormData({...formData, nacionalidade: e.target.value})}
+                          value={clienteForm.formData.nacionalidade || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, nacionalidade: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -597,8 +384,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="email"
-                          value={formData.email || ''}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          value={clienteForm.formData.email || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, email: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -610,8 +397,8 @@ const ClientesPage = () => {
                         <input
                           type="tel"
                           required
-                          value={formData.celular}
-                          onChange={(e) => setFormData({...formData, celular: e.target.value})}
+                          value={clienteForm.formData.celular}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, celular: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -622,8 +409,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="tel"
-                          value={formData.telefone || ''}
-                          onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                          value={clienteForm.formData.telefone || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, telefone: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -634,8 +421,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="tel"
-                          value={formData.telefone_alternativo || ''}
-                          onChange={(e) => setFormData({...formData, telefone_alternativo: e.target.value})}
+                          value={clienteForm.formData.telefone_alternativo || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, telefone_alternativo: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -655,8 +442,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.cep || ''}
-                          onChange={(e) => setFormData({...formData, cep: e.target.value})}
+                          value={clienteForm.formData.cep || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, cep: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -667,8 +454,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.endereco || ''}
-                          onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                          value={clienteForm.formData.endereco || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, endereco: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -679,8 +466,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.numero || ''}
-                          onChange={(e) => setFormData({...formData, numero: e.target.value})}
+                          value={clienteForm.formData.numero || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, numero: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -691,8 +478,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.complemento || ''}
-                          onChange={(e) => setFormData({...formData, complemento: e.target.value})}
+                          value={clienteForm.formData.complemento || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, complemento: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -703,8 +490,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.bairro || ''}
-                          onChange={(e) => setFormData({...formData, bairro: e.target.value})}
+                          value={clienteForm.formData.bairro || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, bairro: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -715,8 +502,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.cidade || ''}
-                          onChange={(e) => setFormData({...formData, cidade: e.target.value})}
+                          value={clienteForm.formData.cidade || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, cidade: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -727,8 +514,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.estado || ''}
-                          onChange={(e) => setFormData({...formData, estado: e.target.value})}
+                          value={clienteForm.formData.estado || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, estado: e.target.value})}
                           maxLength={2}
                           placeholder="SP"
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent uppercase"
@@ -741,8 +528,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.pais || 'Brasil'}
-                          onChange={(e) => setFormData({...formData, pais: e.target.value})}
+                          value={clienteForm.formData.pais || 'Brasil'}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, pais: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -760,9 +547,9 @@ const ClientesPage = () => {
                         <RestrictedSelect
                           label="Status"
                           required
-                          value={formData.status}
-                          onChange={(e) => setFormData({...formData, status: e.target.value as Cliente['status']})}
-                          isRestricted={!isAdmin}
+                          value={clienteForm.formData.status}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, status: e.target.value as Cliente['status']})}
+                          isRestricted={!clienteForm.isAdmin}
                           restrictionMessage="Somente Admin pode alterar"
                         >
                           <option value="ativo">Ativo</option>
@@ -777,8 +564,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.categoria || ''}
-                          onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                          value={clienteForm.formData.categoria || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, categoria: e.target.value})}
                           placeholder="VIP, Regular, etc."
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
@@ -790,8 +577,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.como_conheceu || ''}
-                          onChange={(e) => setFormData({...formData, como_conheceu: e.target.value})}
+                          value={clienteForm.formData.como_conheceu || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, como_conheceu: e.target.value})}
                           placeholder="Google, Indicação, etc."
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
@@ -803,8 +590,8 @@ const ClientesPage = () => {
                         </label>
                         <input
                           type="text"
-                          value={formData.indicado_por || ''}
-                          onChange={(e) => setFormData({...formData, indicado_por: e.target.value})}
+                          value={clienteForm.formData.indicado_por || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, indicado_por: e.target.value})}
                           placeholder="Nome de quem indicou"
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
@@ -815,8 +602,8 @@ const ClientesPage = () => {
                           Observações
                         </label>
                         <textarea
-                          value={formData.observacoes || ''}
-                          onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                          value={clienteForm.formData.observacoes || ''}
+                          onChange={(e) => clienteForm.setFormData({...clienteForm.formData, observacoes: e.target.value})}
                           rows={4}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
@@ -832,10 +619,10 @@ const ClientesPage = () => {
                     </h3>
                     
                     <DocumentManager
-                      documents={formData.documentos_cliente as DocumentItem[]}
-                      onDocumentsChange={(docs) => setFormData({ ...formData, documentos_cliente: docs as DocumentoArquivo[] })}
+                      documents={clienteForm.formData.documentos_cliente as DocumentItem[]}
+                      onDocumentsChange={(docs) => clienteForm.setFormData({ ...clienteForm.formData, documentos_cliente: docs as DocumentoArquivo[] })}
                       bucketName="documentos_cliente"
-                      entityId={editingCliente?.id}
+                      entityId={clienteForm.editingCliente?.id}
                       uploadLabel="Adicionar Documento"
                       showUploadButton={true}
                       readOnly={false}
@@ -843,12 +630,12 @@ const ClientesPage = () => {
                   </div>
 
                   {/* Información de Auditoría */}
-                  {editingCliente && (
+                  {clienteForm.editingCliente && (
                     <AuditInfo
-                      creadoPor={editingCliente.creado_por}
-                      atualizadoPor={editingCliente.atualizado_por}
-                      dataCriacao={editingCliente.data_cadastro}
-                      dataAtualizacao={editingCliente.data_atualizacao}
+                      creadoPor={clienteForm.editingCliente.creado_por}
+                      atualizadoPor={clienteForm.editingCliente.atualizado_por}
+                      dataCriacao={clienteForm.editingCliente.data_criacao}
+                      dataAtualizacao={clienteForm.editingCliente.data_atualizacao}
                     />
                   )}
 
@@ -856,19 +643,16 @@ const ClientesPage = () => {
 
         {/* Modal de Visualização */}
         <ViewModal
-          isOpen={!!viewingCliente}
-          onClose={() => setViewingCliente(null)}
+          isOpen={!!clienteForm.viewingCliente}
+          onClose={clienteForm.handleCloseViewModal}
           title="Detalhes do Cliente"
-          onEdit={canEdit ? () => {
-            setEditingCliente(viewingCliente);
-            setFormData(viewingCliente);
-            setViewingCliente(null);
-            setShowModal(true);
+          onEdit={clienteForm.canEdit ? () => {
+            clienteForm.handleEdit(clienteForm.viewingCliente!);
+            clienteForm.handleCloseViewModal();
           } : undefined}
-          canEdit={canEdit}
           maxWidth="5xl"
         >
-          {viewingCliente && <>
+          {clienteForm.viewingCliente && <>
                 <div className="space-y-6">
                   {/* Seção 1: Informações Pessoais */}
                   <div>
@@ -879,70 +663,70 @@ const ClientesPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Nome Completo</h4>
-                        <p className="text-gray-900 font-medium">{viewingCliente.nome_completo}</p>
+                        <p className="text-gray-900 font-medium">{clienteForm.viewingCliente.nome_completo}</p>
                       </div>
 
                       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Status</h4>
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                          viewingCliente.status === 'ativo' && 'bg-green-100 text-green-800',
-                          viewingCliente.status === 'potencial' && 'bg-blue-100 text-blue-800',
-                          viewingCliente.status === 'inativo' && 'bg-gray-100 text-gray-800'
+                          clienteForm.viewingCliente.status === 'ativo' && 'bg-green-100 text-green-800',
+                          clienteForm.viewingCliente.status === 'potencial' && 'bg-blue-100 text-blue-800',
+                          clienteForm.viewingCliente.status === 'inativo' && 'bg-gray-100 text-gray-800'
                         )}>
-                          {viewingCliente.status === 'ativo' && 'Ativo'}
-                          {viewingCliente.status === 'potencial' && 'Potencial'}
-                          {viewingCliente.status === 'inativo' && 'Inativo'}
+                          {clienteForm.viewingCliente.status === 'ativo' && 'Ativo'}
+                          {clienteForm.viewingCliente.status === 'potencial' && 'Potencial'}
+                          {clienteForm.viewingCliente.status === 'inativo' && 'Inativo'}
                         </span>
                       </div>
 
-                      {viewingCliente.cpf_cnpj && (
+                      {clienteForm.viewingCliente.cpf_cnpj && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">CPF/CNPJ</h4>
-                          <p className="text-gray-900 font-medium">{viewingCliente.cpf_cnpj}</p>
+                          <p className="text-gray-900 font-medium">{clienteForm.viewingCliente.cpf_cnpj}</p>
                         </div>
                       )}
 
-                      {viewingCliente.rg && (
+                      {clienteForm.viewingCliente.rg && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">RG</h4>
-                          <p className="text-gray-900 font-medium">{viewingCliente.rg}</p>
+                          <p className="text-gray-900 font-medium">{clienteForm.viewingCliente.rg}</p>
                         </div>
                       )}
 
-                      {viewingCliente.data_nascimento && (
+                      {clienteForm.viewingCliente.data_nascimento && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
                             <Calendar size={14} />
                             Data de Nascimento
                           </h4>
                           <p className="text-gray-900 font-medium">
-                            {new Date(viewingCliente.data_nascimento).toLocaleDateString('pt-BR')}
+                            {new Date(clienteForm.viewingCliente.data_nascimento).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                       )}
 
-                      {viewingCliente.nacionalidade && (
+                      {clienteForm.viewingCliente.nacionalidade && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Nacionalidade</h4>
-                          <p className="text-gray-900 font-medium">{viewingCliente.nacionalidade}</p>
+                          <p className="text-gray-900 font-medium">{clienteForm.viewingCliente.nacionalidade}</p>
                         </div>
                       )}
 
-                      {viewingCliente.estado_civil && (
+                      {clienteForm.viewingCliente.estado_civil && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Estado Civil</h4>
-                          <p className="text-gray-900 font-medium capitalize">{viewingCliente.estado_civil.replace('_', ' ')}</p>
+                          <p className="text-gray-900 font-medium capitalize">{clienteForm.viewingCliente.estado_civil.replace('_', ' ')}</p>
                         </div>
                       )}
 
-                      {viewingCliente.profissao && (
+                      {clienteForm.viewingCliente.profissao && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
                             <Building2 size={14} />
                             Profissão
                           </h4>
-                          <p className="text-gray-900 font-medium">{viewingCliente.profissao}</p>
+                          <p className="text-gray-900 font-medium">{clienteForm.viewingCliente.profissao}</p>
                         </div>
                       )}
                     </div>
@@ -955,14 +739,14 @@ const ClientesPage = () => {
                       Informações de Contato
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {viewingCliente.email && (
+                      {clienteForm.viewingCliente.email && (
                         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                           <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
                             <Mail size={14} />
                             Email
                           </h4>
-                          <a href={`mailto:${viewingCliente.email}`} className="text-blue-900 font-medium hover:underline">
-                            {viewingCliente.email}
+                          <a href={`mailto:${clienteForm.viewingCliente.email}`} className="text-blue-900 font-medium hover:underline">
+                            {clienteForm.viewingCliente.email}
                           </a>
                         </div>
                       )}
@@ -972,35 +756,35 @@ const ClientesPage = () => {
                           <Phone size={14} />
                           Celular
                         </h4>
-                        <a href={`tel:${viewingCliente.celular}`} className="text-blue-900 font-medium hover:underline">
-                          {viewingCliente.celular}
+                        <a href={`tel:${clienteForm.viewingCliente.celular}`} className="text-blue-900 font-medium hover:underline">
+                          {clienteForm.viewingCliente.celular}
                         </a>
                       </div>
 
-                      {viewingCliente.telefone && (
+                      {clienteForm.viewingCliente.telefone && (
                         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                           <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
                             <Phone size={14} />
                             Telefone Fixo
                           </h4>
-                          <p className="text-blue-900 font-medium">{viewingCliente.telefone}</p>
+                          <p className="text-blue-900 font-medium">{clienteForm.viewingCliente.telefone}</p>
                         </div>
                       )}
 
-                      {viewingCliente.telefone_alternativo && (
+                      {clienteForm.viewingCliente.telefone_alternativo && (
                         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                           <h4 className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
                             <Phone size={14} />
                             Telefone Alternativo
                           </h4>
-                          <p className="text-blue-900 font-medium">{viewingCliente.telefone_alternativo}</p>
+                          <p className="text-blue-900 font-medium">{clienteForm.viewingCliente.telefone_alternativo}</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Seção 3: Endereço */}
-                  {(viewingCliente.endereco || viewingCliente.cidade || viewingCliente.estado) && (
+                  {(clienteForm.viewingCliente.endereco || clienteForm.viewingCliente.cidade || clienteForm.viewingCliente.estado) && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                         <MapPin size={20} />
@@ -1008,22 +792,22 @@ const ClientesPage = () => {
                       </h3>
                       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <div className="space-y-2 text-gray-900">
-                          {viewingCliente.endereco && (
+                          {clienteForm.viewingCliente.endereco && (
                             <p>
-                              {viewingCliente.endereco}
-                              {viewingCliente.numero && `, ${viewingCliente.numero}`}
-                              {viewingCliente.complemento && ` - ${viewingCliente.complemento}`}
+                              {clienteForm.viewingCliente.endereco}
+                              {clienteForm.viewingCliente.numero && `, ${clienteForm.viewingCliente.numero}`}
+                              {clienteForm.viewingCliente.complemento && ` - ${clienteForm.viewingCliente.complemento}`}
                             </p>
                           )}
-                          {viewingCliente.bairro && <p>{viewingCliente.bairro}</p>}
-                          {(viewingCliente.cidade || viewingCliente.estado) && (
+                          {clienteForm.viewingCliente.bairro && <p>{clienteForm.viewingCliente.bairro}</p>}
+                          {(clienteForm.viewingCliente.cidade || clienteForm.viewingCliente.estado) && (
                             <p>
-                              {viewingCliente.cidade}
-                              {viewingCliente.estado && ` - ${viewingCliente.estado}`}
+                              {clienteForm.viewingCliente.cidade}
+                              {clienteForm.viewingCliente.estado && ` - ${clienteForm.viewingCliente.estado}`}
                             </p>
                           )}
-                          {viewingCliente.cep && <p>CEP: {viewingCliente.cep}</p>}
-                          {viewingCliente.pais && <p>{viewingCliente.pais}</p>}
+                          {clienteForm.viewingCliente.cep && <p>CEP: {clienteForm.viewingCliente.cep}</p>}
+                          {clienteForm.viewingCliente.pais && <p>{clienteForm.viewingCliente.pais}</p>}
                         </div>
                       </div>
                     </div>
@@ -1036,66 +820,66 @@ const ClientesPage = () => {
                       Informações de Gestão
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {viewingCliente.categoria && (
+                      {clienteForm.viewingCliente.categoria && (
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                           <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1 flex items-center gap-1">
                             <Star size={14} />
                             Categoria
                           </h4>
-                          <p className="text-purple-900 font-medium">{viewingCliente.categoria}</p>
+                          <p className="text-purple-900 font-medium">{clienteForm.viewingCliente.categoria}</p>
                         </div>
                       )}
 
-                      {viewingCliente.como_conheceu && (
+                      {clienteForm.viewingCliente.como_conheceu && (
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                           <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1">Como Conheceu</h4>
-                          <p className="text-purple-900 font-medium">{viewingCliente.como_conheceu}</p>
+                          <p className="text-purple-900 font-medium">{clienteForm.viewingCliente.como_conheceu}</p>
                         </div>
                       )}
 
-                      {viewingCliente.indicado_por && (
+                      {clienteForm.viewingCliente.indicado_por && (
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                           <h4 className="text-xs font-semibold text-purple-700 uppercase mb-1">Indicado Por</h4>
-                          <p className="text-purple-900 font-medium">{viewingCliente.indicado_por}</p>
+                          <p className="text-purple-900 font-medium">{clienteForm.viewingCliente.indicado_por}</p>
                         </div>
                       )}
 
-                      {viewingCliente.data_cadastro && (
+                      {clienteForm.viewingCliente.data_criacao && (
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
                             <Calendar size={14} />
                             Data de Cadastro
                           </h4>
                           <p className="text-gray-900 font-medium">
-                            {new Date(viewingCliente.data_cadastro).toLocaleDateString('pt-BR')}
+                            {new Date(clienteForm.viewingCliente.data_criacao).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                       )}
                     </div>
 
-                    {viewingCliente.observacoes && (
+                    {clienteForm.viewingCliente.observacoes && (
                       <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-1">
                           <MessageSquare size={14} />
                           Observações
                         </h4>
-                        <p className="text-gray-900 whitespace-pre-wrap">{viewingCliente.observacoes}</p>
+                        <p className="text-gray-900 whitespace-pre-wrap">{clienteForm.viewingCliente.observacoes}</p>
                       </div>
                     )}
                   </div>
 
                   {/* Documentos do Cliente */}
-                  {viewingCliente.documentos_cliente && viewingCliente.documentos_cliente.length > 0 && (
+                  {clienteForm.viewingCliente.documentos_cliente && clienteForm.viewingCliente.documentos_cliente.length > 0 && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                         <FileText size={20} />
                         Documentos do Cliente
                       </h3>
                       <DocumentManager
-                        documents={viewingCliente.documentos_cliente as DocumentItem[]}
+                        documents={clienteForm.viewingCliente.documentos_cliente as DocumentItem[]}
                         onDocumentsChange={() => {}}
                         bucketName="documentos_cliente"
-                        entityId={viewingCliente.id}
+                        entityId={clienteForm.viewingCliente.id}
                         showUploadButton={false}
                         readOnly={true}
                       />
@@ -1104,10 +888,10 @@ const ClientesPage = () => {
 
                   {/* Informações de Auditoria */}
                   <AuditInfo
-                    creadoPor={viewingCliente.creado_por}
-                    atualizadoPor={viewingCliente.atualizado_por}
-                    dataCriacao={viewingCliente.data_criacao}
-                    dataAtualizacao={viewingCliente.data_atualizacao}
+                    creadoPor={clienteForm.viewingCliente.creado_por}
+                    atualizadoPor={clienteForm.viewingCliente.atualizado_por}
+                    dataCriacao={clienteForm.viewingCliente.data_criacao}
+                    dataAtualizacao={clienteForm.viewingCliente.data_atualizacao}
                   />
                 </div>
           </>}
@@ -1118,3 +902,7 @@ const ClientesPage = () => {
 };
 
 export default ClientesPage;
+
+
+
+

@@ -39,6 +39,26 @@ export type {
   NewClienteForm
 } from '../types/processo'
 
+// Re-exportar tipos de cliente desde types/cliente.ts
+export type {
+  Cliente,
+  ClienteFormData,
+  ClienteStatus,
+  EstadoCivil,
+  ClienteStats,
+  ClienteFilters
+} from '../types/cliente'
+
+// Re-exportar tipos de usuario desde types/usuario.ts
+export type {
+  Usuario,
+  UsuarioFormData,
+  UsuarioRole,
+  PasswordForm,
+  UsuarioStats,
+  UsuarioFilters
+} from '../types/usuario'
+
 export interface PostSocial {
   id?: string
   titulo: string
@@ -63,68 +83,4 @@ export interface ComentarioProcesso {
   comentario: string
   autor: string
   data_criacao?: string
-}
-
-export interface Usuario {
-  id?: string
-  email: string
-  titulo?: string
-  nome: string
-  nome_completo?: string
-  foto_perfil_url?: string
-  data_nascimento?: string
-  role: 'admin' | 'advogado' | 'assistente'
-  ativo: boolean
-  tipo_documento?: string
-  numero_documento?: string
-  whatsapp?: string
-  redes_sociais?: {
-    [key: string]: string
-  }
-  endereco?: string
-  numero?: string
-  localidade?: string
-  estado?: string
-  cep?: string
-  pais?: string
-  data_criacao?: string
-  data_atualizacao?: string
-  // Campos de auditoría
-  creado_por?: string
-  atualizado_por?: string
-}
-
-export interface Cliente {
-  id?: string
-  nome_completo: string
-  cpf_cnpj?: string
-  rg?: string
-  data_nascimento?: string
-  nacionalidade?: string
-  estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel'
-  profissao?: string
-  email?: string
-  telefone?: string
-  celular: string
-  telefone_alternativo?: string
-  cep?: string
-  endereco?: string
-  numero?: string
-  complemento?: string
-  bairro?: string
-  cidade?: string
-  estado?: string
-  pais?: string
-  observacoes?: string
-  como_conheceu?: string
-  indicado_por?: string
-  status?: 'ativo' | 'inativo' | 'potencial'
-  categoria?: string
-  documentos_cliente?: DocumentoArquivo[]
-  data_cadastro?: string
-  data_atualizacao?: string
-  ultimo_contato?: string
-  // Campos de auditoría
-  creado_por?: string
-  atualizado_por?: string
 }

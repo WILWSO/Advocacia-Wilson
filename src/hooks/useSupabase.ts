@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, ProcessoJuridico, ComentarioProcesso, Usuario, PostSocial } from '../lib/supabase'
+import { supabase, ProcessoJuridico, ComentarioProcesso, Usuario } from '../lib/supabase'
+import { Cliente } from '../types/cliente'
 
 // Hook para autenticação
 export const useAuth = () => {
@@ -25,14 +26,14 @@ export const useAuth = () => {
 
         if (error) {
           console.error('Error fetching user data:', error)
-          setUser(authUser)
+          setUser(null)
         } else {
           // Combinar datos de auth con datos de la tabla
           setUser({ ...authUser, ...userData })
         }
       } catch (err) {
         console.error('Error:', err)
-        setUser(authUser)
+        setUser(null)
       }
       
       setLoading(false)
@@ -40,13 +41,18 @@ export const useAuth = () => {
 
     // Verificar usuário atual
     supabase.auth.getUser().then(({ data: { user } }) => {
-      fetchUserWithRole(user)
+      if (user) fetchUserWithRole(user)
     })
 
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        fetchUserWithRole(session?.user ?? null)
+        if (session?.user) {
+          fetchUserWithRole(session.user)
+        } else {
+          setUser(null)
+          setLoading(false)
+        }
       }
     )
 
@@ -140,7 +146,7 @@ export const useProcessos = () => {
       // Transformar dados para incluir cliente_nome como string
       const processosTransformados = (data || []).map((processo: ProcessoJuridico & { clientes?: { nome_completo: string } }) => ({
         ...processo,
-        cliente_nome: processo.clientes?.nome_completo || null
+        cliente_nome: processo.clientes?.nome_completo || undefined
       }))
 
       setProcessos(processosTransformados)
@@ -315,6 +321,124 @@ export const useComentarios = (processoId: string) => {
     error,
     fetchComentarios,
     addComentario
+  }
+}
+
+// Hook para gerenciar clientes
+export const useClientes = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchClientes = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('data_criacao', { ascending: false })
+
+      if (supabaseError) throw supabaseError
+
+      setClientes(data || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar clientes')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const createCliente = useCallback(async (cliente: Omit<Cliente, 'id' | 'data_criacao' | 'data_atualizacao'>) => {
+    setError(null)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const { data, error: supabaseError } = await supabase
+        .from('clientes')
+        .insert([cliente])
+        .select()
+
+      if (supabaseError) {
+        console.error('Erro Supabase ao criar cliente:', supabaseError)
+        throw new Error(`Erro ao criar cliente: ${supabaseError.message}`)
+      }
+
+      await fetchClientes()
+      return { data: data?.[0], error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao criar cliente'
+      setError(errorMsg)
+      return { data: null, error: errorMsg }
+    }
+  }, [fetchClientes])
+
+  const updateCliente = useCallback(async (id: string, updates: Partial<Cliente>) => {
+    setError(null)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const { data, error: supabaseError } = await supabase
+        .from('clientes')
+        .update(updates)
+        .eq('id', id)
+        .select()
+
+      if (supabaseError) {
+        console.error('Erro Supabase ao atualizar cliente:', supabaseError)
+        throw new Error(`Erro ao atualizar cliente: ${supabaseError.message}`)
+      }
+
+      await fetchClientes()
+      return { data: data?.[0], error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar cliente'
+      setError(errorMsg)
+      return { data: null, error: errorMsg }
+    }
+  }, [fetchClientes])
+
+  const deleteCliente = useCallback(async (id: string) => {
+    setError(null)
+    
+    try {
+      const { error: supabaseError } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', id)
+
+      if (supabaseError) throw supabaseError
+
+      await fetchClientes()
+      return { error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao excluir cliente'
+      setError(errorMsg)
+      return { error: errorMsg }
+    }
+  }, [fetchClientes])
+
+  useEffect(() => {
+    fetchClientes()
+  }, [fetchClientes])
+
+  return {
+    clientes,
+    loading,
+    error,
+    fetchClientes,
+    createCliente,
+    updateCliente,
+    deleteCliente
   }
 }
 
