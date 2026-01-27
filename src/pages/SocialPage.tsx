@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -23,257 +23,9 @@ import { formatDate, getTypeIcon, getTypeColor } from '../utils/postUtils';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
 import { usePostForm } from '../hooks/usePostForm';
 import { usePostFilters } from '../hooks/usePostFilters';
-import AccessibleButton from '../components/shared/buttons/AccessibleButton'
-import { FormModal } from '../components/shared/modales/FormModal';
-import type { Post, PostType } from '../types/post';
-
-interface CreatePostModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (post: Partial<Post>) => void;
-  editingPost?: Post | null;
-}
-
-const CreatePostModal: React.FC<CreatePostModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  editingPost 
-}) => {
-  const [formData, setFormData] = useState({
-    titulo: '',
-    conteudo: '',
-    tipo: 'article' as Post['tipo'],
-    image_url: '',
-    video_url: '',
-    tags: '',
-    destaque: false,
-    publicado: true
-  });
-
-  useEffect(() => {
-    if (editingPost) {
-      setFormData({
-        titulo: editingPost.titulo,
-        conteudo: editingPost.conteudo,
-        tipo: editingPost.tipo,
-        image_url: editingPost.image_url || '',
-        video_url: editingPost.video_url || '',
-        tags: editingPost.tags.join(', '),
-        destaque: editingPost.destaque,
-        publicado: editingPost.publicado
-      });
-    } else {
-      setFormData({
-        titulo: '',
-        conteudo: '',
-        tipo: 'article',
-        image_url: '',
-        video_url: '',
-        tags: '',
-        destaque: false,
-        publicado: true
-      });
-    }
-  }, [editingPost, isOpen]);
-
-  // Función para extraer el ID de YouTube de una URL
-  const extractYouTubeId = (url: string): string | null => {
-    if (!url) return null;
-    
-    // Patrones para diferentes formatos de URL de YouTube
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/, // youtube.com/watch?v=ID o youtu.be/ID
-      /youtube\.com\/embed\/([^&\n?#]+)/, // youtube.com/embed/ID
-      /youtube\.com\/v\/([^&\n?#]+)/ // youtube.com/v/ID
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-    
-    return null;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-    
-    // Extraer youtube_id si es un video
-    let youtube_id = null;
-    if (formData.tipo === 'video' && formData.video_url) {
-      youtube_id = extractYouTubeId(formData.video_url);
-    }
-    
-    onSave({
-      ...formData,
-      tags: tagsArray,
-      youtube_id: youtube_id || undefined,
-      ...(editingPost ? { id: editingPost.id } : { 
-        likes: 0,
-        comentarios: 0
-      })
-    });
-  };
-
-  const typeIcons = {
-    article: <FileText size={20} />,
-    video: <Video size={20} />,
-    image: <ImageIcon size={20} />,
-    announcement: <ExternalLink size={20} />
-  };
-
-  return (
-    <FormModal
-      isOpen={isOpen}
-      onClose={onClose}
-      onSubmit={handleSubmit}
-      title={editingPost ? 'Editar Conteúdo' : 'Criar Novo Conteúdo'}
-      submitLabel={editingPost ? 'Atualizar' : 'Criar'}
-      cancelLabel="Cancelar"
-      maxWidth="2xl"
-    >
-            {/* Tipo de conteúdo */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-3">
-                Tipo de Conteúdo
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {(['article', 'video', 'image', 'announcement'] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, tipo: type }))}
-                    className={cn(
-                      "flex flex-col items-center p-3 rounded-lg border transition-all",
-                      formData.tipo === type 
-                        ? 'border-primary-500 bg-primary-50 text-primary-700' 
-                        : 'border-neutral-200 hover:border-neutral-300'
-                    )}
-                  >
-                    {typeIcons[type]}
-                    <span className="mt-1 text-xs font-medium capitalize">
-                      {type === 'article' && 'Artigo'}
-                      {type === 'video' && 'Vídeo'}
-                      {type === 'image' && 'Imagem'}
-                      {type === 'announcement' && 'Anúncio'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Título */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-neutral-700 mb-2">
-                Título *
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={formData.titulo}
-                onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Digite o título do conteúdo..."
-                required
-              />
-            </div>
-
-            {/* Conteúdo */}
-            <div>
-              <label htmlFor="content" className="block text-sm font-medium text-neutral-700 mb-2">
-                Conteúdo *
-              </label>
-              <textarea
-                id="content"
-                value={formData.conteudo}
-                onChange={(e) => setFormData(prev => ({ ...prev, conteudo: e.target.value }))}
-                rows={6}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Escreva o conteúdo aqui..."
-                required
-              />
-            </div>
-
-            {/* URLs de mídia */}
-            {(formData.tipo === 'image' || formData.tipo === 'article' || formData.tipo === 'announcement') && (
-              <div>
-                <label htmlFor="mediaUrl" className="block text-sm font-medium text-neutral-700 mb-2">
-                  URL da Imagem
-                </label>
-                <input
-                  id="mediaUrl"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Cole a URL da imagem aqui..."
-                />
-              </div>
-            )}
-
-            {formData.tipo === 'video' && (
-              <div>
-                <label htmlFor="videoUrl" className="block text-sm font-medium text-neutral-700 mb-2">
-                  URL do Vídeo (YouTube)
-                </label>
-                <input
-                  id="videoUrl"
-                  type="url"
-                  value={formData.video_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
-                />
-                <p className="text-xs text-neutral-500 mt-1">
-                  Suporta links do YouTube (youtube.com e youtu.be)
-                </p>
-              </div>
-            )}
-
-            {/* Tags */}
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-neutral-700 mb-2">
-                Tags (separadas por vírgula)
-              </label>
-              <input
-                id="tags"
-                type="text"
-                value={formData.tags}
-                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="direito, civil, penal, trabalhista..."
-              />
-            </div>
-
-            {/* Opções */}
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.destaque}
-                  onChange={(e) => setFormData(prev => ({ ...prev, destaque: e.target.checked }))}
-                  className="mr-2 text-primary-500 focus:ring-primary-500"
-                />
-                <span className="text-sm text-neutral-700">Conteúdo em destaque</span>
-              </label>
-              
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.publicado}
-                  onChange={(e) => setFormData(prev => ({ ...prev, publicado: e.target.checked }))}
-                  className="mr-2 text-primary-500 focus:ring-primary-500"
-                />
-                <span className="text-sm text-neutral-700">Publicar imediatamente</span>
-              </label>
-            </div>
-    </FormModal>
-  );
-};
+import AccessibleButton from '../components/shared/buttons/AccessibleButton';
+import CreatePostModal from '../components/admin/CreatePostModal';
+import type { Post } from '../types/post';
 
 const PostCard: React.FC<{ 
   post: Post; 
@@ -287,7 +39,7 @@ const PostCard: React.FC<{
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border",
+        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border h-full flex flex-col",
         post.destaque ? 'border-gold-300 ring-2 ring-gold-100' : 'border-neutral-200',
         !post.publicado && 'opacity-60'
       )}
@@ -384,8 +136,8 @@ const PostCard: React.FC<{
       )}
 
       {/* Conteúdo */}
-      <div className="p-4">
-        <p className="text-neutral-600 text-sm line-clamp-3 mb-3">
+      <div className="p-4 flex-1 flex flex-col">
+        <p className="text-neutral-600 text-sm line-clamp-3 mb-3 flex-1">
           {post.conteudo}
         </p>
         
@@ -429,103 +181,8 @@ const PostCard: React.FC<{
 
 const AdminSocialPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
-  const { 
-    posts, 
-    loading, 
-    error, 
-    createPost, 
-    updatePost, 
-    deletePost, 
-    togglePublished 
-  } = usePostsSociais();
-  const { success, error: errorNotif, confirm: confirmDialog } = useNotification();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | Post['tipo']>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
-
-  const handleCreatePost = async (postData: Partial<Post>) => {
-    if (!user) return;
-    
-    const newPostData = {
-      ...postData,
-      autor: user.id,
-      likes: 0,
-      comentarios: 0
-    } as Omit<Post, 'id' | 'data_criacao' | 'data_atualizacao'>;
-    
-    const result = await createPost(newPostData);
-    if (!result.error) {
-      success('Conteúdo criado com sucesso!');
-      setIsCreateModalOpen(false);
-      setEditingPost(null);
-    } else {
-      errorNotif('Erro ao criar conteúdo. Tente novamente.');
-    }
-  };
-
-  const handleEditPost = (post: Post) => {
-    setEditingPost(post);
-    setIsCreateModalOpen(true);
-  };
-
-  const handleUpdatePost = async (updatedPost: Partial<Post>) => {
-    if (!editingPost?.id) return;
-    
-    const result = await updatePost(editingPost.id, updatedPost);
-    if (!result.error) {
-      success('Conteúdo atualizado com sucesso!');
-      setIsCreateModalOpen(false);
-      setEditingPost(null);
-    } else {
-      errorNotif('Erro ao atualizar conteúdo. Tente novamente.');
-    }
-  };
-
-  const handleDeletePost = async (id: string) => {
-    const confirmed = await confirmDialog({
-      title: 'Excluir Conteúdo',
-      message: 'Tem certeza que deseja excluir este conteúdo? Esta ação não pode ser desfeita.',
-      confirmText: 'Excluir',
-      cancelText: 'Cancelar',
-      type: 'danger'
-    });
-
-    if (confirmed) {
-      const result = await deletePost(id);
-      if (!result.error) {
-        success('Conteúdo excluído com sucesso!');
-      } else {
-        errorNotif('Erro ao excluir conteúdo. Tente novamente.');
-      }
-    }
-  };
-
-  const handleTogglePublished = async (id: string) => {
-    const post = posts.find(p => p.id === id);
-    if (post) {
-      const result = await togglePublished(id, !post.publicado);
-      if (!result.error) {
-        success(post.publicado ? 'Conteúdo despublicado!' : 'Conteúdo publicado!');
-      } else {
-        errorNotif('Erro ao alterar status de publicação.');
-      }
-    }
-  };
-
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.conteudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesType = filterType === 'all' || post.tipo === filterType;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'published' && post.publicado) ||
-                         (filterStatus === 'draft' && !post.publicado);
-    
-    return matchesSearch && matchesType && matchesStatus;
-  });
+  const postForm = usePostForm();
+  const filters = usePostFilters(postForm.posts);
 
   if (!isAuthenticated || !user || user.role !== 'admin') {
     return (
@@ -566,7 +223,7 @@ const AdminSocialPage: React.FC = () => {
                 {(
                 <AccessibleButton
                   category="create"
-                  onClick={() => setIsCreateModalOpen(true)}
+                  onClick={() => postForm.handleOpenCreateModal()}
                   aria-label="Criar novo conteúdo"
                   size="lg"
                   className="w-full sm:w-auto"
@@ -580,8 +237,48 @@ const AdminSocialPage: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Filtros e Busca */}
+        {/* Estadísticas */}
         <ResponsiveContainer maxWidth="7xl" className="py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Total</p>
+                  <p className="text-2xl font-bold text-neutral-900">{filters.stats.total}</p>
+                </div>
+                <FileText className="text-primary-500" size={24} />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Publicados</p>
+                  <p className="text-2xl font-bold text-green-600">{filters.stats.publicados}</p>
+                </div>
+                <Star className="text-green-500" size={24} />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Rascunhos</p>
+                  <p className="text-2xl font-bold text-neutral-600">{filters.stats.rascunhos}</p>
+                </div>
+                <FileEdit className="text-neutral-500" size={24} />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Destaque</p>
+                  <p className="text-2xl font-bold text-gold-600">{filters.stats.destaque}</p>
+                </div>
+                <Star className="text-gold-500 fill-current" size={24} />
+              </div>
+            </div>
+          </div>
+
+        {/* Filtros e Busca */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Busca */}
@@ -590,8 +287,8 @@ const AdminSocialPage: React.FC = () => {
                   <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
                   <input
                     type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={filters.searchTerm}
+                    onChange={(e) => filters.setSearchTerm(e.target.value)}
                     placeholder="Buscar conteúdos..."
                     className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
@@ -601,8 +298,8 @@ const AdminSocialPage: React.FC = () => {
               {/* Filtros */}
               <div className="flex gap-3">
                 <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as Post['tipo'] | 'all')}
+                  value={filters.filterType}
+                  onChange={(e) => filters.setFilterType(e.target.value as Post['tipo'] | 'all')}
                   className="px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">Todos os tipos</option>
@@ -613,8 +310,8 @@ const AdminSocialPage: React.FC = () => {
                 </select>
 
                 <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'published' | 'draft')}
+                  value={filters.filterStatus}
+                  onChange={(e) => filters.setFilterStatus(e.target.value as 'all' | 'published' | 'draft')}
                   className="px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">Todos os status</option>
@@ -626,7 +323,7 @@ const AdminSocialPage: React.FC = () => {
           </div>
 
           {/* Lista de Posts */}
-          {loading && (
+          {postForm.loading && (
             <div className="text-center py-12">
               <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-primary-500 hover:bg-primary-400 transition ease-in-out duration-150 cursor-not-allowed">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -638,7 +335,7 @@ const AdminSocialPage: React.FC = () => {
             </div>
           )}
 
-          {error && (
+          {postForm.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <div className="flex">
                 <div className="ml-3">
@@ -646,29 +343,29 @@ const AdminSocialPage: React.FC = () => {
                     Erro ao carregar conteúdos
                   </h3>
                   <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
+                    <p>{postForm.error}</p>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {!loading && !error && (
+          {!postForm.loading && !postForm.error && (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               <AnimatePresence>
-                {filteredPosts.map((post) => (
+                {filters.filteredPosts.map((post) => (
                   <PostCard
                     key={post.id}
                     post={post}
-                    onEdit={handleEditPost}
-                    onDelete={handleDeletePost}
+                    onEdit={postForm.handleEditPost}
+                    onDelete={postForm.handleDeletePost}
                   />
                 ))}
               </AnimatePresence>
             </div>
           )}
 
-          {!loading && !error && filteredPosts.length === 0 && (
+          {!postForm.loading && !postForm.error && filters.filteredPosts.length === 0 && (
             <div className="text-center py-12">
               <div className="text-neutral-400 mb-4">
                 <FileText size={48} className="mx-auto" />
@@ -677,7 +374,7 @@ const AdminSocialPage: React.FC = () => {
                 Nenhum conteúdo encontrado
               </h3>
               <p className="text-neutral-500">
-                {searchTerm || filterType !== 'all' || filterStatus !== 'all'
+                {filters.searchTerm || filters.filterType !== 'all' || filters.filterStatus !== 'all'
                   ? 'Tente ajustar os filtros de busca.'
                   : 'Comece criando seu primeiro conteúdo.'}
               </p>
@@ -688,13 +385,10 @@ const AdminSocialPage: React.FC = () => {
 
       {/* Modal de Criação/Edição */}
       <CreatePostModal
-        isOpen={isCreateModalOpen}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setEditingPost(null);
-        }}
-        onSave={editingPost ? handleUpdatePost : handleCreatePost}
-        editingPost={editingPost}
+        isOpen={postForm.isCreateModalOpen}
+        onClose={() => postForm.handleCloseModal()}
+        onSave={postForm.editingPost ? postForm.handleUpdatePost : postForm.handleCreatePost}
+        editingPost={postForm.editingPost}
       />
     </>
   );

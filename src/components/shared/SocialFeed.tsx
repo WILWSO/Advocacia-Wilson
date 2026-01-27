@@ -37,7 +37,7 @@ const PostPreview: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate(`/social?postId=${post.id}`)}
       className={cn(
-        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-neutral-200 group overflow-hidden cursor-pointer",
+        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-neutral-200 group overflow-hidden cursor-pointer h-full flex flex-col",
         post.destaque && "ring-2 ring-gold-200 border-gold-300",
         compact ? "p-3" : "p-0"
       )}
@@ -58,15 +58,29 @@ const PostPreview: React.FC<{
         </div>
       )}
 
-      {!compact && post.video_url && (
-        <div className="aspect-video bg-neutral-900 flex items-center justify-center relative group">
-          <Play size={48} className="text-white opacity-80 group-hover:opacity-100 transition-opacity" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      {!compact && post.video_url && post.youtube_id && (
+        <div className="aspect-video bg-neutral-900 overflow-hidden relative">
+          <img 
+            src={`https://img.youtube.com/vi/${post.youtube_id}/maxresdefault.jpg`}
+            alt={post.titulo}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = `https://img.youtube.com/vi/${post.youtube_id}/hqdefault.jpg`;
+            }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+            <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
+              <Play size={28} className="text-white ml-1" fill="white" />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Conteúdo */}
       <div className={cn(
+        "flex flex-col flex-1",
         !compact && (post.image_url || post.video_url) && "p-3 sm:p-4",
         compact && "p-2"
       )}>
@@ -196,6 +210,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   const [posts, setPosts] = useState<Post[]>([]);
   const { likedPosts, toggleLike, isLiked } = useMultiplePostsLike();
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Carregar posts reais de Supabase
   useEffect(() => {
