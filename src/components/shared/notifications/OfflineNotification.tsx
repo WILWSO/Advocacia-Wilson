@@ -51,7 +51,7 @@ export const OfflineNotification = () => {
                 </h3>
                 <p className="text-sm text-white/90">
                   Parece que você está offline. Que tal dar uma conferida na sua conexão? 
-                  Enquanto isso, relaxa que já voltamos! ☕
+                  Enquanto isso, relaxa que já voltamos!
                 </p>
               </div>
             </div>

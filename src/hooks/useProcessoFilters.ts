@@ -11,6 +11,15 @@ export function useProcessoFilters(processos: ProcessoWithRelations[]) {
   const [filtroAdvogado, setFiltroAdvogado] = useState<string>('')
   const [busca, setBusca] = useState<string>('')
 
+  // Handler personalizado para búsqueda que resetea otros filtros
+  const handleBuscaChange = (valor: string) => {
+    setBusca(valor)
+    if (valor.trim() !== '') {
+      setFiltroStatus('')
+      setFiltroAdvogado('')
+    }
+  }
+
   // Procesos filtrados - memoizado para optimización
   const processosFiltrados = useMemo(() => {
     return processos.filter(processo => {
@@ -49,6 +58,7 @@ export function useProcessoFilters(processos: ProcessoWithRelations[]) {
     setFiltroAdvogado,
     busca,
     setBusca,
+    handleBuscaChange,
     
     // Resultados
     processosFiltrados,

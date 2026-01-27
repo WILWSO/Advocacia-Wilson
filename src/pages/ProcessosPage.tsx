@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Plus, Search, User, Calendar, AlertCircle, CheckCircle, Clock, Eye, FileText, Download, Mail, Phone, Link as LinkIcon, Scale, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -6,270 +6,80 @@ import { useProcessos, useUsuarios, useAuth } from '../hooks/useSupabase'
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
 import { useResponsive } from '../hooks/useResponsive'
 import { cn } from '../utils/cn'
-import { supabase, ProcessoJuridico, DocumentoArquivo } from '../lib/supabase'
+import { supabase, DocumentoArquivo } from '../lib/supabase'
+import { ProcessoLink, Jurisprudencia, ProcessoWithRelations } from '../types/processo'
 import { AuditInfo } from '../components/shared/AuditInfo'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
 import ProcessoCard from '../components/shared/cards/ProcessoCard'
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
-import { useCrudArray } from '../hooks/useCrudArray'
 import { CrudListManager } from '../components/admin/CrudListManager'
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager'
-import { useInlineNotification } from '../hooks/useInlineNotification'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
-import { useNotification } from '../components/shared/notifications/NotificationContext'
 import { Accordion } from '../components/shared/Accordion'
-
-// Tipos para los nuevos campos JSONB
-interface ProcessoLink {
-  titulo: string
-  link: string
-}
-
-interface Jurisprudencia {
-  ementa: string
-  link: string
-}
+import { useProcessoForm } from '../hooks/useProcessoForm'
+import { useProcessoFilters } from '../hooks/useProcessoFilters'
 
 // Componente de gestión de procesos jurídicos
 const ProcessosPage: React.FC = () => {
   useResponsive()
   const { user } = useAuth()
-  const isAdmin = user?.role === 'admin'
-  const isAdvogado = user?.role === 'advogado'
-  const isAssistente = user?.role === 'assistente'
-  const canEdit = isAdmin || isAdvogado || isAssistente
-  // const canDelete = isAdmin // No hay función de eliminar procesos en esta página
-  
   const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso } = useProcessos()
   const { usuarios } = useUsuarios()
-  const { notification, warning, error: errorNotif, hide } = useInlineNotification()
-  const { success: successToast } = useNotification() // Toast global para mensajes de éxito
-
-  const [filtroStatus, setFiltroStatus] = useState<string>('')
-  const [filtroAdvogado, setFiltroAdvogado] = useState<string>('')
-  const [busca, setBusca] = useState<string>('')
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [editingProcesso, setEditingProcesso] = useState<(ProcessoJuridico & { usuarios?: { nome: string }; cliente_nome?: string }) | null>(null)
-  const [viewingProcesso, setViewingProcesso] = useState<(ProcessoJuridico & { usuarios?: { nome: string }; cliente_nome?: string }) | null>(null)
-  const [clientes, setClientes] = useState<{ id: string; nome_completo: string; status: string }[]>([])
-  const [showNewClienteModal, setShowNewClienteModal] = useState(false)
-  const [newClienteForm, setNewClienteForm] = useState({
-    nome_completo: '',
-    celular: '',
-    email: '',
-    status: 'ativo' as 'ativo' | 'inativo' | 'potencial'
+  
+  const [viewingProcesso, setViewingProcesso] = useState<ProcessoWithRelations | null>(null)
+  
+  // Hook de formulario con toda la lógica centralizada
+  const processoForm = useProcessoForm({
+    onSuccess: fetchProcessos,
+    createProcesso,
+    updateProcesso
   })
   
-  const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    advogado_responsavel: '',
-    cliente_id: '',
-    polo: '' as 'ativo' | 'passivo' | '',
-    cliente_email: '',
-    cliente_telefone: '',
-    numero_processo: '',
-    status: 'em_aberto',
-    area_direito: '',
-    prioridade: 'media',
-    valor_causa: '',
-    atividade_pendente: '',
-    competencia: '' as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | '',
-    // Campos JSONB
-    jurisdicao: {
-      uf: '',
-      municipio: '',
-      vara: '',
-      juiz: ''
-    },
-    honorarios: {
-      valor_honorarios: '',
-      detalhes: ''
-    },
-    audiencias: [] as Array<{ data: string; horario: string; tipo: string; forma: string; lugar: string }>,
-    documentos_processo: [] as DocumentoArquivo[],
-    links_processo: [] as ProcessoLink[],
-    jurisprudencia: [] as Jurisprudencia[]
-  })
-  
-  // Estados para gestionar links, jurisprudencias y audiencias con useCrudArray
-  const linksCrud = useCrudArray<ProcessoLink>(formData.links_processo)
-  const jurisprudenciasCrud = useCrudArray<Jurisprudencia>(formData.jurisprudencia)
-  const audienciasCrud = useCrudArray<any>(formData.audiencias)
-  
-  // Sincronizar useCrudArray cuando se carga un proceso para editar
-  useEffect(() => {
-    if (editingProcesso) {
-      linksCrud.setItems(formData.links_processo)
-      jurisprudenciasCrud.setItems(formData.jurisprudencia)
-      audienciasCrud.setItems(formData.audiencias)
-    }
-  }, [editingProcesso?.id])
-  
-  // Estados de modales para CrudListManager
-  const [showLinksModal, setShowLinksModal] = useState(false)
-  const [showLinksViewModal, setShowLinksViewModal] = useState(false)
-  const [showJurisprudenciaModal, setShowJurisprudenciaModal] = useState(false)
-  const [showJurisprudenciaViewModal, setShowJurisprudenciaViewModal] = useState(false)
-  const [showAudienciaModal, setShowAudienciaModal] = useState(false)
-  const [showAudienciaViewModal, setShowAudienciaViewModal] = useState(false)
+  // Hook de filtros (cast a ProcessoWithRelations para compatibilidad)
+  const filters = useProcessoFilters(processos as ProcessoWithRelations[])
 
+  // Cargar procesos al montar el componente
   useEffect(() => {
     fetchProcessos()
-    fetchClientes()
   }, [fetchProcessos])
 
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome_completo, status')
-        .eq('status', 'ativo')
-        .order('nome_completo')
-      
-      if (error) {
-        console.warn('Tabla clientes no encontrada o sin datos:', error)
-        setClientes([])
-        return
-      }
-      setClientes(data || [])
-    } catch (error) {
-      console.warn('Erro ao carregar clientes (tabla puede no existir aún):', error)
-      setClientes([])
-    }
-  }
-
-  // Funciones de gestión de documentos ahora manejadas por DocumentManager
-
-  // Sincronizar cambios de useCrudArray con formData
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      links_processo: linksCrud.items,
-      jurisprudencia: jurisprudenciasCrud.items,
-      audiencias: audienciasCrud.items
-    }))
-  }, [linksCrud.items, jurisprudenciasCrud.items, audienciasCrud.items])
-
-  // Handlers para Links (integrados con useCrudArray)
-  const handleAddLink = () => {
-    if (!linksCrud.tempItem.titulo?.trim() || !linksCrud.tempItem.link?.trim()) {
-      warning('Por favor, preencha o título e o link')
-      return
-    }
-    linksCrud.addItem(linksCrud.tempItem as ProcessoLink)
-    linksCrud.resetTempItem()
-  }
-
-  const handleUpdateLink = () => {
-    if (!linksCrud.tempItem.titulo?.trim() || !linksCrud.tempItem.link?.trim()) {
-      warning('Por favor, preencha o título e o link')
-      return
-    }
-    if (linksCrud.editingIndex !== null) {
-      linksCrud.updateItem(linksCrud.editingIndex, linksCrud.tempItem as ProcessoLink)
-      linksCrud.cancelEdit()
-    }
-  }
-
-  // Handlers para Jurisprudencias (integrados con useCrudArray)
-  const handleAddJurisprudencia = () => {
-    if (!jurisprudenciasCrud.tempItem.ementa?.trim() || !jurisprudenciasCrud.tempItem.link?.trim()) {
-      warning('Por favor, preencha a ementa e o link')
-      return
-    }
-    jurisprudenciasCrud.addItem(jurisprudenciasCrud.tempItem as Jurisprudencia)
-    jurisprudenciasCrud.resetTempItem()
-  }
-
-  const handleUpdateJurisprudencia = () => {
-    if (!jurisprudenciasCrud.tempItem.ementa?.trim() || !jurisprudenciasCrud.tempItem.link?.trim()) {
-      warning('Por favor, preencha a ementa e o link')
-      return
-    }
-    if (jurisprudenciasCrud.editingIndex !== null) {
-      jurisprudenciasCrud.updateItem(jurisprudenciasCrud.editingIndex, jurisprudenciasCrud.tempItem as Jurisprudencia)
-      jurisprudenciasCrud.cancelEdit()
-    }
-  }
-
-  // Handlers para Audiencias (integrados con useCrudArray)
-  const handleAddAudiencia = () => {
-    const { data, horario, tipo, forma, lugar } = audienciasCrud.tempItem
-    if (!data?.trim() || !horario?.trim() || !tipo?.trim() || !forma?.trim() || !lugar?.trim()) {
-      warning('Por favor, preencha todos os campos da audiência')
-      return
-    }
-    audienciasCrud.addItem(audienciasCrud.tempItem)
-    audienciasCrud.resetTempItem()
-  }
-
-  const handleUpdateAudiencia = () => {
-    const { data, horario, tipo, forma, lugar } = audienciasCrud.tempItem
-    if (!data?.trim() || !horario?.trim() || !tipo?.trim() || !forma?.trim() || !lugar?.trim()) {
-      warning('Por favor, preencha todos os campos da audiência')
-      return
-    }
-    if (audienciasCrud.editingIndex !== null) {
-      audienciasCrud.updateItem(audienciasCrud.editingIndex, audienciasCrud.tempItem)
-      audienciasCrud.cancelEdit()
-    }
-  }
-
-  // Handlers para Documentos
+  
+  // Handlers para documentos (locales, interactúan con Supabase Storage)
   const handleViewDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
-    
     try {
-      // Extraer path desde la URL
       const urlPattern = new RegExp(`/object/(?:public/)?documentos_processo/(.+)`)
       const match = doc.url.match(urlPattern)
       
       if (match && match[1]) {
-        const filePath = match[1]
-        
         const { data, error } = await supabase.storage
           .from('documentos_processo')
-          .createSignedUrl(filePath, 60)
-
+          .createSignedUrl(match[1], 60)
         if (error) throw error
-        
-        if (data?.signedUrl) {
-          window.open(data.signedUrl, '_blank')
-        }
+        if (data?.signedUrl) window.open(data.signedUrl, '_blank')
       } else {
-        // Si no coincide el patrón, intentar abrir directamente
         window.open(doc.url, '_blank')
       }
     } catch (error) {
       console.error('Erro ao visualizar documento:', error)
-      errorNotif('Erro ao visualizar documento')
     }
   }
 
   const handleDownloadDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
-    
     try {
-      // Extraer path desde la URL
       const urlPattern = new RegExp(`/object/(?:public/)?documentos_processo/(.+)`)
       const match = doc.url.match(urlPattern)
       let downloadUrl = doc.url
       
       if (match && match[1]) {
-        const filePath = match[1]
-        
         const { data, error } = await supabase.storage
           .from('documentos_processo')
-          .createSignedUrl(filePath, 60)
-
+          .createSignedUrl(match[1], 60)
         if (error) throw error
-        
-        if (data?.signedUrl) {
-          downloadUrl = data.signedUrl
-        }
+        if (data?.signedUrl) downloadUrl = data.signedUrl
       }
       
       const response = await fetch(downloadUrl)
@@ -286,211 +96,12 @@ const ProcessosPage: React.FC = () => {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Erro ao baixar documento:', error)
-      errorNotif('Erro ao baixar documento')
     }
   }
 
-  const handleCreateCliente = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .insert([{ 
-          ...newClienteForm,
-          pais: 'Brasil'
-        }])
-        .select()
-      
-      if (error) throw error
-      
-      // Actualizar lista de clientes
-      await fetchClientes()
-      
-      // Seleccionar el nuevo cliente
-      if (data && data[0]) {
-        setFormData({...formData, cliente_id: data[0].id})
-      }
-      
-      // Resetear form y cerrar modal
-      setNewClienteForm({
-        nome_completo: '',
-        celular: '',
-        email: '',
-        status: 'ativo'
-      })
-      setShowNewClienteModal(false)
-      setShowCreateForm(true)
-    } catch (error) {
-      console.error('Erro ao criar cliente:', error)
-      errorNotif('Erro ao criar cliente. Por favor, tente novamente.')
-    }
-  }
-
-  const handleCreateProcesso = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Verificar permisos
-    if (!canEdit) {
-      warning('Você não tem permissão para criar ou editar processos');
-      return;
-    }
-    
-    // Limpiar datos: convertir strings vacíos en null para campos opcionales
-    const cleanedData: Partial<ProcessoJuridico> = {
-      titulo: formData.titulo,
-      descricao: formData.descricao,
-      status: formData.status as ProcessoJuridico['status'],
-      advogado_responsavel: formData.advogado_responsavel || undefined,
-      numero_processo: formData.numero_processo || undefined,
-      cliente_id: formData.cliente_id || undefined,
-      polo: formData.polo || undefined,
-      cliente_email: formData.cliente_email || undefined,
-      cliente_telefone: formData.cliente_telefone || undefined,
-      area_direito: formData.area_direito || undefined,
-      prioridade: formData.prioridade,
-      valor_causa: formData.valor_causa || undefined,
-      atividade_pendente: formData.atividade_pendente || undefined,
-      competencia: formData.competencia || undefined,
-      // Campos JSONB
-      jurisdicao: formData.jurisdicao.uf || formData.jurisdicao.municipio || formData.jurisdicao.vara || formData.jurisdicao.juiz 
-        ? formData.jurisdicao 
-        : undefined,
-      honorarios: formData.honorarios.valor_honorarios || formData.honorarios.detalhes 
-        ? {
-            valor_honorarios: formData.honorarios.valor_honorarios ? parseFloat(formData.honorarios.valor_honorarios) : undefined,
-            detalhes: formData.honorarios.detalhes || undefined
-          }
-        : undefined,
-      audiencias: formData.audiencias.length > 0 ? formData.audiencias : undefined,
-      documentos_processo: formData.documentos_processo || [],
-      links_processo: formData.links_processo || [],
-      jurisprudencia: formData.jurisprudencia || [],
-    }
-    
-    if (editingProcesso && editingProcesso.id) {
-      // Modo edición
-      // Remover campos protegidos según el rol del usuario
-      const dataToUpdate = { ...cleanedData }
-      
-      if (user?.role === 'assistente') {
-        // Assistente no puede editar: numero_processo, titulo, advogado_responsavel, status
-        delete dataToUpdate.numero_processo
-        delete dataToUpdate.titulo
-        delete dataToUpdate.advogado_responsavel
-        delete dataToUpdate.status
-      } else if (user?.role === 'advogado') {
-        // Advogado no puede editar: numero_processo, titulo, advogado_responsavel
-        delete dataToUpdate.numero_processo
-        delete dataToUpdate.titulo
-        delete dataToUpdate.advogado_responsavel
-      }
-      // Admin puede editar todo, no eliminamos nada
-      
-      // IMPORTANTE: Remover campos undefined antes de enviar a Supabase
-      const cleanUpdate = Object.fromEntries(
-        Object.entries(dataToUpdate).filter(([_, value]) => value !== undefined)
-      )
-      
-      const resultado = await updateProcesso(editingProcesso.id, cleanUpdate)
-      
-      if (!resultado.error) {
-        successToast('Processo atualizado com sucesso!')
-        resetForm()
-      }
-    } else {
-      // Modo creación
-      const resultado = await createProcesso(cleanedData as Omit<ProcessoJuridico, 'id'>)
-
-      if (!resultado.error) {
-        successToast('Processo criado com sucesso!')
-        resetForm()
-      }
-    }
-  }
-
-  const handleViewProcesso = (processo: ProcessoJuridico & { usuarios?: { nome: string }; cliente_nome?: string }) => {
+  const handleViewProcesso = (processo: ProcessoWithRelations) => {
     setViewingProcesso(processo)
   }
-
-  const handleEditProcesso = (processo: ProcessoJuridico & { usuarios?: { nome: string }; cliente_nome?: string }) => {
-    setEditingProcesso(processo)
-    setFormData({
-      titulo: processo.titulo || '',
-      descricao: processo.descricao || '',
-      advogado_responsavel: processo.advogado_responsavel || '',
-      cliente_id: processo.cliente_id || '',
-      polo: (processo.polo as 'ativo' | 'passivo') || '',
-      cliente_email: processo.cliente_email || '',
-      cliente_telefone: processo.cliente_telefone || '',
-      numero_processo: processo.numero_processo || '',
-      status: processo.status || 'em_aberto',
-      area_direito: processo.area_direito || '',
-      prioridade: processo.prioridade || 'media',
-      valor_causa: processo.valor_causa || '',
-      atividade_pendente: processo.atividade_pendente || '',
-      competencia: (processo.competencia || '') as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | '',
-      jurisdicao: processo.jurisdicao ? {
-        uf: processo.jurisdicao.uf || '',
-        municipio: processo.jurisdicao.municipio || '',
-        vara: processo.jurisdicao.vara || '',
-        juiz: processo.jurisdicao.juiz || ''
-      } : { uf: '', municipio: '', vara: '', juiz: '' },
-      honorarios: processo.honorarios ? {
-        valor_honorarios: processo.honorarios.valor_honorarios?.toString() || '',
-        detalhes: processo.honorarios.detalhes || ''
-      } : { valor_honorarios: '', detalhes: '' },
-      audiencias: processo.audiencias || [],
-      documentos_processo: processo.documentos_processo || [],
-      links_processo: processo.links_processo || [],
-      jurisprudencia: processo.jurisprudencia || []
-    })
-    setShowCreateForm(true)
-  }
-
-  const resetForm = () => {
-    hide(); // Limpiar notificaciones al cerrar modal
-    setFormData({
-      titulo: '',
-      descricao: '',
-      advogado_responsavel: '',
-      cliente_id: '',
-      polo: '',
-      cliente_email: '',
-      cliente_telefone: '',
-      numero_processo: '',
-      status: 'em_aberto',
-      area_direito: '',
-      prioridade: 'media',
-      valor_causa: '',
-      atividade_pendente: '',
-      competencia: '',
-      jurisdicao: { uf: '', municipio: '', vara: '', juiz: '' },
-      honorarios: { valor_honorarios: '', detalhes: '' },
-      audiencias: [],
-      documentos_processo: [],
-      links_processo: [],
-      jurisprudencia: []
-    })
-    setEditingProcesso(null)
-    setShowCreateForm(false)
-    // Resetear los useCrudArray
-    linksCrud.cancelEdit()
-    jurisprudenciasCrud.cancelEdit()
-    audienciasCrud.cancelEdit()
-  }
-
-  const processosFiltrados = processos.filter(processo => {
-    const matchesBusca = busca === '' || 
-      processo.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      processo.descricao.toLowerCase().includes(busca.toLowerCase()) ||
-      processo.cliente_nome?.toLowerCase().includes(busca.toLowerCase())
-    
-    const matchesStatus = filtroStatus === '' || processo.status === filtroStatus
-    const matchesAdvogado = filtroAdvogado === '' || processo.advogado_responsavel === filtroAdvogado
-
-    return matchesBusca && matchesStatus && matchesAdvogado
-  })
 
   if (!user) {
     return (
@@ -520,10 +131,10 @@ const ProcessosPage: React.FC = () => {
               </div>
               
               {/* Botão de novo processo */}
-              {canEdit && (
+              {processoForm.canEdit && (
                 <AccessibleButton
                   category="create"
-                  onClick={() => setShowCreateForm(true)}
+                  onClick={() => processoForm.setShowCreateForm(true)}
                   aria-label="Criar novo processo"
                   size="lg"
                   className="w-full sm:w-auto"
@@ -542,7 +153,7 @@ const ProcessosPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Em Aberto</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {processos.filter(p => p.status === 'em_aberto').length}
+                  {filters.stats.emAberto}
                 </p>
               </div>
             </div>
@@ -554,7 +165,7 @@ const ProcessosPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Em Andamento</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {processos.filter(p => p.status === 'em_andamento').length}
+                  {filters.stats.emAndamento}
                 </p>
               </div>
             </div>
@@ -566,7 +177,7 @@ const ProcessosPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Fechados</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {processos.filter(p => p.status === 'fechado').length}
+                  {filters.stats.fechados}
                 </p>
               </div>
             </div>
@@ -586,8 +197,8 @@ const ProcessosPage: React.FC = () => {
                   type="text"
                   placeholder="Buscar por título, descrição ou cliente..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
+                  value={filters.busca}
+                  onChange={(e) => filters.handleBuscaChange(e.target.value)}
                 />
               </div>
             </div>
@@ -597,8 +208,8 @@ const ProcessosPage: React.FC = () => {
                 Status
               </label>
               <select
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
+                value={filters.filtroStatus}
+                onChange={(e) => filters.setFiltroStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">Todos</option>
@@ -613,8 +224,8 @@ const ProcessosPage: React.FC = () => {
                 Advogado
               </label>
               <select
-                value={filtroAdvogado}
-                onChange={(e) => setFiltroAdvogado(e.target.value)}
+                value={filters.filtroAdvogado}
+                onChange={(e) => filters.setFiltroAdvogado(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">Todos</option>
@@ -641,20 +252,20 @@ const ProcessosPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
-            {processosFiltrados.map((processo, index) => (
+            {filters.processosFiltrados.map((processo, index) => (
               <ProcessoCard
                 key={processo.id}
                 processo={processo}
-                onEdit={handleEditProcesso}
+                onEdit={(p) => processoForm.loadProcessoForEdit(p)}
                 onView={handleViewProcesso}
-                canEdit={canEdit}
+                canEdit={processoForm.canEdit}
                 index={index}
               />
             ))}
           </div>
         )}
 
-        {processosFiltrados.length === 0 && !loading && (
+        {filters.processosFiltrados.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Nenhum processo encontrado</p>
           </div>
@@ -662,21 +273,21 @@ const ProcessosPage: React.FC = () => {
 
       {/* Modal de crear/editar proceso */}
       <FormModal
-        isOpen={showCreateForm}
-        onClose={resetForm}
-        onSubmit={handleCreateProcesso}
-        title={editingProcesso ? 'Editar Processo' : 'Novo Processo'}
-        submitLabel={editingProcesso ? 'Atualizar' : 'Salvar'}
+        isOpen={processoForm.showCreateForm}
+        onClose={processoForm.resetForm}
+        onSubmit={processoForm.handleSubmit}
+        title={processoForm.editingProcesso ? 'Editar Processo' : 'Novo Processo'}
+        submitLabel={processoForm.editingProcesso ? 'Atualizar' : 'Salvar'}
         cancelLabel="Cancelar"
         maxWidth="4xl"
       >
               {/* Notificación inline */}
               <AnimatePresence mode="wait">
-                {notification.show && (
+                {processoForm.notification.show && (
                   <InlineNotification
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={hide}
+                    type={processoForm.notification.type}
+                    message={processoForm.notification.message}
+                    onClose={processoForm.hide}
                     className="mb-4"
                   />
                 )}
@@ -691,21 +302,22 @@ const ProcessosPage: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Título do Processo *
-                      {!isAdmin && editingProcesso && (
+                      {!processoForm.isAdmin && processoForm.editingProcesso && (
                         <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
                       )}
                     </label>
                     <input
                       type="text"
                       required
+                      autoFocus
                       className={cn(
                         "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                        !isAdmin && editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
+                        !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
                       )}
-                      value={formData.titulo}
-                      onChange={(e) => setFormData({...formData, titulo: e.target.value})}
+                      value={processoForm.formData.titulo}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, titulo: e.target.value})}
                       placeholder="Ex: Ação de Indenização por Danos Morais"
-                      disabled={!isAdmin && editingProcesso !== null}
+                      disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
                     />
                   </div>
 
@@ -717,8 +329,8 @@ const ProcessosPage: React.FC = () => {
                       required
                       rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.descricao}
-                      onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                      value={processoForm.formData.descricao}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, descricao: e.target.value})}
                       placeholder="Descreva os detalhes do processo..."
                     />
                   </div>
@@ -727,7 +339,7 @@ const ProcessosPage: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Número do Processo
-                        {!isAdmin && editingProcesso && (
+                        {!processoForm.isAdmin && processoForm.editingProcesso && (
                           <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
                         )}
                       </label>
@@ -736,31 +348,31 @@ const ProcessosPage: React.FC = () => {
                         placeholder="Ex: 1001234-12.2024.8.07.0001"
                         className={cn(
                           "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                          !isAdmin && editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
+                          !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
                         )}
-                        value={formData.numero_processo}
-                        onChange={(e) => setFormData({...formData, numero_processo: e.target.value})}
-                        disabled={!isAdmin && editingProcesso !== null}
+                        value={processoForm.formData.numero_processo}
+                        onChange={(e) => processoForm.setFormData({...processoForm.formData, numero_processo: e.target.value})}
+                        disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status *
-                        {isAssistente && (
+                        {processoForm.isAssistente && (
                           <span className="ml-2 text-xs text-amber-600">(Apenas admin e advogado podem editar)</span>
                         )}
                       </label>
                       <select
                         required
-                        disabled={isAssistente}
+                        disabled={processoForm.isAssistente}
                         className={cn(
                           "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                          isAssistente && "bg-gray-100 cursor-not-allowed opacity-75"
+                          processoForm.isAssistente && "bg-gray-100 cursor-not-allowed opacity-75"
                         )}
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
-                        title={isAssistente ? 'Apenas administradores e advogados podem alterar o status' : ''}
+                        value={processoForm.formData.status}
+                        onChange={(e) => processoForm.setFormData({...processoForm.formData, status: e.target.value})}
+                        title={processoForm.isAssistente ? 'Apenas administradores e advogados podem alterar o status' : ''}
                       >
                         <option value="em_aberto">Em Aberto</option>
                         <option value="em_andamento">Em Andamento</option>
@@ -786,11 +398,11 @@ const ProcessosPage: React.FC = () => {
                         <select
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                          value={formData.cliente_id}
-                          onChange={(e) => setFormData({...formData, cliente_id: e.target.value})}
+                          value={processoForm.formData.cliente_id}
+                          onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_id: e.target.value})}
                         >
                           <option value="">Selecione um cliente</option>
-                          {clientes.map(cliente => (
+                          {processoForm.clientes.map(cliente => (
                             <option key={cliente.id} value={cliente.id}>
                               {cliente.nome_completo}
                             </option>
@@ -801,8 +413,8 @@ const ProcessosPage: React.FC = () => {
                         <AccessibleButton
                           type="button"
                           onClick={() => {
-                            setShowNewClienteModal(true)
-                            setShowCreateForm(false)
+                            processoForm.setShowNewClienteModal(true)
+                            processoForm.setShowCreateForm(false)
                           }}
                           variant="primary"
                           size="md"
@@ -821,8 +433,8 @@ const ProcessosPage: React.FC = () => {
                       </label>
                       <select
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                        value={formData.polo}
-                        onChange={(e) => setFormData({...formData, polo: e.target.value as 'ativo' | 'passivo' | ''})}
+                        value={processoForm.formData.polo}
+                        onChange={(e) => processoForm.setFormData({...processoForm.formData, polo: e.target.value as 'ativo' | 'passivo' | ''})}
                       >
                         <option value="">Selecione o polo</option>
                         <option value="ativo">Ativo (Autor/Requerente)</option>
@@ -840,8 +452,8 @@ const ProcessosPage: React.FC = () => {
                       <input
                         type="email"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                        value={formData.cliente_email}
-                        onChange={(e) => setFormData({...formData, cliente_email: e.target.value})}
+                        value={processoForm.formData.cliente_email}
+                        onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_email: e.target.value})}
                         placeholder="cliente@exemplo.com"
                       />
                     </div>
@@ -854,8 +466,8 @@ const ProcessosPage: React.FC = () => {
                       <input
                         type="tel"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                        value={formData.cliente_telefone}
-                        onChange={(e) => setFormData({...formData, cliente_telefone: e.target.value})}
+                        value={processoForm.formData.cliente_telefone}
+                        onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_telefone: e.target.value})}
                         placeholder="(xx) xxxxx-xxxx"
                       />
                     </div>
@@ -875,8 +487,8 @@ const ProcessosPage: React.FC = () => {
                     </label>
                     <select
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.area_direito}
-                      onChange={(e) => setFormData({...formData, area_direito: e.target.value})}
+                      value={processoForm.formData.area_direito}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, area_direito: e.target.value})}
                     >
                       <option value="">Selecione uma área</option>
                       <option value="Direito Civil">Direito Civil</option>
@@ -899,8 +511,8 @@ const ProcessosPage: React.FC = () => {
                     <select
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.prioridade}
-                      onChange={(e) => setFormData({...formData, prioridade: e.target.value})}
+                      value={processoForm.formData.prioridade}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, prioridade: e.target.value})}
                     >
                       <option value="baixa">Baixa</option>
                       <option value="media">Média</option>
@@ -912,18 +524,18 @@ const ProcessosPage: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Advogado Responsável
-                      {!isAdmin && editingProcesso && (
+                      {!processoForm.isAdmin && processoForm.editingProcesso && (
                         <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
                       )}
                     </label>
                     <select
                       className={cn(
                         "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                        !isAdmin && editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
+                        !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
                       )}
-                      value={formData.advogado_responsavel}
-                      onChange={(e) => setFormData({...formData, advogado_responsavel: e.target.value})}
-                      disabled={!isAdmin && editingProcesso !== null}
+                      value={processoForm.formData.advogado_responsavel}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, advogado_responsavel: e.target.value})}
+                      disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
                     >
                       <option value="">Selecione um advogado</option>
                       {usuarios.map(usuario => (
@@ -944,8 +556,8 @@ const ProcessosPage: React.FC = () => {
                       min="0"
                       placeholder="0,00"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.valor_causa}
-                      onChange={(e) => setFormData({...formData, valor_causa: e.target.value})}
+                      value={processoForm.formData.valor_causa}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, valor_causa: e.target.value})}
                     />
                   </div>
 
@@ -956,8 +568,8 @@ const ProcessosPage: React.FC = () => {
                     <input
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.competencia}
-                      onChange={(e) => setFormData({...formData, competencia: e.target.value as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | ''})}
+                      value={processoForm.formData.competencia}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, competencia: e.target.value as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | ''})}
                       placeholder="Ex: Federal, Estadual, Trabalhista, Eleitoral"
                     />
                   </div>
@@ -969,8 +581,8 @@ const ProcessosPage: React.FC = () => {
                     <textarea
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.atividade_pendente}
-                      onChange={(e) => setFormData({...formData, atividade_pendente: e.target.value})}
+                      value={processoForm.formData.atividade_pendente}
+                      onChange={(e) => processoForm.setFormData({...processoForm.formData, atividade_pendente: e.target.value})}
                       placeholder="Descreva as atividades pendentes do processo..."
                     />
                   </div>
@@ -992,10 +604,10 @@ const ProcessosPage: React.FC = () => {
                       maxLength={2}
                       placeholder="Ex: SP, RJ, MG"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 uppercase"
-                      value={formData.jurisdicao.uf}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        jurisdicao: {...formData.jurisdicao, uf: e.target.value.toUpperCase()}
+                      value={processoForm.formData.jurisdicao.uf}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        jurisdicao: {...processoForm.formData.jurisdicao, uf: e.target.value.toUpperCase()}
                       })}
                     />
                   </div>
@@ -1008,10 +620,10 @@ const ProcessosPage: React.FC = () => {
                       type="text"
                       placeholder="Ex: São Paulo"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.jurisdicao.municipio}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        jurisdicao: {...formData.jurisdicao, municipio: e.target.value}
+                      value={processoForm.formData.jurisdicao.municipio}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        jurisdicao: {...processoForm.formData.jurisdicao, municipio: e.target.value}
                       })}
                     />
                   </div>
@@ -1024,10 +636,10 @@ const ProcessosPage: React.FC = () => {
                       type="text"
                       placeholder="Ex: 1ª Vara Cível"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.jurisdicao.vara}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        jurisdicao: {...formData.jurisdicao, vara: e.target.value}
+                      value={processoForm.formData.jurisdicao.vara}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        jurisdicao: {...processoForm.formData.jurisdicao, vara: e.target.value}
                       })}
                     />
                   </div>
@@ -1040,10 +652,10 @@ const ProcessosPage: React.FC = () => {
                       type="text"
                       placeholder="Ex: Dr. João Silva"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.jurisdicao.juiz}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        jurisdicao: {...formData.jurisdicao, juiz: e.target.value}
+                      value={processoForm.formData.jurisdicao.juiz}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        jurisdicao: {...processoForm.formData.jurisdicao, juiz: e.target.value}
                       })}
                     />
                   </div>
@@ -1066,10 +678,10 @@ const ProcessosPage: React.FC = () => {
                       min="0"
                       placeholder="0,00"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.honorarios.valor_honorarios}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        honorarios: {...formData.honorarios, valor_honorarios: e.target.value}
+                      value={processoForm.formData.honorarios.valor_honorarios}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        honorarios: {...processoForm.formData.honorarios, valor_honorarios: e.target.value}
                       })}
                     />
                   </div>
@@ -1081,10 +693,10 @@ const ProcessosPage: React.FC = () => {
                     <textarea
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={formData.honorarios.detalhes}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        honorarios: {...formData.honorarios, detalhes: e.target.value}
+                      value={processoForm.formData.honorarios.detalhes}
+                      onChange={(e) => processoForm.setFormData({
+                        ...processoForm.formData, 
+                        honorarios: {...processoForm.formData.honorarios, detalhes: e.target.value}
                       })}
                       placeholder="Ex: Honorários contratuais - 3 parcelas de R$ 1.000,00"
                     />
@@ -1102,10 +714,10 @@ const ProcessosPage: React.FC = () => {
                 </div>
 
                 <DocumentManager
-                  documents={formData.documentos_processo as DocumentItem[]}
-                  onDocumentsChange={(docs) => setFormData({ ...formData, documentos_processo: docs as DocumentoArquivo[] })}
+                  documents={processoForm.formData.documentos_processo as DocumentItem[]}
+                  onDocumentsChange={(docs) => processoForm.setFormData({ ...processoForm.formData, documentos_processo: docs as DocumentoArquivo[] })}
                   bucketName="documentos_processo"
-                  entityId={editingProcesso?.id}
+                  entityId={processoForm.editingProcesso?.id}
                   uploadLabel="Adicionar Documento"
                   showUploadButton={true}
                   readOnly={false}
@@ -1117,20 +729,20 @@ const ProcessosPage: React.FC = () => {
                 title="Links do Processo"
                 icon={<LinkIcon size={20} />}
                 color="blue"
-                items={linksCrud.items}
-                tempItem={linksCrud.tempItem}
-                setTempItem={linksCrud.setTempItem}
-                editingIndex={linksCrud.editingIndex}
-                isEditing={linksCrud.isEditing}
-                showAddModal={showLinksModal}
-                setShowAddModal={setShowLinksModal}
-                showViewModal={showLinksViewModal}
-                setShowViewModal={setShowLinksViewModal}
-                onAdd={handleAddLink}
-                onUpdate={handleUpdateLink}
-                onDelete={linksCrud.deleteItem}
-                onEdit={linksCrud.startEdit}
-                onCancelEdit={linksCrud.cancelEdit}
+                items={processoForm.linksCrud.items}
+                tempItem={processoForm.linksCrud.tempItem}
+                setTempItem={processoForm.linksCrud.setTempItem}
+                editingIndex={processoForm.linksCrud.editingIndex}
+                isEditing={processoForm.linksCrud.isEditing}
+                showAddModal={processoForm.showLinksModal}
+                setShowAddModal={processoForm.setShowLinksModal}
+                showViewModal={processoForm.showLinksViewModal}
+                setShowViewModal={processoForm.setShowLinksViewModal}
+                onAdd={processoForm.handleAddLink}
+                onUpdate={processoForm.handleUpdateLink}
+                onDelete={processoForm.linksCrud.deleteItem}
+                onEdit={processoForm.linksCrud.startEdit}
+                onCancelEdit={processoForm.linksCrud.cancelEdit}
                 fields={[
                   { name: 'titulo', label: 'Título do Link', type: 'text', placeholder: 'Ex: Consulta processo TJ-SP', required: true },
                   { name: 'link', label: 'URL do Link', type: 'url', placeholder: 'https://...', required: true },
@@ -1153,7 +765,7 @@ const ProcessosPage: React.FC = () => {
                     </a>
                   </div>
                 )}
-                canEdit={canEdit}
+                canEdit={processoForm.canEdit}
                 addButtonText="Adicionar Link"
                 emptyText="Nenhum link adicionado"
                 confirmDeleteText="Deseja realmente remover este link?"
@@ -1164,20 +776,20 @@ const ProcessosPage: React.FC = () => {
                 title="Jurisprudências"
                 icon={<Scale size={20} />}
                 color="purple"
-                items={jurisprudenciasCrud.items}
-                tempItem={jurisprudenciasCrud.tempItem}
-                setTempItem={jurisprudenciasCrud.setTempItem}
-                editingIndex={jurisprudenciasCrud.editingIndex}
-                isEditing={jurisprudenciasCrud.isEditing}
-                showAddModal={showJurisprudenciaModal}
-                setShowAddModal={setShowJurisprudenciaModal}
-                showViewModal={showJurisprudenciaViewModal}
-                setShowViewModal={setShowJurisprudenciaViewModal}
-                onAdd={handleAddJurisprudencia}
-                onUpdate={handleUpdateJurisprudencia}
-                onDelete={jurisprudenciasCrud.deleteItem}
-                onEdit={jurisprudenciasCrud.startEdit}
-                onCancelEdit={jurisprudenciasCrud.cancelEdit}
+                items={processoForm.jurisprudenciasCrud.items}
+                tempItem={processoForm.jurisprudenciasCrud.tempItem}
+                setTempItem={processoForm.jurisprudenciasCrud.setTempItem}
+                editingIndex={processoForm.jurisprudenciasCrud.editingIndex}
+                isEditing={processoForm.jurisprudenciasCrud.isEditing}
+                showAddModal={processoForm.showJurisprudenciaModal}
+                setShowAddModal={processoForm.setShowJurisprudenciaModal}
+                showViewModal={processoForm.showJurisprudenciaViewModal}
+                setShowViewModal={processoForm.setShowJurisprudenciaViewModal}
+                onAdd={processoForm.handleAddJurisprudencia}
+                onUpdate={processoForm.handleUpdateJurisprudencia}
+                onDelete={processoForm.jurisprudenciasCrud.deleteItem}
+                onEdit={processoForm.jurisprudenciasCrud.startEdit}
+                onCancelEdit={processoForm.jurisprudenciasCrud.cancelEdit}
                 fields={[
                   { name: 'ementa', label: 'Ementa da Jurisprudência', type: 'textarea', placeholder: 'Digite a ementa da jurisprudência...', required: true, fullWidth: true },
                   { name: 'link', label: 'Link da Jurisprudência', type: 'url', placeholder: 'https://...', required: true, fullWidth: true },
@@ -1202,7 +814,7 @@ const ProcessosPage: React.FC = () => {
                     </a>
                   </div>
                 )}
-                canEdit={canEdit}
+                canEdit={processoForm.canEdit}
                 addButtonText="Adicionar Jurisprudência"
                 emptyText="Nenhuma jurisprudência adicionada"
                 confirmDeleteText="Deseja realmente remover esta jurisprudência?"
@@ -1213,20 +825,20 @@ const ProcessosPage: React.FC = () => {
                 title="Audiências"
                 icon={<Calendar size={20} />}
                 color="indigo"
-                items={audienciasCrud.items}
-                tempItem={audienciasCrud.tempItem}
-                setTempItem={audienciasCrud.setTempItem}
-                editingIndex={audienciasCrud.editingIndex}
-                isEditing={audienciasCrud.isEditing}
-                showAddModal={showAudienciaModal}
-                setShowAddModal={setShowAudienciaModal}
-                showViewModal={showAudienciaViewModal}
-                setShowViewModal={setShowAudienciaViewModal}
-                onAdd={handleAddAudiencia}
-                onUpdate={handleUpdateAudiencia}
-                onDelete={audienciasCrud.deleteItem}
-                onEdit={audienciasCrud.startEdit}
-                onCancelEdit={audienciasCrud.cancelEdit}
+                items={processoForm.audienciasCrud.items}
+                tempItem={processoForm.audienciasCrud.tempItem}
+                setTempItem={processoForm.audienciasCrud.setTempItem}
+                editingIndex={processoForm.audienciasCrud.editingIndex}
+                isEditing={processoForm.audienciasCrud.isEditing}
+                showAddModal={processoForm.showAudienciaModal}
+                setShowAddModal={processoForm.setShowAudienciaModal}
+                showViewModal={processoForm.showAudienciaViewModal}
+                setShowViewModal={processoForm.setShowAudienciaViewModal}
+                onAdd={processoForm.handleAddAudiencia}
+                onUpdate={processoForm.handleUpdateAudiencia}
+                onDelete={processoForm.audienciasCrud.deleteItem}
+                onEdit={processoForm.audienciasCrud.startEdit}
+                onCancelEdit={processoForm.audienciasCrud.cancelEdit}
                 fields={[
                   { name: 'data', label: 'Data da Audiência', type: 'date', required: true },
                   { name: 'horario', label: 'Horário', type: 'time', required: true },
@@ -1274,31 +886,43 @@ const ProcessosPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-                canEdit={canEdit}
+                canEdit={processoForm.canEdit}
                 addButtonText="Adicionar Audiência"
                 emptyText="Nenhuma audiência agendada"
                 confirmDeleteText="Deseja realmente remover esta audiência?"
               />
 
               {/* Información de Auditoría */}
-              {editingProcesso && (
+              {processoForm.editingProcesso && (
                 <AuditInfo
-                  creadoPor={editingProcesso.creado_por}
-                  atualizadoPor={editingProcesso.atualizado_por}
-                  dataCriacao={editingProcesso.data_criacao}
-                  dataAtualizacao={editingProcesso.data_atualizacao}
+                  creadoPor={processoForm.editingProcesso.creado_por}
+                  atualizadoPor={processoForm.editingProcesso.atualizado_por}
+                  dataCriacao={processoForm.editingProcesso.data_criacao}
+                  dataAtualizacao={processoForm.editingProcesso.data_atualizacao}
                 />
               )}
 
       </FormModal>
 
       {/* Modal de redirecionamento para cadastro de cliente */}
-      {showNewClienteModal && (
+      {processoForm.showNewClienteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Cadastrar Novo Cliente</h2>
             
-            <form onSubmit={handleCreateCliente} className="space-y-4">
+            {/* Notificación inline */}
+            <AnimatePresence mode="wait">
+              {processoForm.notification.show && (
+                <InlineNotification
+                  type={processoForm.notification.type}
+                  message={processoForm.notification.message}
+                  onClose={processoForm.hide}
+                  className="mb-4"
+                />
+              )}
+            </AnimatePresence>
+            
+            <form onSubmit={processoForm.handleCreateCliente} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nome Completo *
@@ -1306,9 +930,10 @@ const ProcessosPage: React.FC = () => {
                 <input
                   type="text"
                   required
+                  autoFocus
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                  value={newClienteForm.nome_completo}
-                  onChange={(e) => setNewClienteForm({...newClienteForm, nome_completo: e.target.value})}
+                  value={processoForm.newClienteForm.nome_completo}
+                  onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, nome_completo: e.target.value})}
                 />
               </div>
 
@@ -1322,8 +947,8 @@ const ProcessosPage: React.FC = () => {
                     required
                     placeholder="(xx) xxxxx-xxxx"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                    value={newClienteForm.celular}
-                    onChange={(e) => setNewClienteForm({...newClienteForm, celular: e.target.value})}
+                    value={processoForm.newClienteForm.celular}
+                    onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, celular: e.target.value})}
                   />
                 </div>
 
@@ -1334,8 +959,8 @@ const ProcessosPage: React.FC = () => {
                   <input
                     type="email"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                    value={newClienteForm.email}
-                    onChange={(e) => setNewClienteForm({...newClienteForm, email: e.target.value})}
+                    value={processoForm.newClienteForm.email}
+                    onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, email: e.target.value})}
                   />
                 </div>
               </div>
@@ -1346,8 +971,8 @@ const ProcessosPage: React.FC = () => {
                 </label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                  value={newClienteForm.status}
-                  onChange={(e) => setNewClienteForm({...newClienteForm, status: e.target.value as 'ativo' | 'inativo' | 'potencial'})}
+                  value={processoForm.newClienteForm.status}
+                  onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, status: e.target.value as 'ativo' | 'inativo' | 'potencial'})}
                 >
                   <option value="ativo">Ativo</option>
                   <option value="potencial">Potencial</option>
@@ -1359,9 +984,9 @@ const ProcessosPage: React.FC = () => {
                 <AccessibleButton
                   type="button"
                   onClick={() => {
-                    setShowNewClienteModal(false)
-                    setShowCreateForm(true)
-                    setNewClienteForm({
+                    processoForm.setShowNewClienteModal(false)
+                    processoForm.setShowCreateForm(true)
+                    processoForm.setNewClienteForm({
                       nome_completo: '',
                       celular: '',
                       email: '',
@@ -1403,7 +1028,7 @@ const ProcessosPage: React.FC = () => {
         title="Detalhes do Processo"
         onEdit={() => {
           if (viewingProcesso) {
-            handleEditProcesso(viewingProcesso)
+            processoForm.loadProcessoForEdit(viewingProcesso)
             setViewingProcesso(null)
           }
         }}
@@ -1624,7 +1249,7 @@ const ProcessosPage: React.FC = () => {
                 {/* Seções colapsables con Accordion */}
                 <Accordion
                   allowMultiple={false} // elegir si se permite abrir múltiples secciones al mismo tiempo
-                  defaultOpen={['audiencias', 'documentos']}
+                  defaultOpen={[]} // Inicia con todas las secciones colapsadas
                   items={[
                     // Audiências
                     ...(viewingProcesso.audiencias && viewingProcesso.audiencias.length > 0 ? [{

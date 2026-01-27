@@ -20,6 +20,7 @@ import { useInlineNotification } from './useInlineNotification'
 import { useNotification } from '../components/shared/notifications/NotificationContext'
 import { useAuth } from './useSupabase'
 
+
 interface UseProcessoFormOptions {
   onSuccess?: () => void
   createProcesso: (data: Omit<ProcessoJuridico, 'id'>) => Promise<{ error: any }>
@@ -59,7 +60,7 @@ const initialFormData: ProcessoFormData = {
 
 export function useProcessoForm({ onSuccess, createProcesso, updateProcesso }: UseProcessoFormOptions) {
   const { user } = useAuth()
-  const { notification, warning, error: errorNotif, hide } = useInlineNotification()
+  const { notification, success, warning, error: errorNotif, hide } = useInlineNotification()
   const { success: successToast } = useNotification()
 
   // Estados principales
@@ -211,18 +212,26 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso }: U
       const { data, error } = await supabase
         .from('clientes')
         .insert([{ 
-          ...newClienteForm,
+          nome_completo: newClienteForm.nome_completo,
+          celular: newClienteForm.celular,
+          email: newClienteForm.email || null,
+          status: newClienteForm.status,
           pais: 'Brasil'
         }])
         .select()
       
-      if (error) throw error
+      if (error) {
+        console.error('Error detalle:', error)
+        throw error
+      }
       
       await fetchClientes()
       
       if (data && data[0]) {
         setFormData(prev => ({ ...prev, cliente_id: data[0].id }))
       }
+      
+      success('Cliente criado com sucesso!')
       
       setNewClienteForm({
         nome_completo: '',
@@ -236,7 +245,7 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso }: U
       console.error('Erro ao criar cliente:', error)
       errorNotif('Erro ao criar cliente. Por favor, tente novamente.')
     }
-  }, [newClienteForm, fetchClientes, errorNotif])
+  }, [newClienteForm, fetchClientes, success, errorNotif])
 
   // Handler principal para crear/actualizar proceso
   const handleSubmit = useCallback(async (e: React.FormEvent) => {

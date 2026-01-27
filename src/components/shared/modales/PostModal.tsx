@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Tag, Play, Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { getTypeIcon, getTypeColor, formatDate } from '../../../utils/postUtils';
-import { getYouTubeEmbedUrl } from '../../../utils/youtubeUtils';
+import { getYouTubeEmbedUrl, extractYouTubeId } from '../../../utils/youtubeUtils';
 import { useSinglePostLike } from '../../../hooks/useLikes';
 import { useComments } from '../../../hooks/useComments';
-import type { Post, PostModalProps } from '../../../types/post';
+import type { PostModalProps } from '../../../types/post';
 import { useNotification } from '../notifications/NotificationContext';
 
 /**
@@ -22,7 +22,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, isOpen, onClose }) => {
     submittingComment, 
     loadComments, 
     submitComment 
-  } = useComments(post.id);
+  } = useComments(post.id || '');
   
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -246,7 +246,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, isOpen, onClose }) => {
                     </p>
                     <div className="text-sm text-neutral-500 flex items-center gap-1">
                       <Calendar size={14} />
-                      {formatDate(post.data_publicacao || post.data_criacao, true)}
+                      {formatDate(post.data_publicacao || post.data_criacao || new Date().toISOString(), true)}
                     </div>
                   </div>
                 </div>

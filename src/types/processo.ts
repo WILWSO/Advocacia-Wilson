@@ -5,39 +5,14 @@
 
 import { DocumentoArquivo } from '../lib/supabase'
 
-/**
- * Status posibles de un proceso
- */
+
+
 export type ProcessoStatus = 'em_aberto' | 'em_andamento' | 'fechado'
-
-/**
- * Polo del cliente en el proceso
- */
 export type ProcessoPolo = 'ativo' | 'passivo'
-
-/**
- * Nivel de prioridad del proceso
- */
 export type ProcessoPrioridade = 'baixa' | 'media' | 'alta' | 'urgente'
-
-/**
- * Competencia judicial
- */
 export type ProcessoCompetencia = 'federal' | 'estadual' | 'trabalhista' | 'eleitoral'
-
-/**
- * Tipo de audiencia
- */
 export type AudienciaTipo = 'Conciliação' | 'Instrução'
-
-/**
- * Forma de realización de la audiencia
- */
 export type AudienciaForma = 'Presencial' | 'Virtual' | 'Híbrida'
-
-/**
- * Link relacionado al proceso
- */
 export interface ProcessoLink {
   titulo: string
   link: string
