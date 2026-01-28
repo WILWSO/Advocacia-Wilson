@@ -2,13 +2,45 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play } from 'lucide-react';
 import OptimizedImage from '../shared/OptimizedImage';
-import useResponsive from '../../hooks/useResponsive';
+import useResponsive from '../../hooks/ui/useResponsive';
 import { ResponsiveContainer, ResponsiveStack } from '../shared/ResponsiveGrid';
 import { cn } from '../../utils/cn';
-import { SocialCard } from '../shared/cards/SocialCard';
+import { PostCard } from '../shared/cards/PostCard';
+import { usePostsCarousel } from '../../hooks/features/usePostsCarousel';
+import { useVideoPlayer } from '../../hooks/ui/useVideoPlayer';
 
 const Hero = () => {
   const { isMobile, isTablet } = useResponsive();
+  
+  // Carousel de posts para o card social
+  const {
+    posts,
+    currentPost,
+    currentPostIndex,
+    isLoading,
+    direction,
+    setDirection,
+    setCurrentPostIndex,
+    nextPost,
+    prevPost,
+  } = usePostsCarousel(5000);
+
+  const { playingVideo, setPlayingVideo, stopVideo } = useVideoPlayer();
+
+  const handleNextPost = () => {
+    nextPost();
+    stopVideo();
+  };
+
+  const handlePrevPost = () => {
+    prevPost();
+    stopVideo();
+  };
+
+  const handleSetIndex = (index: number) => {
+    setCurrentPostIndex(index);
+    stopVideo();
+  };
   
   const getHeightClasses = () => {
     if (isMobile) return 'min-h-[100svh] sm:min-h-[600px]';
@@ -25,28 +57,32 @@ const Hero = () => {
       role="banner" 
       aria-label="Seção principal de apresentação"
     >
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0 w-full min-h-full"> {/* min-h-full - Asegura que la imagen de fondo cubra al menos altura completa del contenedor, de la section, incluso si el contenido crece */}
-        <OptimizedImage
-          src="/Images/Banner_Wilson.jpg"
-          alt="Imagem profissional dos advogados Wilson Santos e Lucas Nascimento em frente ao escritório Santos & Nascimento Advogados Associados em Palmas, Tocantins"
-          className={cn(
-            "w-full h-full",
-            isMobile ? "object-cover object-center" : "object-cover object-center-top"
-          )}
-          priority={true}
-          sizes={isMobile ? "100vw" : "(max-width: 768px) 100vw, 100vw"}
-        />
-        {/* Gradient overlay */}
-        <div 
-          className={cn(
-            "absolute inset-0",
-            isMobile 
-              ? "bg-gradient-to-t from-primary-900/90 via-primary-800/70 to-primary-700/50"
-              : "bg-gradient-to-r from-primary-900/95 via-primary-800/80 to-primary-700/60"
-          )} 
-          aria-hidden="true"
-        />
+      {/* Background: Solid color en móvil, imagen en desktop */}
+      <div className="absolute inset-0 z-0 w-full min-h-full">
+        {/* Móvil: Color sólido con gradiente */}
+        <div className={cn(
+          "w-full h-full",
+          isMobile 
+            ? "bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700"
+            : "hidden"
+        )} aria-hidden="true" />
+        
+        {/* Desktop: Imagen con overlay */}
+        {!isMobile && (
+          <>
+            <OptimizedImage
+              src="/Images/Banner_Wilson.jpg"
+              alt="Imagem profissional dos advogados Wilson Santos e Lucas Nascimento em frente ao escritório Santos & Nascimento Advogados Associados em Palmas, Tocantins"
+              className="w-full h-full object-cover object-center-top"
+              priority={true}
+              sizes="100vw"
+            />
+            <div 
+              className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-800/80 to-primary-700/60"
+              aria-hidden="true"
+            />
+          </>
+        )}
       </div>
       
       <ResponsiveContainer
@@ -161,8 +197,28 @@ const Hero = () => {
             </motion.div>
           </div>
 
-          {/* Card Social */}
-          {!isMobile && <SocialCard />}
+          {/* Card Social - Carousel de Posts */}
+          {!isMobile && !isLoading && posts.length > 0 && currentPost && (
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="hidden md:block md:col-span-12 lg:col-span-4 md:mt-8 lg:mt-0"
+            >
+              <PostCard
+                post={currentPost}
+                direction={direction}
+                currentPostIndex={currentPostIndex}
+                postsLength={posts.length}
+                playingVideo={playingVideo}
+                onPlayVideo={() => setPlayingVideo(true)}
+                onPrevPost={handlePrevPost}
+                onNextPost={handleNextPost}
+                onSetIndex={handleSetIndex}
+                onSetDirection={setDirection}
+              />
+            </motion.div>
+          )}
         </div>
       </ResponsiveContainer>
     </section>

@@ -4,21 +4,21 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import { 
   ProcessoJuridico, 
   ProcessoFormData, 
   ProcessoWithRelations,
-  ClienteSimple,
   NewClienteForm,
   ProcessoLink,
   Jurisprudencia,
   Audiencia
-} from '../types/processo'
-import { useCrudArray } from './useCrudArray'
-import { useInlineNotification } from './useInlineNotification'
-import { useNotification } from '../components/shared/notifications/NotificationContext'
-import { useAuth } from './useSupabase'
+} from '../../types/processo'
+import { ClienteSimple } from '../../types/cliente'
+import { useCrudArray } from '../utils/useCrudArray'
+import { useInlineNotification } from '../ui/useInlineNotification'
+import { useNotification } from '../../components/shared/notifications/NotificationContext'
+import { useAuthLogin as useAuth } from '../../components/auth/useAuthLogin'
 
 
 interface UseProcessoFormOptions {
@@ -119,7 +119,7 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso }: U
     try {
       const { data, error } = await supabase
         .from('clientes')
-        .select('id, nome_completo, status')
+        .select('id, nome_completo, celular, email, status')
         .eq('status', 'ativo')
         .order('nome_completo')
       
@@ -212,18 +212,12 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso }: U
       const { data, error } = await supabase
         .from('clientes')
         .insert([{ 
-          nome_completo: newClienteForm.nome_completo,
-          celular: newClienteForm.celular,
-          email: newClienteForm.email || null,
-          status: newClienteForm.status,
+          ...newClienteForm,
           pais: 'Brasil'
         }])
         .select()
       
-      if (error) {
-        console.error('Error detalle:', error)
-        throw error
-      }
+      if (error) throw error
       
       await fetchClientes()
       

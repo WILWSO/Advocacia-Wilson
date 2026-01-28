@@ -1,9 +1,5 @@
 import { FileText, Video, ImageIcon, ExternalLink } from 'lucide-react';
-
-/**
- * Tipos de post disponibles en la plataforma
- */
-export type PostType = 'article' | 'video' | 'image' | 'announcement';
+import { PostType } from '../types/post';
 
 /**
  * Retorna el ícono correspondiente al tipo de post

@@ -1,18 +1,24 @@
 /**
  * Hook personalizado para manejo de responsive design
  * Facilita la detección de breakpoints y adaptación de componentes
+ * Sincronizado con tailwind.config.js
  */
 
 import { useState, useEffect } from 'react';
 
-// Breakpoints según Tailwind CSS
+// Breakpoints sincronizados con Tailwind CSS (Mobile First)
 const breakpoints = {
-  xs: 0,
-  sm: 640,
-  md: 768,
-  lg: 1024,
-  xl: 1280,
-  '2xl': 1536,
+  xs: 375,      // iPhone SE, móviles pequeños
+  sm: 480,      // Móviles medianos
+  md: 640,      // Móviles grandes, phablets
+  lg: 768,      // Tablets portrait
+  xl: 1024,     // Tablets landscape, laptops pequeños
+  '2xl': 1280,  // Desktop estándar
+  '3xl': 1440,  // Desktop grande
+  '4xl': 1536,  // Desktop XL
+  '5xl': 1920,  // Full HD
+  '6xl': 2560,  // 2K
+  '7xl': 3840,  // 4K
 } as const;
 
 type Breakpoint = keyof typeof breakpoints;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { User, Calendar, AlertCircle, CheckCircle, Clock, Eye } from 'lucide-react';
-import { ProcessoJuridico } from '../../../lib/supabase';
-import { useResponsive } from '../../../hooks/useResponsive';
+import { ProcessoJuridico } from '../../../types/processo';
+import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
 import AccessibleButton from '../buttons/AccessibleButton';
 

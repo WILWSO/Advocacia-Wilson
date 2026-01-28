@@ -4,11 +4,13 @@
  */
 
 import { useState, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
-import { useAuth, useUsuarios } from './useSupabase'
-import { useNotification } from '../components/shared/notifications/NotificationContext'
-import { useInlineNotification } from './useInlineNotification'
-import { Usuario, UsuarioFormData, PasswordForm } from '../types/usuario'
+import { supabase } from '../../lib/supabase'
+import { useAuthLogin as useAuth } from '../../components/auth/useAuthLogin'
+import { useUsuarios } from '../data-access/useUsuarios'
+import { useNotification } from '../../components/shared/notifications/NotificationContext'
+import { useInlineNotification } from '../ui/useInlineNotification'
+import { Usuario, UsuarioFormData, PasswordForm } from '../../types/usuario'
+import { StorageService } from '../../services/storageService'
 
 export const useUsuarioForm = () => {
   const { user: currentUser } = useAuth()
@@ -287,64 +289,35 @@ export const useUsuarioForm = () => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validar tamaño (5MB máximo)
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      warning('A foto é muito grande. Tamanho máximo: 5MB')
-      return
-    }
-
-    // Validar tipo de archivo
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      warning('Tipo de arquivo não permitido. Use: JPG, PNG ou WEBP')
-      return
-    }
-
     setUploadingPhoto(true)
     setUploadProgress(0)
 
     try {
       const targetId = usuarioId || editingUsuario?.id || `temp-${Date.now()}`
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-      const filePath = `${targetId}/${fileName}`
+      
+      // ✅ SSoT: Usa StorageService en lugar de queries directas
+      const newPhotoUrl = await StorageService.uploadProfilePhoto(
+        targetId,
+        file,
+        formData.foto_perfil_url // Elimina foto anterior automáticamente
+      )
 
-      // Eliminar foto anterior si existe
-      if (formData.foto_perfil_url) {
-        const oldUrlParts = formData.foto_perfil_url.split('/foto_perfil/')
-        if (oldUrlParts.length > 1) {
-          const oldFilePath = oldUrlParts[1]
-          await supabase.storage.from('foto_perfil').remove([oldFilePath])
-        }
+      if (!newPhotoUrl) {
+        throw new Error('No se pudo obtener URL de la foto')
       }
-
-      // Subir nueva foto
-      const { error: uploadError } = await supabase.storage
-        .from('foto_perfil')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (uploadError) throw uploadError
-
-      // Obtener URL pública
-      const { data: urlData } = supabase.storage
-        .from('foto_perfil')
-        .getPublicUrl(filePath)
 
       setFormData(prev => ({
         ...prev,
-        foto_perfil_url: urlData.publicUrl
+        foto_perfil_url: newPhotoUrl
       }))
 
       setUploadProgress(100)
       successToast('Foto enviada com sucesso!')
       
       e.target.value = ''
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer upload:', error)
-      errorNotif('Erro ao enviar foto. Tente novamente.')
+      errorNotif(error.message || 'Erro ao enviar foto. Tente novamente.')
     } finally {
       setUploadingPhoto(false)
       setTimeout(() => setUploadProgress(0), 1000)

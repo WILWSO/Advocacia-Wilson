@@ -2,15 +2,19 @@
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    // Breakpoints responsivos personalizados
+    // Breakpoints responsivos personalizados - Mobile First
     screens: {
-      'xs': '475px',    // Teléfonos pequeños
-      'sm': '640px',    // Teléfonos grandes
-      'md': '768px',    // Tablets
-      'lg': '1024px',   // Laptops
-      'xl': '1280px',   // Desktop
-      '2xl': '1536px',  // Large desktop
-      '3xl': '1920px',  // Ultra wide
+      'xs': '375px',    // iPhone SE, móviles pequeños
+      'sm': '480px',    // Móviles medianos
+      'md': '640px',    // Móviles grandes, Tablets
+      'lg': '768px',    // Tablets portrait
+      'xl': '1024px',   // Tablets lanSdscape, laptops pequeños
+      '2xl': '1280px',  // Desktop estándar
+      '3xl': '1440px',  // Desktop grande
+      '4xl': '1536px',  // Desktop XL
+      '5xl': '1920px',  // Full HD
+      '6xl': '2560px',  // 2K
+      '7xl': '3840px',  // 4K
       // Breakpoints de altura
       'tall': { 'raw': '(min-height: 800px)' },
       'short': { 'raw': '(max-height: 600px)' },

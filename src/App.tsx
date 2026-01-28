@@ -18,16 +18,18 @@ import SkipLinks from './components/layout/SkipLinks';
 import { cn } from './utils/cn';
 
 // Lazy load admin pages para reducir bundle inicial
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ProcessosPage = lazy(() => import('./pages/ProcessosPage'));
 const ClientesPage = lazy(() => import('./pages/ClientesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
-const AdminSocialPage = lazy(() => import('./pages/SocialPage'));
+const SocialPage = lazy(() => import('./pages/SocialPage'));
 
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isLoginRoute = location.pathname === '/login';
   const isSocialRoute = location.pathname === '/social';
+  const shouldHideHeader = isAdminRoute || isLoginRoute;
 
   useEffect(() => {
     if (!location.hash) {
@@ -58,7 +60,7 @@ function App() {
       <div className="font-sans text-neutral-800 flex flex-col min-h-screen">
         <SkipLinks />
         <OfflineNotification />
-        {!isAdminRoute && <Header />}
+        {!shouldHideHeader && <Header />}
         <main id="main-content" className={cn("flex-grow", isSocialRoute && "pt-20")} role="main" tabIndex={-1}>
         <Routes>
           {/* Rutas públicas */}
@@ -76,7 +78,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-lg">Cargando...</div></div>}>
-                  <AdminDashboard />
+                  <Dashboard />
                 </Suspense>
               </ProtectedRoute>
             }
@@ -93,7 +95,7 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin', 'advogado']}>
                   <Suspense fallback={<div>Cargando...</div>}>
-                    <AdminSocialPage />
+                    <SocialPage />
                   </Suspense>
                 </ProtectedRoute>
               } 
@@ -110,8 +112,8 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
-      {!isAdminRoute && <WhatsAppButton />}
+      {!shouldHideHeader && <Footer />}
+      {!shouldHideHeader && <WhatsAppButton />}
       </div>
     </NotificationProvider>
   );

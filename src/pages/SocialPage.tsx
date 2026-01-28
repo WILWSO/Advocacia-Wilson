@@ -1,186 +1,23 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
-  Edit3, 
-  Trash2, 
-  Image as ImageIcon, 
-  Video, 
   FileText, 
-  Calendar,
   Search,
-  Tag,
-  Heart,
-  MessageCircle,
-  Play,
-  ExternalLink,
   Star,
   FileEdit
 } from 'lucide-react';
-import { useAuthStore } from '../components/auth/authStore';
-import { cn } from '../utils/cn';
-import { formatDate, getTypeIcon, getTypeColor } from '../utils/postUtils';
+import { useAuthLogin } from '../components/auth/useAuthLogin';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
-import { usePostForm } from '../hooks/usePostForm';
-import { usePostFilters } from '../hooks/usePostFilters';
+import { usePostForm } from '../hooks/forms/usePostForm';
+import { usePostFilters } from '../hooks/filters/usePostFilters';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import CreatePostModal from '../components/admin/CreatePostModal';
+import { SocialPostCard } from '../components/shared/cards/SocialPostCard';
 import type { Post } from '../types/post';
 
-const PostCard: React.FC<{ 
-  post: Post; 
-  onEdit: (post: Post) => void;
-  onDelete: (id: string) => void;
-}> = ({ post, onEdit, onDelete }) => {
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        "bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border h-full flex flex-col",
-        post.destaque ? 'border-gold-300 ring-2 ring-gold-100' : 'border-neutral-200',
-        !post.publicado && 'opacity-60'
-      )}
-    >
-      {/* Header do Card */}
-      <div className="p-4 border-b border-neutral-100">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
-                getTypeColor(post.tipo)
-              )}>
-                {getTypeIcon(post.tipo)}
-                {post.tipo === 'article' && 'Artigo'}
-                {post.tipo === 'video' && 'Vídeo'}
-                {post.tipo === 'image' && 'Imagem'}
-                {post.tipo === 'announcement' && 'Anúncio'}
-              </span>
-              
-              {post.destaque && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-100 text-gold-800 text-xs font-medium rounded-full">
-                  <Star size={12} className="fill-current" />
-                  Destaque
-                </span>
-              )}
-              
-              {!post.publicado && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full">
-                  <FileEdit size={12} />
-                  Rascunho
-                </span>
-              )}
-            </div>
-            
-            <h3 className="font-semibold text-neutral-800 line-clamp-2">
-              {post.titulo}
-            </h3>
-          </div>
-          
-          <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={() => onEdit(post)}
-              className="p-1.5 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-              title="Editar"
-            >
-              <Edit3 size={14} />
-            </button>
-            <button
-              onClick={() => onDelete(post.id || '')}
-              className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-              title="Excluir"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Preview da mídia */}
-      {post.image_url && (
-        <div className="aspect-video bg-neutral-100">
-          <img
-            src={post.image_url}
-            alt={post.titulo}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
-        </div>
-      )}
-
-      {post.video_url && post.youtube_id && (
-        <div className="aspect-video bg-neutral-900 overflow-hidden relative group cursor-pointer">
-          <img 
-            src={`https://img.youtube.com/vi/${post.youtube_id}/maxresdefault.jpg`}
-            alt={post.titulo}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback a thumbnail de menor calidad si maxres no existe
-              const target = e.target as HTMLImageElement;
-              target.src = `https://img.youtube.com/vi/${post.youtube_id}/hqdefault.jpg`;
-            }}
-          />
-          {/* Botón play superpuesto */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-            <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
-              <Play size={28} className="text-white ml-1" fill="white" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Conteúdo */}
-      <div className="p-4 flex-1 flex flex-col">
-        <p className="text-neutral-600 text-sm line-clamp-3 mb-3 flex-1">
-          {post.conteudo}
-        </p>
-        
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {post.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded"
-              >
-                <Tag size={10} className="mr-1" />
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        
-        {/* Estatísticas e data */}
-        <div className="flex items-center justify-between text-xs text-neutral-500">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <Heart size={12} />
-              {post.likes}
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle size={12} />
-              {post.comentarios}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Calendar size={12} />
-            {formatDate(post.data_criacao || new Date().toISOString())}
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const AdminSocialPage: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+const SocialPage: React.FC = () => {
+  const { isAuthenticated, user } = useAuthLogin();
   const postForm = usePostForm();
   const filters = usePostFilters(postForm.posts);
 
@@ -204,7 +41,6 @@ const AdminSocialPage: React.FC = () => {
   }
 
   return (
-    <>
     <div className="bg-neutral-50 min-h-full">
       {/* Header da página */}
       <div className="bg-white shadow-sm border-b border-gray-200">
@@ -218,9 +54,7 @@ const AdminSocialPage: React.FC = () => {
               </div>
               
               <div className="flex gap-3">
-
                 {/* Botão de Novo Conteúdo */}
-                {(
                 <AccessibleButton
                   category="create"
                   onClick={() => postForm.handleOpenCreateModal()}
@@ -230,15 +64,13 @@ const AdminSocialPage: React.FC = () => {
                 >
                   Novo Conteúdo
                 </AccessibleButton>
-              )}
-                            
               </div>
             </div>
-          </ResponsiveContainer>
-        </div>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Estadísticas */}
-        <ResponsiveContainer maxWidth="7xl" className="py-6">
+      {/* Estadísticas */}
+      <ResponsiveContainer maxWidth="7xl" className="py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
               <div className="flex items-center justify-between">
@@ -271,7 +103,7 @@ const AdminSocialPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-neutral-600">Destaque</p>
-                  <p className="text-2xl font-bold text-gold-600">{filters.stats.destaque}</p>
+                  <p className="text-2xl font-bold text-gold-600">{filters.stats.destacados}</p>
                 </div>
                 <Star className="text-gold-500 fill-current" size={24} />
               </div>
@@ -354,9 +186,10 @@ const AdminSocialPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               <AnimatePresence>
                 {filters.filteredPosts.map((post) => (
-                  <PostCard
+                  <SocialPostCard
                     key={post.id}
                     post={post}
+                    variant="admin"
                     onEdit={postForm.handleEditPost}
                     onDelete={postForm.handleDeletePost}
                   />
@@ -381,17 +214,16 @@ const AdminSocialPage: React.FC = () => {
             </div>
           )}
         </ResponsiveContainer>
+
+        {/* Modal de Criação/Edição */}
+        <CreatePostModal
+          isOpen={postForm.isCreateModalOpen}
+          onClose={() => postForm.handleCloseModal()}
+          onSave={postForm.editingPost ? postForm.handleUpdatePost : postForm.handleCreatePost}
+          editingPost={postForm.editingPost}
+        />
       </div>
+    );
+  };
 
-      {/* Modal de Criação/Edição */}
-      <CreatePostModal
-        isOpen={postForm.isCreateModalOpen}
-        onClose={() => postForm.handleCloseModal()}
-        onSave={postForm.editingPost ? postForm.handleUpdatePost : postForm.handleCreatePost}
-        editingPost={postForm.editingPost}
-      />
-    </>
-  );
-};
-
-export default AdminSocialPage;
+export default SocialPage;

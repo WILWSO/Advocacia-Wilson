@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { PostsService, Post } from '../services/postsService';
+import { PostsService } from '../../services/postsService';
+import { Post } from '../../types/post';
 
 interface UsePostsCarouselReturn {
   posts: Post[];

@@ -1,5 +1,5 @@
 import { company } from '../../../data/DataCompany';
-import useResponsive from '../../../hooks/useResponsive';
+import useResponsive from '../../../hooks/ui/useResponsive';
 
 export const LocationMap = () => {
   const { isMobile, isTablet } = useResponsive();

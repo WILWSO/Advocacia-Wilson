@@ -1,54 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
-import { useAuthStore } from '../components/auth/authStore';
+import { useLoginForm } from '../hooks/forms/useLoginForm';
 import Logo from '../components/shared/Logo';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isAuthenticated, isLoading } = useAuthStore();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Ruta a la que se intentó acceder
-  const from = (location.state as { from?: string })?.from || '/admin';
-
-  // Redirigir si ya está autenticado
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate, from]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      await login(email, password);
-      // La redirección se maneja en el useEffect
-    } catch (err: any) {
-      console.error('Login error:', err);
-      
-      // Mensajes de error más específicos
-      if (err.message?.includes('Invalid login credentials')) {
-        setError('Email ou senha incorretos');
-      } else if (err.message?.includes('Email not confirmed')) {
-        setError('Email não confirmado. Verifique sua caixa de entrada.');
-      } else {
-        setError('Erro ao fazer login. Tente novamente.');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    email,
+    password,
+    showPassword,
+    error,
+    isSubmitting,
+    setEmail,
+    setPassword,
+    toggleShowPassword,
+    handleSubmit,
+    isLoading,
+    navigate
+  } = useLoginForm();
 
   if (isLoading) {
     return (
@@ -139,7 +107,7 @@ const LoginPage = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={toggleShowPassword}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
                   aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >

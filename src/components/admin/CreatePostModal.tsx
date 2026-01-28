@@ -6,6 +6,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { extractYouTubeId } from '../../utils/youtubeUtils';
 import { FormModal } from '../shared/modales/FormModal';
 import type { Post } from '../../types/post';
 
@@ -58,27 +59,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
       });
     }
   }, [editingPost, isOpen]);
-
-  // Función para extraer el ID de YouTube de una URL
-  const extractYouTubeId = (url: string): string | null => {
-    if (!url) return null;
-    
-    // Patrones para diferentes formatos de URL de YouTube
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/, // youtube.com/watch?v=ID o youtu.be/ID
-      /youtube\.com\/embed\/([^&\n?#]+)/, // youtube.com/embed/ID
-      /youtube\.com\/v\/([^&\n?#]+)/ // youtube.com/v/ID
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-    
-    return null;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

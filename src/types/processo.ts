@@ -3,7 +3,8 @@
  * Single source of truth para evitar inconsistencias entre componentes
  */
 
-import { DocumentoArquivo } from '../lib/supabase'
+import { DocumentoArquivo } from './documento'
+import type { ClienteStatus } from './cliente'
 
 
 
@@ -135,20 +136,22 @@ export interface ProcessoFormData {
 }
 
 /**
- * Cliente simplificado para el formulario
- */
-export interface ClienteSimple {
-  id: string
-  nome_completo: string
-  status: string
-}
-
-/**
  * Formulario de nuevo cliente
  */
 export interface NewClienteForm {
   nome_completo: string
   celular: string
   email: string
-  status: 'ativo' | 'inativo' | 'potencial'
+  status: ClienteStatus
+}
+
+/**
+ * Comentarios de procesos
+ */
+export interface ComentarioProcesso {
+  id?: string
+  processo_id: string
+  comentario: string
+  autor: string
+  data_criacao?: string
 }

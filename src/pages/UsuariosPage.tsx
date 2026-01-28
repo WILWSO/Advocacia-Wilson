@@ -1,9 +1,10 @@
 import { AnimatePresence } from 'framer-motion'
 import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText } from 'lucide-react'
-import { useUsuarioForm } from '../hooks/useUsuarioForm'
-import { useUsuarioFilters } from '../hooks/useUsuarioFilters'
+import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
+import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
-import { useResponsive } from '../hooks/useResponsive'
+import { useResponsive } from '../hooks/ui/useResponsive'
+import { getRoleBadgeColor, getRoleLabel } from '../utils/roleHelpers'
 import { cn } from '../utils/cn'
 import { AuditInfo } from '../components/shared/AuditInfo'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
@@ -1052,15 +1053,11 @@ const UsuariosPage: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
                     {/* Role Badge */}
                     <span className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium",
-                      usuarioForm.viewingUsuario.role === 'admin' && 'bg-purple-100 text-purple-800',
-                      usuarioForm.viewingUsuario.role === 'advogado' && 'bg-blue-100 text-blue-800',
-                      usuarioForm.viewingUsuario.role === 'assistente' && 'bg-gray-100 text-gray-800'
+                      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border",
+                      getRoleBadgeColor(usuarioForm.viewingUsuario.role)
                     )}>
                       <Shield size={14} />
-                      {usuarioForm.viewingUsuario.role === 'admin' && 'Administrador'}
-                      {usuarioForm.viewingUsuario.role === 'advogado' && 'Advogado'}
-                      {usuarioForm.viewingUsuario.role === 'assistente' && 'Assistente'}
+                      {getRoleLabel(usuarioForm.viewingUsuario.role)}
                     </span>
 
                     {/* Status Badge */}

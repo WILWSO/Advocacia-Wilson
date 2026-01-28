@@ -3,10 +3,10 @@
  * Centraliza todas las definiciones de tipos relacionadas con usuarios del sistema
  */
 
-/**
- * Rol del usuario en el sistema
- */
-export type UsuarioRole = 'admin' | 'advogado' | 'assistente'
+import type { UsuarioRole } from '../config/roles';
+
+// Re-exportar el tipo centralizado
+export type { UsuarioRole } from '../config/roles';
 
 /**
  * Interface principal para Usuario

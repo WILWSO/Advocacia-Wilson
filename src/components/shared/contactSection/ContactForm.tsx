@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, AlertCircle } from 'lucide-react';
-import { useSecureForm } from '../../../hooks/useSecureForm';
+import { useSecureForm } from '../../../hooks/utils/useSecureForm';
 import { getButtonClasses, getInputClasses, getLabelClasses } from '../../../utils/formStyles';
-import { useInlineNotification } from '../../../hooks/useInlineNotification';
+import { useInlineNotification } from '../../../hooks/ui/useInlineNotification';
 import { InlineNotification } from '../notifications/InlineNotification';
 
 // ═══════════════════════════════════════════════════════════════

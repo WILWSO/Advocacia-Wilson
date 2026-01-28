@@ -1,9 +1,9 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Bell, LogOut, User, Settings, ChevronDown } from 'lucide-react'
-import { useAuth } from '../../hooks/useSupabase'
+import { useAuthLogin } from '../auth/useAuthLogin'
 import Logo from '../shared/Logo'
-
+import { getRoleBadgeColor, getRoleLabel } from '../../utils/roleHelpers'
 import { cn } from '../../utils/cn'
 
 interface AdminHeaderProps {
@@ -11,7 +11,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuthLogin()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = React.useState(false)
 
@@ -20,52 +20,28 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
     navigate('/')
   }
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-700 border-red-300'
-      case 'advogado':
-        return 'bg-blue-100 text-blue-700 border-blue-300'
-      case 'assistente':
-        return 'bg-green-100 text-green-700 border-green-300'
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-300'
-    }
-  }
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'Administrador'
-      case 'advogado':
-        return 'Advogado'
-      case 'assistente':
-        return 'Assistente'
-      default:
-        return 'Usuário'
-    }
-  }
-
   return (
     <header className={cn(
-      "bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm",
+      "bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm safe-top",
       className
     )}>
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <Logo className="h-8 w-auto" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity">
+            <Logo className="h-6 sm:h-8 w-auto" />
           </Link>
 
           {/* Right Section: Notifications + User Menu */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Notifications */}
             <button
-              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors min-touch-target"
               title="Notificações"
+              aria-label="Ver notificações"
             >
-              <Bell size={20} />
+              <Bell size={18} className="sm:hidden" />
+              <Bell size={20} className="hidden sm:block" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
@@ -73,10 +49,12 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors min-touch-target"
+                aria-expanded={showUserMenu}
+                aria-haspopup="true"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                     {user?.nome_completo?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="hidden md:block text-left">

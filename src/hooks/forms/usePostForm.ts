@@ -4,13 +4,13 @@
  */
 
 import { useState } from 'react'
-import { useAuthStore } from '../components/auth/authStore'
-import { usePostsSociais } from './usePosts'
-import { useNotification } from '../components/shared/notifications/NotificationContext'
-import { Post } from '../types/post'
+import { useAuthLogin } from '../../components/auth/useAuthLogin'
+import { usePosts as usePostsSociais } from '../data-access/usePosts'
+import { useNotification } from '../../components/shared/notifications/NotificationContext'
+import { Post } from '../../types/post'
 
 export const usePostForm = () => {
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated } = useAuthLogin()
   const { posts, loading, error, createPost, updatePost, deletePost, togglePublished } = usePostsSociais()
   const { success, error: errorNotif, confirm: confirmDialog } = useNotification()
 

@@ -2,12 +2,15 @@
 import { AnimatePresence } from 'framer-motion'
 import { Plus, Search, User, Calendar, AlertCircle, CheckCircle, Clock, Eye, FileText, Download, Mail, Phone, Link as LinkIcon, Scale, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useProcessos, useUsuarios, useAuth } from '../hooks/useSupabase'
+import { useProcessos } from '../hooks/data-access/useProcessos'
+import { useUsuarios } from '../hooks/data-access/useUsuarios'
+import { useAuthLogin as useAuth } from '../components/auth/useAuthLogin'
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
-import { useResponsive } from '../hooks/useResponsive'
+import { useResponsive } from '../hooks/ui/useResponsive'
 import { cn } from '../utils/cn'
-import { supabase, DocumentoArquivo } from '../lib/supabase'
+import { DocumentoArquivo } from '../types/documento'
 import { ProcessoLink, Jurisprudencia, ProcessoWithRelations } from '../types/processo'
+import { StorageService } from '../services/storageService'
 import { AuditInfo } from '../components/shared/AuditInfo'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
 import ProcessoCard from '../components/shared/cards/ProcessoCard'
@@ -18,8 +21,8 @@ import { CrudListManager } from '../components/admin/CrudListManager'
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
 import { Accordion } from '../components/shared/Accordion'
-import { useProcessoForm } from '../hooks/useProcessoForm'
-import { useProcessoFilters } from '../hooks/useProcessoFilters'
+import { useProcessoForm } from '../hooks/forms/useProcessoForm'
+import { useProcessoFilters } from '../hooks/filters/useProcessoFilters'
 
 // Componente de gestión de procesos jurídicos
 const ProcessosPage: React.FC = () => {
@@ -46,22 +49,11 @@ const ProcessosPage: React.FC = () => {
   }, [fetchProcessos])
 
   
-  // Handlers para documentos (locales, interactúan con Supabase Storage)
+  // Handlers para documentos (usan StorageService - SSoT)
   const handleViewDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
     try {
-      const urlPattern = new RegExp(`/object/(?:public/)?documentos_processo/(.+)`)
-      const match = doc.url.match(urlPattern)
-      
-      if (match && match[1]) {
-        const { data, error } = await supabase.storage
-          .from('documentos_processo')
-          .createSignedUrl(match[1], 60)
-        if (error) throw error
-        if (data?.signedUrl) window.open(data.signedUrl, '_blank')
-      } else {
-        window.open(doc.url, '_blank')
-      }
+      await StorageService.viewDocument(doc, 'documentos_processo')
     } catch (error) {
       console.error('Erro ao visualizar documento:', error)
     }
@@ -70,30 +62,7 @@ const ProcessosPage: React.FC = () => {
   const handleDownloadDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
     try {
-      const urlPattern = new RegExp(`/object/(?:public/)?documentos_processo/(.+)`)
-      const match = doc.url.match(urlPattern)
-      let downloadUrl = doc.url
-      
-      if (match && match[1]) {
-        const { data, error } = await supabase.storage
-          .from('documentos_processo')
-          .createSignedUrl(match[1], 60)
-        if (error) throw error
-        if (data?.signedUrl) downloadUrl = data.signedUrl
-      }
-      
-      const response = await fetch(downloadUrl)
-      if (!response.ok) throw new Error('Error al obtener el archivo')
-      
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = doc.nome || 'documento'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      await StorageService.downloadDocument(doc, 'documentos_processo')
     } catch (error) {
       console.error('Erro ao baixar documento:', error)
     }

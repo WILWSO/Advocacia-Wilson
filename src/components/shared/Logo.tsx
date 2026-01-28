@@ -7,10 +7,28 @@ interface LogoProps {
   priority?: boolean;
 }
 
+/**
+ * Logo responsive:
+ * - Móvil: Solo ícono (iconSN_dark.jpg)
+ * - Desktop: Logo completo con texto
+ */
+const Logo: React.FC<LogoProps> = ({ className = 'h-10', priority = true }) => {
+  return (
+    <div className={`flex items-center ${className}`}>
+      {/* Logo Mobile: Solo ícono (< 640px) */}
+      <div className="flex sm:hidden items-center justify-center w-10 h-10 rounded overflow-hidden bg-white bg-opacity-90">
+        <OptimizedImage
+          src={company.icoLogo[2]} // Cambiar imagen que se mostrará en las pantallas < 640px
+          alt={`${company.alias} - Logo`}
+          className="object-contain w-full h-full"
+          sizes="40px"
+          priority={priority}
+          placeholder="empty"
+        />
+      </div>
 
-  const Logo: React.FC<LogoProps> = ({ className = 'h-10', priority = true }) => {
-    return (
-      <div className={`flex items-center ${className}`}>
+      {/* Logo Desktop: Completo con texto (>= 640px) */}
+      <div className="hidden sm:flex items-center">
         <div className="mr-3">
           <svg 
             viewBox="0 0 24 24" 
@@ -31,7 +49,7 @@ interface LogoProps {
           <div className="px-1 rounded text-sm font-medium transition-colors flex items-center">
             <div className="h-10 w-10 overflow-hidden rounded aspect-square">
               <OptimizedImage
-                src={company.icoLogo[1]}
+                src={company.icoLogo[1]} // logoSN_dark.jpg
                 alt={`Logotipo ${company.alias}`}
                 className="object-contain w-full h-full"
                 sizes="40px"
@@ -46,7 +64,8 @@ interface LogoProps {
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
 export default Logo;

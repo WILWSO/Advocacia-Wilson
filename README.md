@@ -219,7 +219,7 @@ netlify deploy --prod
 ### Guía Completa
 
 Para instrucciones detalladas paso a paso, consulta:
-**[DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md)**
+**[docs/DEPLOY_PRODUCTION.md](./docs/DEPLOY_PRODUCTION.md)**
 
 ---
 
@@ -292,10 +292,8 @@ El proyecto ha pasado una auditoría completa de seguridad:
 
 ### Documentos Principales
 
-- **[DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md)** - Guía completa de deploy paso a paso
+- **[docs/DEPLOY_PRODUCTION.md](./docs/DEPLOY_PRODUCTION.md)** - Guía completa de deploy y producción
 - **[docs/SECURITY_AUDIT.md](./docs/SECURITY_AUDIT.md)** - Auditoría de seguridad
-- **[docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md)** - Checklist de producción
-- **[docs/DEPLOY_INSTRUCTIONS.md](./docs/DEPLOY_INSTRUCTIONS.md)** - Instrucciones de deploy
 - **[docs/RLS.md](./docs/RLS.md)** - Políticas de seguridad RLS
 - **[docs/SUPABASE_SETUP.md](./docs/SUPABASE_SETUP.md)** - Configuración de Supabase
 

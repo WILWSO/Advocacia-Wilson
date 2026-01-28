@@ -11,6 +11,8 @@ interface TeamMember {
   specialties: string[];
   linkedin: string;
   email: string;
+  imageZoom?: number; // Zoom personalizado (100 = sin zoom, 110 = 10% zoom, etc.)
+  imagePosition?: number; // Posición vertical (0-100, 50 = centrado)
 }
 
 interface TeamCardProps {
@@ -20,6 +22,10 @@ interface TeamCardProps {
 }
 
 export const TeamCard = ({ member, itemVariants, isMobile }: TeamCardProps) => {
+  const zoom = member.imageZoom || 110; // Zoom por defecto 10%
+  const hoverZoom = zoom + 15; // 15% adicional en hover
+  const position = member.imagePosition || 50; // Posición vertical por defecto (centrado)
+  
   return (
     <motion.div
       variants={itemVariants}
@@ -30,17 +36,27 @@ export const TeamCard = ({ member, itemVariants, isMobile }: TeamCardProps) => {
       )}
     >
       {/* Image Container */}
-      <div className={cn(
-        "relative overflow-hidden aspect-square",
-        isMobile ? "h-72" : "h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]"
-      )}>
-        <OptimizedImage
-          src={member.image}
-          alt={`Foto do advogado ${member.name} do escritório Santos & Nascimento`}
-          className="w-full h-full transition-transform duration-700 group-hover:scale-110"
-          sizes={isMobile ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
-          objectFit="cover"
-        />
+      <div 
+        className={cn(
+          "relative overflow-hidden",
+          isMobile ? "h-72" : "h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]"
+        )}
+        style={{
+          ['--base-zoom' as any]: zoom / 120,
+          ['--hover-zoom' as any]: hoverZoom / 120,
+          ['--image-position' as any]: position
+        } as React.CSSProperties}
+      >
+        <div className="absolute inset-0 -bottom-24">
+          <OptimizedImage
+            src={member.image}
+            alt={`Foto do advogado ${member.name} do escritório Santos & Nascimento`}
+            className="w-full h-full transition-transform duration-700 ease-out team-card-image"
+            sizes={isMobile ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+            objectFit="cover"
+            objectPosition="center"
+          />
+        </div>
         
         {/* Desktop Hover Overlay */}
         {!isMobile && (

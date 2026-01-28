@@ -84,15 +84,6 @@ export interface PostFilters {
 }
 
 /**
- * Props para PostModal
- */
-export interface PostModalProps {
-  post: Post;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-/**
  * Props para PostPreview en SocialFeed
  */
 export interface PostPreviewProps {

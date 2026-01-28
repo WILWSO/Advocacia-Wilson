@@ -9,14 +9,20 @@ interface HamburgerButtonProps {
 }
 
 export const HamburgerButton = ({ isOpen, onClick, isScrolled, buttonRef }: HamburgerButtonProps) => {
+  // En mobile siempre hay fondo blanco, así que siempre usamos colores oscuros
+  // En desktop, depende de isScrolled
+  const isDarkBackground = false; // Nunca fondo oscuro porque mobile siempre es blanco y desktop varía
+  const barColor = 'rgb(17, 24, 39)'; // Siempre oscuro para contrastar con fondo blanco
+  
   return (
     <button
       ref={buttonRef}
       className={cn(
-        "ml-4 p-2 rounded-lg transition-all duration-200",
+        "p-2 rounded-lg transition-all duration-200",
         "focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2",
-        "hover:bg-white/10 active:scale-95",
-        "w-10 h-10 flex items-center justify-center"
+        "hover:bg-primary-50 active:scale-95",
+        "min-w-[44px] min-h-[44px] flex items-center justify-center",
+        "touch-manipulation"
       )}
       onClick={onClick}
       aria-expanded={isOpen}
@@ -29,11 +35,11 @@ export const HamburgerButton = ({ isOpen, onClick, isScrolled, buttonRef }: Hamb
           animate={isOpen ? {
             rotate: 45,
             y: 8,
-            backgroundColor: isScrolled ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)'
+            backgroundColor: barColor
           } : {
             rotate: 0,
             y: 0,
-            backgroundColor: isScrolled ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)'
+            backgroundColor: barColor
           }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="w-full h-0.5 rounded-full origin-center"
@@ -47,20 +53,17 @@ export const HamburgerButton = ({ isOpen, onClick, isScrolled, buttonRef }: Hamb
             x: 0
           }}
           transition={{ duration: 0.2 }}
-          className={cn(
-            "w-full h-0.5 rounded-full",
-            isScrolled ? 'bg-primary-800' : 'bg-white'
-          )}
+          className="w-full h-0.5 rounded-full bg-primary-800"
         />
         <motion.span
           animate={isOpen ? {
             rotate: -45,
             y: -8,
-            backgroundColor: isScrolled ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)'
+            backgroundColor: barColor
           } : {
             rotate: 0,
             y: 0,
-            backgroundColor: isScrolled ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)'
+            backgroundColor: barColor
           }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="w-full h-0.5 rounded-full origin-center"

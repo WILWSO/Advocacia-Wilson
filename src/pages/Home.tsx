@@ -6,7 +6,7 @@ import Testimonials from '../components/home/Testimonials';
 import Contact from '../components/home/Contact';
 import SocialFeed from '../components/shared/SocialFeed';
 import SEOHead from '../components/shared/SEOHead';
-import { useFeaturedPosts } from '../hooks/useFeaturedPosts';
+import { useFeaturedPosts } from '../hooks/features/useFeaturedPosts';
 
 const Home = () => {
   const { hasFeaturedPosts } = useFeaturedPosts();

@@ -18,10 +18,10 @@ import {
   MessageSquare,
   UserCheck
 } from 'lucide-react';
-import { DocumentoArquivo } from '../lib/supabase';
+import { DocumentoArquivo } from '../types/documento';
 import { Cliente } from '../types/cliente';
-import { useClienteForm } from '../hooks/useClienteForm';
-import { useClienteFilters } from '../hooks/useClienteFilters';
+import { useClienteForm } from '../hooks/forms/useClienteForm';
+import { useClienteFilters } from '../hooks/filters/useClienteFilters';
 import { cn } from '../utils/cn';
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager';

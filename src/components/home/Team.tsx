@@ -1,33 +1,14 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { teamMemberData } from '../../data/DataTeamMember';
-import useResponsive from '../../hooks/useResponsive';
+import useResponsive from '../../hooks/ui/useResponsive';
 import { ResponsiveContainer, ResponsiveGrid } from '../shared/ResponsiveGrid';
 import { cn } from '../../utils/cn';
-import { scrollTriggerProps } from '../../utils/animations';
+import { scrollTriggerProps, containerVariants, itemVariants } from '../../utils/animations';
 import { TeamCard } from '../shared/cards/TeamCard';
 
 const Team = () => {
   const { isMobile } = useResponsive();
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
 
   return (
     <section className={cn(
@@ -65,7 +46,7 @@ const Team = () => {
         </div>
 
         <motion.div
-          variants={containerVariants}
+          variants={containerVariants(0.2)}
           {...scrollTriggerProps}
         >
           <ResponsiveGrid
@@ -89,7 +70,9 @@ const Team = () => {
                   image: member.image[1],
                   specialties: member.specialties,
                   linkedin: member.linkedin,
-                  email: member.email
+                  email: member.email,
+                  imageZoom: member.imageZoom,
+                  imagePosition: member.imagePosition
                 }}
                 itemVariants={itemVariants}
                 isMobile={isMobile}

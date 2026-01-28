@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   priority?: boolean;
   sizes?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none';
+  objectPosition?: string;
   placeholder?: 'blur' | 'empty';
   blurDataURL?: string;
   onLoad?: () => void;
@@ -25,6 +26,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false,
   sizes = '100vw',
   objectFit = 'cover',
+  objectPosition,
   placeholder = 'blur',
   blurDataURL,
   onLoad,
@@ -170,7 +172,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
                 src={blurDataURL}
                 alt=""
                 className={`${className} blur-sm scale-110`}
-                style={{ objectFit }}
+                style={{ objectFit, objectPosition }}
                 aria-hidden="true"
               />
             ) : (
@@ -218,7 +220,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             height={height}
             sizes={sizes}
             srcSet={generateSrcSet(src, 'original')}
-            style={{ objectFit }}
+            style={{ objectFit, objectPosition }}
             onLoad={handleLoad}
             onError={handleError}
             fetchpriority={priority ? 'high' : 'auto'}

@@ -11,9 +11,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
-import { supabase } from '../../lib/supabase';
 import { getTypeIcon, getTypeColor, formatDate, truncateText } from '../../utils/postUtils';
-import { useMultiplePostsLike } from '../../hooks/useLikes';
+import { useMultiplePostsLike } from '../../hooks/features/useLikes';
+import { PostsService } from '../../services/postsService';
 import type { Post } from '../../types/post';
 
 interface SocialFeedProps {
@@ -124,8 +124,8 @@ const PostPreview: React.FC<{
             compact ? "text-xs" : "text-xs sm:text-sm"
           )}>
             <Calendar size={compact ? 12 : 14} className="mr-1" />
-            <span className="hidden sm:inline">{formatDate(post.data_criacao)}</span>
-            <span className="sm:hidden">{new Date(post.data_criacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
+            <span className="hidden sm:inline">{post.data_criacao ? formatDate(post.data_criacao) : ''}</span>
+            <span className="sm:hidden">{post.data_criacao ? new Date(post.data_criacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</span>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ const PostPreview: React.FC<{
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onLike?.(post.id);
+                if (post.id) onLike?.(post.id);
               }}
               className={cn(
                 "flex items-center gap-1 text-xs sm:text-sm transition-colors",
@@ -208,7 +208,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   compact = false
 }) => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const { likedPosts, toggleLike, isLiked } = useMultiplePostsLike();
+  const { toggleLike, isLiked } = useMultiplePostsLike();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -218,16 +218,12 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
       setLoading(true);
       
       try {
-        const { data, error } = await supabase
-          .from('posts_sociais')
-          .select('*')
-          .eq('publicado', true)
-          .order('data_criacao', { ascending: false })
-          .limit(maxPosts);
+        // ✅ SSoT: Usa PostsService en lugar de query directa
+        const data = showFeaturedOnly
+          ? await PostsService.getFeaturedPosts(maxPosts)
+          : await PostsService.getPublishedPosts(maxPosts);
 
-        if (error) throw error;
-
-        const formattedPosts: Post[] = (data || []).map(post => ({
+        const formattedPosts: Post[] = data.map(post => ({
           id: post.id,
           titulo: post.titulo,
           conteudo: post.conteudo,
@@ -239,18 +235,13 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
           autor: post.autor || 'Santos & Nascimento',
           data_criacao: post.data_criacao,
           data_publicacao: post.data_publicacao,
-          destaque: post.destaque || false,
+          destaque: post.destaque ?? false,
+          publicado: post.publicado ?? true,
           likes: post.likes || 0,
           comentarios: post.comentarios || 0
         }));
 
-        let filteredPosts = formattedPosts;
-        
-        if (showFeaturedOnly) {
-          filteredPosts = filteredPosts.filter(post => post.destaque);
-        }
-
-        setPosts(filteredPosts);
+        setPosts(formattedPosts);
       } catch (error) {
         console.error('Error loading posts:', error);
       } finally {
@@ -367,7 +358,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                   post={post}
                   compact={compact}
                   onLike={handleLike}
-                  isLiked={isLiked(post.id)}
+                  isLiked={post.id ? isLiked(post.id) : false}
                 />
               </motion.div>
             ))}

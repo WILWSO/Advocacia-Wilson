@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Comentario } from '../types/post';
+import { supabase } from '../../lib/supabase';
+import type { Comentario } from '../../types/post';
 
 /**
  * Hook para gestionar comentarios de posts

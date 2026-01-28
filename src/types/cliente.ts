@@ -3,7 +3,7 @@
  * Centraliza todas las definiciones de tipos relacionadas con clientes
  */
 
-import { DocumentoArquivo } from '../lib/supabase'
+import { DocumentoArquivo } from './documento'
 
 /**
  * Estado civil del cliente

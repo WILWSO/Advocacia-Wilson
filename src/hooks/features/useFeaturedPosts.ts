@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { PostsService } from '../../services/postsService';
 
 /**
  * Hook para verificar si existen posts destacados publicados
@@ -12,15 +12,9 @@ export const useFeaturedPosts = () => {
   useEffect(() => {
     const checkFeaturedPosts = async () => {
       try {
-        const { count, error } = await supabase
-          .from('posts_sociais')
-          .select('id', { count: 'exact', head: true })
-          .eq('publicado', true)
-          .eq('destaque', true);
-
-        if (error) throw error;
-
-        setHasFeaturedPosts((count ?? 0) > 0);
+        // ✅ SSoT: Usa PostsService en lugar de query directa
+        const result = await PostsService.hasFeaturedPosts();
+        setHasFeaturedPosts(result);
       } catch (error) {
         console.error('Error checking featured posts:', error);
         setHasFeaturedPosts(false);

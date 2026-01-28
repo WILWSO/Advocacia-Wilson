@@ -1,12 +1,11 @@
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import Logo from '../../shared/Logo';
 import { cn } from '../../../utils/cn';
 import { publicNavLinks, pageDropdownItems } from '../../home/NavBar';
-import { useAuthStore } from '../../auth/authStore';
-import { useFeaturedPosts } from '../../../hooks/useFeaturedPosts';
+import { useFeaturedPosts } from '../../../hooks/features/useFeaturedPosts';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -18,7 +17,6 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
   const [paginaExpanded, setPaginaExpanded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuthStore();
   const { hasFeaturedPosts } = useFeaturedPosts();
 
   // Filtrar items del dropdown basado en si hay posts destacados
@@ -213,16 +211,6 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
 
             {/* CTA Section */}
             <div className="px-6 pb-6 space-y-3">
-              {isAuthenticated && (
-                <Link
-                  to="/admin"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gold-600 hover:bg-gold-700 text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2"
-                  onClick={onClose}
-                >
-                  <LayoutDashboard size={18} />
-                  <span>Dashboard</span>
-                </Link>
-              )}
               <div className="p-4 bg-gradient-to-br from-primary-50 to-gold-50 rounded-xl border border-primary-100">
                 <h3 className="text-sm font-semibold text-primary-800 mb-2">
                   Precisa de ajuda jurídica?

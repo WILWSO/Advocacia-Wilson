@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Shield, Eye } from 'lucide-react';
-import { Usuario } from '../../../lib/supabase';
-import { useResponsive } from '../../../hooks/useResponsive';
+import { Usuario } from '../../../types/usuario';
+import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
+import { getRoleBadgeColor, getRoleLabel } from '../../../utils/roleHelpers';
 import AccessibleButton from '../buttons/AccessibleButton';
 
 interface UsuarioCardProps {
@@ -28,24 +29,6 @@ const UsuarioCard: React.FC<UsuarioCardProps> = ({
   const { isMobile } = useResponsive();
   const isCurrentUser = currentUser?.id === usuario.id;
   const isAdmin = currentUser?.role === 'admin';
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'advogado': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'assistente': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getRoleText = (role: string) => {
-    switch (role) {
-      case 'admin': return 'Administrador';
-      case 'advogado': return 'Advogado';
-      case 'assistente': return 'Assistente';
-      default: return role;
-    }
-  };
 
   return (
     <motion.div
@@ -79,11 +62,11 @@ const UsuarioCard: React.FC<UsuarioCardProps> = ({
           </div>
           <div className={cn(
             "px-2 sm:px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 whitespace-nowrap flex-shrink-0",
-            getRoleColor(usuario.role)
+            getRoleBadgeColor(usuario.role)
           )}>
             <Shield size={14} />
-            <span className="hidden sm:inline">{getRoleText(usuario.role)}</span>
-            <span className="sm:hidden">{getRoleText(usuario.role).substring(0, 4)}</span>
+            <span className="hidden sm:inline">{getRoleLabel(usuario.role)}</span>
+            <span className="sm:hidden">{getRoleLabel(usuario.role).substring(0, 4)}</span>
           </div>
         </div>
 

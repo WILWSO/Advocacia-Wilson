@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Post } from '../../../types/post';
 import { isNewPost, getBackgroundImage } from '../../../utils/postUtils';
-import { useResponsive } from '../../../hooks/useResponsive';
+import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
 
 interface PostCardProps {

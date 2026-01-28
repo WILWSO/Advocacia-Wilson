@@ -1,4 +1,4 @@
-import { Home, Users, Scale, Briefcase, Share2, Phone, FileText, MessageCircle, Award } from 'lucide-react';
+import { getIcon, SYSTEM_ICONS } from '../../config/icons';
 
 export interface NavLink {
   to: string;
@@ -14,42 +14,107 @@ export interface DropdownMenuItem {
   icon?: React.ReactNode;
 }
 
-// Items del menú dropdown "Página"
+// Items del menú dropdown "Página" para TABLETS - Incluye navegación principal y secciones
 export const pageDropdownItems: DropdownMenuItem[] = [
+  { 
+    label: 'Home', 
+    href: '/',
+    icon: getIcon('home', 16)
+  },
+  { 
+    label: 'Nossa História', 
+    href: '/nossa-historia',
+    icon: getIcon('aboutUs', 16)
+  },
+  { 
+    label: 'Equipe', 
+    href: '/equipe',
+    icon: getIcon('team', 16)
+  },
+  { 
+    label: 'Social', 
+    href: '/social',
+    icon: getIcon('social', 16)
+  },
+  // Separador visual (sin texto, solo estilos)
+  { 
+    label: '─────────────────', 
+    href: '#separator',
+    icon: null
+  },
   { 
     label: 'Início', 
     href: '#hero',
-    icon: <Home size={16} />
+    icon: getIcon('hero', 16)
   },
   { 
     label: 'Especialistas', 
     href: '#team',
-    icon: <Users size={16} />
+    icon: getIcon('team', 16)
   },
   { 
     label: 'Sobre Nós', 
     href: '#about',
-    icon: <FileText size={16} />
+    icon: getIcon('achievements', 16)
   },
   { 
     label: 'Áreas de Atuação', 
     href: '#practice-areas',
-    icon: <Scale size={16} />
+    icon: getIcon('practiceAreas', 16)
   },
   { 
     label: 'Destaques', 
     href: '#social',
-    icon: <Share2 size={16} />
+    icon: getIcon('social', 16)
   },
   { 
     label: 'Depoimentos', 
     href: '#testimonials',
-    icon: <MessageCircle size={16} />
+    icon: getIcon('testimonials', 16)
   },
   { 
     label: 'Contato', 
     href: '#contact',
-    icon: <Phone size={16} />
+    icon: getIcon('contact', 16)
+  }
+];
+
+// Items del menú dropdown "Página" para DESKTOP - Solo secciones del home
+export const pageSectionsDropdownItems: DropdownMenuItem[] = [
+  { 
+    label: 'Início', 
+    href: '#hero',
+    icon: getIcon('hero', 16)
+  },
+  { 
+    label: 'Especialistas', 
+    href: '#team',
+    icon: getIcon('team', 16)
+  },
+  { 
+    label: 'Sobre Nós', 
+    href: '#about',
+    icon: getIcon('achievements', 16)
+  },
+  { 
+    label: 'Áreas de Atuação', 
+    href: '#practice-areas',
+    icon: getIcon('practiceAreas', 16)
+  },
+  { 
+    label: 'Destaques', 
+    href: '#social',
+    icon: getIcon('social', 16)
+  },
+  { 
+    label: 'Depoimentos', 
+    href: '#testimonials',
+    icon: getIcon('testimonials', 16)
+  },
+  { 
+    label: 'Contato', 
+    href: '#contact',
+    icon: getIcon('contact', 16)
   }
 ];
 
@@ -57,27 +122,27 @@ export const publicNavLinks: NavLink[] = [
   { 
     to: '/', 
     label: 'Home', 
-    icon: Home,
+    icon: SYSTEM_ICONS.home,
     ariaLabel: 'Página inicial' 
   },
   { 
     to: '/nossa-historia', 
     label: 'História', 
-    icon: Users,
+    icon: SYSTEM_ICONS.aboutUs,
     ariaLabel: 'História do escritório' 
   },
   // Nota: "Página" dropdown será manejado por DropdownMenu component
   { 
     to: '/equipe', 
     label: 'Equipe', 
-    icon: Briefcase,
+    icon: SYSTEM_ICONS.team,
     ariaLabel: 'Conheça nossa equipe' 
   },
   { 
     to: '/social', 
     label: 'Social', 
-    icon: Share2,
-    ariaLabel: 'Notícias e conteúdos' 
+    icon: SYSTEM_ICONS.social,
+    ariaLabel: 'Responsabilidade Social e conteúdos' 
   },
 
 ];

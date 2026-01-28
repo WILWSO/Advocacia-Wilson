@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from './authStore';
+import { useAuthLogin } from './useAuthLogin';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -25,7 +25,7 @@ export const ProtectedRoute = ({
   requiredRoles,
   redirectTo = '/login'
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, user, isLoading, checkAuth } = useAuthStore();
+  const { isAuthenticated, user, isLoading, checkAuth } = useAuthLogin();
   const location = useLocation();
 
   useEffect(() => {

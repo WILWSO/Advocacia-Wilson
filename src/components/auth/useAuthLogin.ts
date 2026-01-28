@@ -1,27 +1,26 @@
 import { create } from 'zustand';
 import { supabase } from '../../lib/supabase';
-
-interface User {
-  id: string;
-  name?: string;
-  email: string;
-  role: 'admin' | 'advogado' | 'assistente';
-  avatar?: string;
-}
+import { Usuario } from '../../types/usuario';
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
+  user: Usuario | null;
   isLoading: boolean;
+  loading: boolean; // Alias para compatibilidad
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signOut: () => Promise<void>; // Alias para compatibilidad
+  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
+  signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
+  resetPassword: (email: string) => Promise<{ data: any; error: any }>;
   checkAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthLogin = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
   isLoading: true,
+  get loading() { return get().isLoading; }, // Alias para compatibilidad
   
   login: async (email: string, password: string) => {
     try {
@@ -42,12 +41,14 @@ export const useAuthStore = create<AuthState>((set) => ({
           .eq('email', data.user.email)
           .single();
           
-        const user: User = {
+        const user: Usuario = {
           id: data.user.id,
-          name: userData?.nome || data.user.email,
+          nome: userData?.nome || data.user.email || '',
           email: data.user.email!,
           role: userData?.role || 'assistente',
-          avatar: userData?.avatar_url || data.user.user_metadata?.avatar_url
+          foto_perfil_url: userData?.foto_perfil_url || data.user.user_metadata?.avatar_url,
+          ativo: userData?.ativo ?? true,
+          ...userData
         };
         
         set({ isAuthenticated: true, user, isLoading: false });
@@ -59,6 +60,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   
+  signIn: async (email: string, password: string) => {
+    // Alias para compatibilidad con useAuth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    return { data, error };
+  },
+  
+  signUp: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password
+    });
+    return { data, error };
+  },
+  
+  resetPassword: async (email: string) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    return { data, error };
+  },
+  
   logout: async () => {
     try {
       await supabase.auth.signOut();
@@ -66,6 +89,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       console.error('Logout error:', error);
     }
+  },
+  
+  signOut: async () => {
+    // Alias para compatibilidad con useAuth
+    await get().logout();
   },
   
   checkAuth: async () => {
@@ -81,15 +109,17 @@ export const useAuthStore = create<AuthState>((set) => ({
         const { data: userData } = await supabase
           .from('usuarios')
           .select('*')
-          .eq('email', user.email)
+          .eq('id', user.id)
           .single();
           
-        const userInfo: User = {
+        const userInfo: Usuario = {
           id: user.id,
-          name: userData?.nome || user.email,
+          nome: userData?.nome || user.email || '',
           email: user.email!,
           role: userData?.role || 'assistente',
-          avatar: userData?.avatar_url || user.user_metadata?.avatar_url
+          foto_perfil_url: userData?.foto_perfil_url || user.user_metadata?.avatar_url,
+          ativo: userData?.ativo ?? true,
+          ...userData
         };
         
         set({ isAuthenticated: true, user: userInfo, isLoading: false });
@@ -107,13 +137,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // Verificar autenticação ao inicializar
-useAuthStore.getState().checkAuth();
+useAuthLogin.getState().checkAuth();
 
 // Escuchar cambios de autenticación
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT') {
-    useAuthStore.setState({ isAuthenticated: false, user: null, isLoading: false });
+    useAuthLogin.setState({ isAuthenticated: false, user: null, isLoading: false });
   } else if (event === 'SIGNED_IN' && session?.user) {
-    useAuthStore.getState().checkAuth();
+    useAuthLogin.getState().checkAuth();
   }
 });

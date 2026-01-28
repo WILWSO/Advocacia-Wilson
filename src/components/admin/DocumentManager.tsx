@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Upload, Download, Trash2, Eye, FileText, Loader2 } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { StorageService } from '../../services/storageService'
 import AccessibleButton from '../shared/buttons/AccessibleButton'
-import { useInlineNotification } from '../../hooks/useInlineNotification'
+import { useInlineNotification } from '../../hooks/ui/useInlineNotification'
 import { InlineNotification } from '../shared/notifications/InlineNotification'
 import { useNotification } from '../shared/notifications/NotificationContext'
 
@@ -73,30 +73,18 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     try {
       // Usar ID temporal si no hay entityId
       const targetId = entityId || `temp-${Date.now()}`
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-      const filePath = `${targetId}/${fileName}`
 
-      // Subir archivo
-      const { error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type
-        })
+      // Upload usando StorageService
+      const publicUrl = await StorageService.uploadFile(bucketName, file, targetId)
 
-      if (uploadError) throw uploadError
-
-      // Para buckets privados, guardar solo el filePath
-      // La URL se generará dinámicamente al visualizar con signed URL
-      const { data: urlData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(filePath)
+      if (!publicUrl) {
+        throw new Error('Erro ao fazer upload do arquivo')
+      }
 
       // Crear objeto documento
       const newDoc: DocumentItem = {
         nome: file.name,
-        url: urlData.publicUrl, // Guardamos la URL pública como referencia (contiene el path)
+        url: publicUrl, // Guardamos la URL pública como referencia (contiene el path)
         tipo: file.type,
         tamanho: file.size,
         data_upload: new Date().toISOString()
@@ -121,34 +109,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const handleViewDocument = async (doc: DocumentItem) => {
     try {
-      // Extraer path desde /object/public/{bucketName}/ o /object/{bucketName}/
-      const urlPattern = new RegExp(`/object/(?:public/)?${bucketName}/(.+)`)
-      const match = doc.url.match(urlPattern)
-      
-      if (match && match[1]) {
-        const filePath = match[1]
-
-        const { data: fileBlob, error } = await supabase.storage
-          .from(bucketName)
-          .download(filePath)
-
-        if (error) {
-          console.error('Download error:', error)
-          throw error
-        }
-
-        if (fileBlob) {
-          const blobUrl = URL.createObjectURL(
-            new Blob([fileBlob], { type: doc.tipo || fileBlob.type })
-          )
-          
-          window.open(blobUrl, '_blank')
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-        }
-      } else {
-        console.error('Failed to extract path from URL:', doc.url)
-        alert('Erro: não foi possível extrair o caminho do documento')
-      }
+      await StorageService.viewDocument(doc, bucketName)
     } catch (error) {
       console.error('Erro ao visualizar documento:', error)
       alert('Erro ao visualizar documento. Verifique as permissões no Supabase Storage.')
@@ -157,42 +118,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const handleDownloadDocument = async (doc: DocumentItem) => {
     try {
-      // Extraer path desde /object/public/{bucketName}/ o /object/{bucketName}/
-      const urlPattern = new RegExp(`/object/(?:public/)?${bucketName}/(.+)`)
-      const match = doc.url.match(urlPattern)
-      let downloadUrl = doc.url
-      
-      if (match && match[1]) {
-        const filePath = match[1]
-        
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .createSignedUrl(filePath, 60)
-
-        if (error) throw error
-        
-        if (data?.signedUrl) {
-          downloadUrl = data.signedUrl
-        }
-      }
-      
-      const response = await fetch(downloadUrl)
-      if (!response.ok) throw new Error('Error al obtener el archivo')
-      
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = doc.nome
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
-      
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-      }, 100)
-      
+      await StorageService.downloadDocument(doc, bucketName)
       success('Download iniciado com sucesso!')
     } catch (error) {
       console.error('Erro ao baixar documento:', error)
@@ -212,15 +138,10 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     if (!confirmed) return;
 
     try {
-      const urlParts = doc.url.split(`/${bucketName}/`)
-      if (urlParts.length > 1) {
-        const filePath = urlParts[1]
-        
-        const { error } = await supabase.storage
-          .from(bucketName)
-          .remove([filePath])
-
-        if (error) throw error
+      const deleted = await StorageService.deleteFile(bucketName, doc.url)
+      
+      if (!deleted) {
+        throw new Error('Falha ao deletar arquivo do Storage')
       }
 
       const newDocs = documents.filter((_, i) => i !== index)

@@ -14,7 +14,7 @@ import Logo from '../shared/Logo';
 import { company } from '../../data/DataCompany';
 import { footerQuickLinks } from '../home/NavBar';
 import { ResponsiveGrid, ResponsiveContainer } from '../shared/ResponsiveGrid';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useResponsive } from '../../hooks/ui/useResponsive';
 import { cn } from '../../utils/cn';
 
 const Footer: React.FC = () => {

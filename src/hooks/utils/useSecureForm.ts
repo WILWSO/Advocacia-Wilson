@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { FormValidator, ContactFormData } from '../utils/FormValidator';
-import { InputSanitizer } from '../utils/InputSanitizer';
-import { formRateLimiter } from '../utils/RateLimiter';
+import { FormValidator, ContactFormData } from '../../utils/FormValidator';
+import { InputSanitizer } from '../../utils/InputSanitizer';
+import { formRateLimiter } from '../../utils/RateLimiter';
 
 export interface UseSecureFormReturn {
   formData: ContactFormData;

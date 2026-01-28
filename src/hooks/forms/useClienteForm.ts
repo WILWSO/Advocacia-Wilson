@@ -4,10 +4,11 @@
  */
 
 import { useState } from 'react'
-import { useAuth, useClientes } from './useSupabase'
-import { useNotification } from '../components/shared/notifications/NotificationContext'
-import { useInlineNotification } from './useInlineNotification'
-import { Cliente, ClienteFormData } from '../types/cliente'
+import { useAuthLogin as useAuth } from '../../components/auth/useAuthLogin'
+import { useClientes } from '../data-access/useClientes'
+import { useNotification } from '../../components/shared/notifications/NotificationContext'
+import { useInlineNotification } from '../ui/useInlineNotification'
+import { Cliente, ClienteFormData } from '../../types/cliente'
 
 export const useClienteForm = () => {
   const { user: currentUser } = useAuth()

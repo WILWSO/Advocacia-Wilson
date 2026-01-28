@@ -5,6 +5,8 @@ export const teamMemberData = [
     active: true,
     position: 'Sócio',
     image: ['/Images/Wilson5.jpg', '/Images/Wilson8.jpg'],
+    imageZoom: 110, // Zoom base 10%
+    imagePosition: 50, // Posición vertical (50 = centrado)
     education: [
       'Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
       'Especialização em Direito Empresarial',
@@ -23,7 +25,9 @@ export const teamMemberData = [
     name: 'Dr. Lucas Nascimento',
     active: true,
     position: 'Sócio',
-    image: ['/Images/Lucas5.jpg', '/Images/Lucas6.jpg'],
+    image: ['/Images/Lucas5.jpg', '/Images/Lucas8.jpeg'],
+    imageZoom: 110, // Zoom ajustado según proporciones de la foto
+    imagePosition: 50, // Position ajustado para compensar proporciones diferentes
     education: [
       'Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
       'Especialização em Direito Civil',
@@ -42,6 +46,7 @@ export const teamMemberData = [
     active: true,
     position: 'Associada',
     image: ['/Images/Rosimeire2.jpg', '/Images/Rosimeire5.jpg'],
+    imageZoom: 110, // Zoom base 10%
     education: [
       'Bacharel em Direito - Universidade Federal do Tocantins (UFT)',
       'Especialização em Direito do trabalho'
@@ -59,6 +64,7 @@ export const teamMemberData = [
     active: true,
     position: 'Assessoria Contábil',
     image: ['/Rosilene2.jpg', '/Rosilene1.jpg'],
+    imageZoom: 110, // Zoom base 10%
     education: [
       'Bacharel em Ciencias Contábeis - Universidade Norte do Paraná (UNOPAR)',
       'Bacharel em Administração - Instituto de Ensino e Pesquisa Objetivo (IEP)',

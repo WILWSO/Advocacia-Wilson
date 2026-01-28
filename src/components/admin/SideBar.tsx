@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FileText, Users, User, MessageSquare } from 'lucide-react';
+import { getIcon } from '../../config/icons';
 import { cn } from '../../utils/cn';
 
 interface NavItem {
@@ -13,22 +13,22 @@ const navItems: NavItem[] = [
   {
     path: '/admin/processos',
     label: 'Processos',
-    icon: <FileText size={20} />
+    icon: getIcon('processos', 20)
   },
   {
     path: '/admin/clientes',
     label: 'Clientes',
-    icon: <Users size={20} />
+    icon: getIcon('clientes', 20)
   },
   {
     path: '/admin/usuarios',
     label: 'Usuários',
-    icon: <User size={20} />
+    icon: getIcon('usuarios', 20)
   },
   {
     path: '/admin/social',
     label: 'Social',
-    icon: <MessageSquare size={20} />
+    icon: getIcon('socialAdmin', 20)
   }
 ];
 

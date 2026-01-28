@@ -1,5 +1,5 @@
 import { Clock, User } from 'lucide-react'
-import { useAuditData } from '../../hooks/useAuditData'
+import { useAuditData } from '../../hooks/data-access/useAuditData'
 import { formatDate } from '../../utils/postUtils'
 
 interface AuditInfoProps {

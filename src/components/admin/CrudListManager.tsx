@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { X, Edit2, Trash2, Plus, Eye } from 'lucide-react';
 import AccessibleButton from '../shared/buttons/AccessibleButton';
 import { cn } from '../../utils/cn';
-import { useInlineNotification } from '../../hooks/useInlineNotification';
+import { useInlineNotification } from '../../hooks/ui/useInlineNotification';
 import { InlineNotification } from '../shared/notifications/InlineNotification';
 import { useNotification } from '../shared/notifications/NotificationContext';
 
