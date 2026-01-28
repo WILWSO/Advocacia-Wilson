@@ -4,20 +4,24 @@ import { NotificationProvider } from './components/shared/notifications/Notifica
 import { OfflineNotification } from './components/shared/notifications/OfflineNotification';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
-import Home from './pages/Home';
-import AboutPage from './pages/AboutPage';
-import PracticeAreasPage from './pages/PracticeAreasPage';
-import TeamPage from './pages/TeamPage';
-import ContactPage from './pages/ContactPage';
-import SocialPublicPage from './pages/SocialPublicPage';
-import NotFoundPage from './pages/NotFoundPage';
-import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import WhatsAppButton from './components/shared/buttons/WhatsAppButton';
 import SkipLinks from './components/layout/SkipLinks';
+import { PageLoader } from './components/shared/LoadingFallback';
 import { cn } from './utils/cn';
 
-// Lazy load admin pages para reducir bundle inicial
+// Lazy load TODAS las páginas para optimizar bundle inicial
+// Páginas públicas
+const Home = lazy(() => import('./pages/Home'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const PracticeAreasPage = lazy(() => import('./pages/PracticeAreasPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const SocialPublicPage = lazy(() => import('./pages/SocialPublicPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+
+// Páginas administrativas
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ProcessosPage = lazy(() => import('./pages/ProcessosPage'));
 const ClientesPage = lazy(() => import('./pages/ClientesPage'));
@@ -62,41 +66,38 @@ function App() {
         <OfflineNotification />
         {!shouldHideHeader && <Header />}
         <main id="main-content" className={cn("flex-grow", isSocialRoute && "pt-20")} role="main" tabIndex={-1}>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<Home />} />
-          <Route path="/nossa-historia" element={<AboutPage />} />
-          <Route path="/areas-de-atuacao" element={<PracticeAreasPage />} />
-          <Route path="/equipe" element={<TeamPage />} />
-          <Route path="/contato" element={<ContactPage />} />
-          <Route path="/social" element={<SocialPublicPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          
-          {/* Rutas protegidas - Admin Area con navegación anidada */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute>
-                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-lg">Cargando...</div></div>}>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Rutas públicas */}
+            <Route path="/" element={<Home />} />
+            <Route path="/nossa-historia" element={<AboutPage />} />
+            <Route path="/areas-de-atuacao" element={<PracticeAreasPage />} />
+            <Route path="/equipe" element={<TeamPage />} />
+            <Route path="/contato" element={<ContactPage />} />
+            <Route path="/social" element={<SocialPublicPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            
+            {/* Rutas protegidas - Admin Area con navegación anidada */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
                   <Dashboard />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          >
-            {/* Redirigir /admin a /admin/processos */}
-            <Route index element={<Navigate to="/admin/processos" replace />} />
+                </ProtectedRoute>
+              }
+            >
+              {/* Redirigir /admin a /admin/processos */}
+              <Route index element={<Navigate to="/admin/processos" replace />} />
             
             {/* Subrutas del área administrativa */}
-            <Route path="processos" element={<Suspense fallback={<div>Cargando...</div>}><ProcessosPage /></Suspense>} />
-            <Route path="clientes" element={<Suspense fallback={<div>Cargando...</div>}><ClientesPage /></Suspense>} />
-            <Route path="usuarios" element={<Suspense fallback={<div>Cargando...</div>}><UsuariosPage /></Suspense>} />
+            <Route path="processos" element={<ProcessosPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+            <Route path="usuarios" element={<UsuariosPage />} />
             <Route 
               path="social" 
               element={
                 <ProtectedRoute requiredRoles={['admin', 'advogado']}>
-                  <Suspense fallback={<div>Cargando...</div>}>
-                    <SocialPage />
-                  </Suspense>
+                  <SocialPage />
                 </ProtectedRoute>
               } 
             />
@@ -111,6 +112,7 @@ function App() {
           {/* Ruta catch-all para 404 - debe ser la última */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </Suspense>
       </main>
       {!shouldHideHeader && <Footer />}
       {!shouldHideHeader && <WhatsAppButton />}

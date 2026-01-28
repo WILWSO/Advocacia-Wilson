@@ -7,6 +7,22 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React y dependencias core
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Supabase y autenticación
+          'supabase-vendor': ['@supabase/supabase-js'],
+          // Iconos
+          'icons-vendor': ['lucide-react'],
+        },
+      },
+    },
+    // Aumentar el límite de advertencia a 600 KB
+    chunkSizeWarningLimit: 600,
+  },
   server: {
     // Configuración para evitar problemas de caché en desarrollo
     force: true,
