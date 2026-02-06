@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthLogin } from '../../components/auth/useAuthLogin';
+import { ERROR_MESSAGES } from '../../config/messages';
 
 interface UseLoginFormReturn {
   // Estados del formulario
@@ -74,20 +75,24 @@ export const useLoginForm = (): UseLoginFormReturn => {
     try {
       await login(email, password);
       // La redirección se maneja automáticamente en el useEffect
-    } catch (err: any) {
-      console.error('Login error:', err);
+    } catch (err: unknown) {
+      const error = err as Error;
+      // Log solo errores inesperados, no credenciales incorrectas
+      if (!error.message?.includes('Invalid login credentials')) {
+        console.error('Login error:', error);
+      }
       
       // Mensajes de error específicos según el tipo de error
-      if (err.message?.includes('Invalid login credentials')) {
+      if (error.message?.includes('Invalid login credentials')) {
         setError('Email ou senha incorretos');
-      } else if (err.message?.includes('Email not confirmed')) {
+      } else if (error.message?.includes('Email not confirmed')) {
         setError('Email não confirmado. Verifique sua caixa de entrada.');
-      } else if (err.message?.includes('Too many requests')) {
+      } else if (error.message?.includes('Too many requests')) {
         setError('Muitas tentativas. Aguarde alguns minutos e tente novamente.');
-      } else if (err.message?.includes('Network')) {
-        setError('Erro de conexão. Verifique sua internet.');
+      } else if (error.message?.includes('Network')) {
+        setError(ERROR_MESSAGES.auth.CONNECTION_ERROR);
       } else {
-        setError('Erro ao fazer login. Tente novamente.');
+        setError(ERROR_MESSAGES.auth.LOGIN_ERROR);
       }
     } finally {
       setIsSubmitting(false);

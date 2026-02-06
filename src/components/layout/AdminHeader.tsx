@@ -68,7 +68,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
                       "inline-block text-xs px-2 py-0.5 rounded-full border font-medium",
                       getRoleBadgeColor(user?.role || '')
                     )}>
-                      {getRoleLabel(user?.role || '')}
+                      {getRoleLabel(user?.role)}
                     </span>
                   </div>
                   <ChevronDown size={16} className="text-gray-500 hidden md:block" />
@@ -94,19 +94,21 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
                         "inline-block mt-2 text-xs px-2 py-1 rounded-full border font-medium",
                         getRoleBadgeColor(user?.role || '')
                       )}>
-                        {getRoleLabel(user?.role || '')}
+                        {getRoleLabel(user?.role)}
                       </span>
                     </div>
 
                     <div className="py-1">
-                      <Link
-                        to="/admin/usuarios"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        onClick={() => setShowUserMenu(false)}
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          navigate('/admin/usuarios', { state: { viewCurrentUser: true } })
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       >
                         <User size={16} />
                         {UI_LAYOUT.HEADER.MY_PROFILE}
-                      </Link>
+                      </button>
                       <button
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       >

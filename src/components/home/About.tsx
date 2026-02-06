@@ -5,6 +5,9 @@ import { company } from '../../data/DataCompany';
 import OptimizedImage from '../shared/OptimizedImage';
 import { SectionHeader } from './SectionHeader';
 import { fadeInUp, scrollTriggerProps, standardTransition, delayedTransition } from '../../utils/animations';
+import { HOME_SECTIONS } from '../../config/messages';
+import { HOME_SECTION_CLASSES } from '../../config/theme';
+import { cn } from '../../utils/cn';
 
 const companyValues = [
   {
@@ -55,8 +58,8 @@ const About = () => {
           {/* Content */}
            <div>
             <SectionHeader
-              overline="Sobre Nós"
-              title="O que é Advocacia Integral em Serviços Jurídicos?"
+              overline={HOME_SECTIONS.ABOUT.OVERLINE}
+              title={HOME_SECTIONS.ABOUT.TITLE}
               description=""
               align="left"
             />
@@ -83,9 +86,9 @@ const About = () => {
               >
                 <Link
                   to="/sobre"
-                  className="inline-block px-6 py-3 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors"
+                  className={HOME_SECTION_CLASSES.ctaButton}
                 >
-                  Conheça Nossa História
+                  {HOME_SECTIONS.ABOUT.CTA_HISTORY}
                 </Link>
               </motion.div>  
             </div>          

@@ -1,4 +1,9 @@
 import { supabase } from '../lib/supabase';
+import { 
+  STORAGE_BUCKETS,
+  validateFile, 
+  STORAGE_ERROR_MESSAGES 
+} from '../config/storage';
 
 /**
  * Interface para documentos (compatible con DocumentoArquivo y DocumentItem)
@@ -77,7 +82,15 @@ export class StorageService {
     }
 
     try {
-      const filePath = this.extractFilePath(doc.url, bucketName);
+      // Si doc.url es un path (no contiene http), úsalo directamente
+      // Si es URL completa, extraer el path
+      let filePath: string | null = null;
+      
+      if (doc.url.startsWith('http')) {
+        filePath = this.extractFilePath(doc.url, bucketName);
+      } else {
+        filePath = doc.url; // Ya es un path
+      }
 
       if (filePath) {
         // Usar .download() para obtener el blob directamente (mejor compatibilidad RLS)
@@ -104,7 +117,7 @@ export class StorageService {
       }
     } catch (error) {
       console.error('Error viewing document:', error);
-      throw new Error('Erro ao visualizar documento. Verifique as permissões no Supabase Storage.');
+      throw new Error(STORAGE_ERROR_MESSAGES.downloadFailed);
     }
   }
 
@@ -123,7 +136,16 @@ export class StorageService {
     }
 
     try {
-      const filePath = this.extractFilePath(doc.url, bucketName);
+      // Si doc.url es un path (no contiene http), úsalo directamente
+      // Si es URL completa, extraer el path
+      let filePath: string | null = null;
+      
+      if (doc.url.startsWith('http')) {
+        filePath = this.extractFilePath(doc.url, bucketName);
+      } else {
+        filePath = doc.url; // Ya es un path
+      }
+
       let downloadUrl = doc.url;
 
       if (filePath) {
@@ -155,7 +177,7 @@ export class StorageService {
       }, 100);
     } catch (error) {
       console.error('Error downloading document:', error);
-      throw new Error('Erro ao baixar documento. Tente novamente.');
+      throw new Error(STORAGE_ERROR_MESSAGES.downloadFailed);
     }
   }
 
@@ -176,25 +198,42 @@ export class StorageService {
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       const filePath = `${entityId}/${fileName}`;
 
+      // SIEMPRE determinar contentType por extensión (más confiable que file.type)
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const mimeTypes: Record<string, string> = {
+        'pdf': 'application/pdf',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xls': 'application/vnd.ms-excel',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'txt': 'text/plain',
+        'csv': 'text/csv'
+      };
+      
+      const contentType = mimeTypes[extension] || 'application/octet-stream';
+
+      // Convertir File a ArrayBuffer y luego a Blob con tipo correcto
+      const arrayBuffer = await file.arrayBuffer();
+      const fileBlob = new Blob([arrayBuffer], { type: contentType });
+
       const { error } = await supabase.storage
         .from(bucketName)
-        .upload(filePath, file, {
+        .upload(filePath, fileBlob, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type
+          contentType: contentType
         });
 
       if (error) throw error;
 
-      // Retornar public URL como referencia (contiene el path)
-      const { data: urlData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
-
-      return urlData.publicUrl;
+      return filePath;
     } catch (error) {
       console.error('Error uploading file:', error);
-      return null;
+      throw new Error(STORAGE_ERROR_MESSAGES.uploadFailed);
     }
   }
 
@@ -207,7 +246,16 @@ export class StorageService {
    */
   static async deleteFile(bucketName: string, url: string): Promise<boolean> {
     try {
-      const filePath = this.extractFilePath(url, bucketName);
+      // Si url es un path (no contiene http), úsalo directamente
+      // Si es URL completa, extraer el path
+      let filePath: string | null = null;
+      
+      if (url.startsWith('http')) {
+        filePath = this.extractFilePath(url, bucketName);
+      } else {
+        filePath = url; // Ya es un path
+      }
+      
       if (!filePath) {
         console.error('Could not extract file path from URL');
         return false;
@@ -228,7 +276,7 @@ export class StorageService {
 
   /**
    * Sube una foto de perfil de usuario
-   * - Validaciones: tipo (JPG, PNG, WEBP) y tamaño (5MB)
+   * - Validaciones: usa validateFile de config/storage.ts (SSoT)
    * - Elimina foto anterior si existe
    * - Retorna URL pública de la nueva foto
    * 
@@ -243,16 +291,10 @@ export class StorageService {
     oldPhotoUrl?: string
   ): Promise<string | null> {
     try {
-      // Validar tamaño (5MB máximo)
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        throw new Error('A foto é muito grande. Tamanho máximo: 5MB');
-      }
-
-      // Validar tipo de archivo
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error('Tipo de arquivo não permitido. Use: JPG, PNG ou WEBP');
+      // ✅ SSoT: Usa validateFile centralizado de config/storage.ts
+      const validation = validateFile(file, STORAGE_BUCKETS.fotoPerfil);
+      if (!validation.valid) {
+        throw new Error(validation.error);
       }
 
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
@@ -265,7 +307,7 @@ export class StorageService {
 
       // Subir nueva foto
       const { error: uploadError } = await supabase.storage
-        .from('foto_perfil')
+        .from(STORAGE_BUCKETS.fotoPerfil)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -276,7 +318,7 @@ export class StorageService {
 
       // Obtener URL pública
       const { data: urlData } = supabase.storage
-        .from('foto_perfil')
+        .from(STORAGE_BUCKETS.fotoPerfil)
         .getPublicUrl(filePath);
 
       return urlData.publicUrl;
@@ -296,7 +338,7 @@ export class StorageService {
    */
   static async deleteProfilePhoto(url: string): Promise<boolean> {
     try {
-      const urlParts = url.split('/foto_perfil/');
+      const urlParts = url.split(`/${STORAGE_BUCKETS.fotoPerfil}/`);
       if (urlParts.length < 2) {
         console.error('Invalid profile photo URL format');
         return false;
@@ -305,7 +347,7 @@ export class StorageService {
       const filePath = urlParts[1];
 
       const { error } = await supabase.storage
-        .from('foto_perfil')
+        .from(STORAGE_BUCKETS.fotoPerfil)
         .remove([filePath]);
 
       if (error) throw error;

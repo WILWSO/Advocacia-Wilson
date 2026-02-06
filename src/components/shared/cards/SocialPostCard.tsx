@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Edit3, 
   Trash2, 
@@ -18,6 +18,7 @@ import {
 import { cn } from '../../../utils/cn';
 import { formatDate, getTypeIcon, getTypeColor, truncateText } from '../../../utils/postUtils';
 import { extractYouTubeId, getYouTubeEmbedUrl } from '../../../utils/youtubeUtils';
+import { EXTERNAL_COMPONENT_CLASSES } from '../../../config/theme';
 import { useComments } from '../../../hooks/data-access/useComments';
 import { PostsService } from '../../../services/postsService';
 import type { Post } from '../../../types/post';
@@ -61,6 +62,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
   initialShowModal = false,
   onClick
 }) => {
+  const [showModal, setShowModal] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.likes);
   const [localComments, setLocalComments] = useState(post.comentarios);
@@ -69,6 +71,13 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
 
   const MAX_CONTENT_LENGTH = 150;
   const MAX_TITLE_LENGTH = 60;
+
+  // Abrir modal automáticamente si initialShowModal es true
+  useEffect(() => {
+    if (initialShowModal) {
+      setShowModal(true);
+    }
+  }, [initialShowModal]);
 
   // Hook de comentarios (solo para variant public)
   const {
@@ -120,7 +129,12 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      onClick={onClick}
+      onClick={() => {
+        if (variant === 'public') {
+          setShowModal(true);
+        }
+        onClick?.();
+      }}
       className={cn(
         "bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border overflow-hidden",
         post.destaque && "ring-2 ring-gold-200 border-gold-300",
@@ -229,7 +243,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
                 }}
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
+                <div className={cn("w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all group-hover:scale-110", EXTERNAL_COMPONENT_CLASSES.youtubeButton)}>
                   <Play size={28} className="text-white ml-1" fill="white" />
                 </div>
               </div>
@@ -393,7 +407,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
                   type="submit"
                   onClick={(e) => e.stopPropagation()}
                   disabled={submittingComment || !newComment.trim() || !commentAuthor.trim()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
                 >
                   {submittingComment ? (
                     <>
@@ -556,6 +570,261 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de detalle completo - Solo para variant public */}
+      {variant === 'public' && (
+        <AnimatePresence>
+          {showModal && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowModal(false)}
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+              />
+
+              {/* Modal Container */}
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ type: 'spring', duration: 0.3 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+                >
+                  {/* Header del Modal */}
+                  <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white">
+                    <div className="flex items-center gap-3 flex-wrap flex-1">
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border",
+                        getTypeColor(post.tipo)
+                      )}>
+                        {getTypeIcon(post.tipo)}
+                        {post.tipo === 'article' && 'Artigo'}
+                        {post.tipo === 'video' && 'Vídeo'}
+                        {post.tipo === 'image' && 'Imagem'}
+                        {post.tipo === 'announcement' && 'Anúncio'}
+                      </span>
+                      {post.destaque && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-gold-100 to-gold-200 text-gold-800 text-xs font-medium rounded-full border border-gold-300">
+                          ⭐ Destaque
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
+                      aria-label="Cerrar modal"
+                    >
+                      <X size={20} className="text-neutral-600" />
+                    </button>
+                  </div>
+
+                  {/* Contenido del Modal */}
+                  <div className="p-6">
+                    {/* Título */}
+                    <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800 mb-4 leading-tight">
+                      {post.titulo}
+                    </h2>
+
+                    {/* Imagen/Video */}
+                    {post.image_url && post.tipo !== 'video' && (
+                      <div className="mb-6 rounded-xl overflow-hidden">
+                        <img
+                          src={post.image_url}
+                          alt={post.titulo}
+                          className="w-full h-auto"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {post.tipo === 'video' && post.video_url && (post.youtube_id || extractYouTubeId(post.video_url)) && (
+                      <div className="mb-6 aspect-video rounded-xl overflow-hidden">
+                        <iframe
+                          src={getYouTubeEmbedUrl(post.youtube_id || extractYouTubeId(post.video_url)!)}
+                          title={post.titulo}
+                          className="w-full h-full border-0"
+                          allowFullScreen
+                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                        />
+                      </div>
+                    )}
+
+                    {/* Contenido completo */}
+                    <div className="prose prose-neutral max-w-none mb-6">
+                      <p className="text-neutral-700 leading-relaxed whitespace-pre-wrap">
+                        {post.conteudo}
+                      </p>
+                    </div>
+
+                    {/* Tags */}
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {post.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm rounded-lg transition-colors"
+                          >
+                            <Tag size={14} />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Metadata */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500 mb-6 pb-6 border-b border-neutral-200">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} className="text-neutral-400" />
+                        <span>{formatDate(post.data_criacao || new Date().toISOString())}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User size={16} className="text-neutral-400" />
+                        <span className="font-medium">
+                          {typeof post.autor === 'string' ? post.autor : post.autor.nome}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (post.id && onLike) {
+                            await onLike(post.id);
+                            setLocalLikes(prev => isLiked ? prev - 1 : prev + 1);
+                          }
+                        }}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all",
+                          isLiked
+                            ? "bg-red-50 text-red-600 hover:bg-red-100"
+                            : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                        )}
+                      >
+                        <Heart size={18} className={isLiked ? "fill-current" : ""} />
+                        <span>{localLikes}</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowComments(!showComments);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-lg font-medium transition-colors"
+                      >
+                        <MessageCircle size={18} />
+                        <span>{localComments}</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (post.id && onShare) {
+                            onShare(post.id);
+                          }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-lg font-medium transition-colors"
+                      >
+                        <Share2 size={18} />
+                        <span>Compartir</span>
+                      </button>
+                    </div>
+
+                    {/* Sección de Comentarios */}
+                    {showComments && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="border-t border-neutral-200 pt-6"
+                      >
+                        <h3 className="text-lg font-semibold text-neutral-800 mb-4">
+                          Comentários ({localComments})
+                        </h3>
+
+                        {/* Formulario de nuevo comentario */}
+                        <form onSubmit={handleSubmitComment} className="mb-6">
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              placeholder="Seu nome"
+                              value={commentAuthor}
+                              onChange={(e) => setCommentAuthor(e.target.value)}
+                              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              required
+                            />
+                            <textarea
+                              placeholder="Escreva seu comentário..."
+                              value={newComment}
+                              onChange={(e) => setNewComment(e.target.value)}
+                              rows={3}
+                              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                              required
+                            />
+                            <button
+                              type="submit"
+                              disabled={submittingComment}
+                              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white rounded-lg font-medium transition-colors"
+                            >
+                              <Send size={16} />
+                              {submittingComment ? 'Enviando...' : 'Enviar'}
+                            </button>
+                          </div>
+                        </form>
+
+                        {/* Lista de comentarios */}
+                        {loadingComments ? (
+                          <div className="text-center py-8 text-neutral-500">
+                            Carregando comentários...
+                          </div>
+                        ) : comentarios.length > 0 ? (
+                          <div className="space-y-4">
+                            {comentarios.map((comentario) => (
+                              <div key={comentario.id} className="bg-neutral-50 rounded-lg p-4">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                                      <User size={16} className="text-primary-600" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-neutral-800">
+                                        {comentario.autor_nome}
+                                      </p>
+                                      <p className="text-xs text-neutral-500">
+                                        {formatDate(comentario.data_criacao)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <p className="text-neutral-700 leading-relaxed ml-10">
+                                  {comentario.comentario}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-neutral-500">
+                            Nenhum comentário ainda. Seja o primeiro!
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+      )}
     </motion.div>
   );
 };

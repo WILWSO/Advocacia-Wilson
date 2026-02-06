@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { EXTERNAL_COMPONENT_CLASSES } from '../../config/theme';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -74,7 +75,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           <div className="max-w-2xl w-full bg-white rounded-xl shadow-2xl p-8 md:p-12">
             {/* Ícono de error */}
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${EXTERNAL_COMPONENT_CLASSES.errorContainer}`}>
                 <AlertTriangle size={40} className="text-red-600" />
               </div>
             </div>
@@ -100,15 +101,15 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 </summary>
                 <div className="mt-3 space-y-2">
                   <div className="text-xs">
-                    <strong className="text-red-700">Erro:</strong>
-                    <pre className="mt-1 p-2 bg-red-50 rounded text-red-800 overflow-x-auto">
+                    <strong className={EXTERNAL_COMPONENT_CLASSES.errorText}>Erro:</strong>
+                    <pre className={`mt-1 p-2 rounded overflow-x-auto ${EXTERNAL_COMPONENT_CLASSES.errorBg} ${EXTERNAL_COMPONENT_CLASSES.errorText}`}>
                       {this.state.error.toString()}
                     </pre>
                   </div>
                   {this.state.errorInfo && (
                     <div className="text-xs">
-                      <strong className="text-red-700">Stack trace:</strong>
-                      <pre className="mt-1 p-2 bg-red-50 rounded text-red-800 overflow-x-auto max-h-48 overflow-y-auto">
+                      <strong className={EXTERNAL_COMPONENT_CLASSES.errorText}>Stack trace:</strong>
+                      <pre className={`mt-1 p-2 rounded overflow-x-auto max-h-48 overflow-y-auto ${EXTERNAL_COMPONENT_CLASSES.errorBg} ${EXTERNAL_COMPONENT_CLASSES.errorText}`}>
                         {this.state.errorInfo.componentStack}
                       </pre>
                     </div>

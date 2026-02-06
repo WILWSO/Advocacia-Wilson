@@ -4,6 +4,7 @@
  */
 
 import { DocumentoArquivo } from './documento'
+import { BaseEntity, BaseFilters, BaseStats, ActiveStatus } from './common'
 
 /**
  * Estado civil del cliente
@@ -11,16 +12,15 @@ import { DocumentoArquivo } from './documento'
 export type EstadoCivil = 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel'
 
 /**
- * Status del cliente
+ * Status del cliente - extiende ActiveStatus con 'potencial'
  */
-export type ClienteStatus = 'ativo' | 'inativo' | 'potencial'
+export type ClienteStatus = ActiveStatus | 'potencial'
 
 /**
  * Interface principal para Cliente
- * Coincide con schema de Supabase
+ * Extiende BaseEntity para campos de auditoría estándar
  */
-export interface Cliente {
-  id?: string
+export interface Cliente extends BaseEntity {
   // Información Personal
   nome_completo: string
   cpf_cnpj?: string
@@ -52,11 +52,11 @@ export interface Cliente {
   categoria?: string
   // Documentos
   documentos_cliente?: DocumentoArquivo[]
-  // Metadata
+  // Metadata adicional
   data_criacao?: string
   data_atualizacao?: string
   ultimo_contato?: string
-  // Campos de auditoría
+  // Campos de auditoría legacy (mapped from BaseEntity)
   creado_por?: string
   atualizado_por?: string
 }
@@ -64,7 +64,7 @@ export interface Cliente {
 /**
  * Datos del formulario de cliente (estado local)
  */
-export interface ClienteFormData extends Omit<Cliente, 'id' | 'data_criacao' | 'data_atualizacao' | 'creado_por' | 'atualizado_por'> {
+export interface ClienteFormData extends Omit<Cliente, 'id' | 'created_at' | 'updated_at' | 'data_criacao' | 'data_atualizacao' | 'creado_por' | 'atualizado_por'> {
   id?: string
 }
 
@@ -81,9 +81,9 @@ export interface ClienteSimple {
 
 /**
  * Estadísticas de clientes
+ * Extiende BaseStats con campos específicos
  */
-export interface ClienteStats {
-  total: number
+export interface ClienteStats extends BaseStats {
   ativos: number
   inativos: number
   potenciais: number
@@ -91,8 +91,9 @@ export interface ClienteStats {
 
 /**
  * Filtros de búsqueda de clientes
+ * Extiende BaseFilters con campos específicos
  */
-export interface ClienteFilters {
+export interface ClienteFilters extends BaseFilters {
   busca: string
   status: string
 }

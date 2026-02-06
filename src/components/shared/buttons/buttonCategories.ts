@@ -1,4 +1,4 @@
-import { Plus, Check, Pencil, Trash2, Eye, X, XCircle, ArrowRight, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
+import { SYSTEM_ICONS } from '../../../config/icons';
 
 /**
  * Configuración centralizada de categorías de botones
@@ -16,7 +16,7 @@ import { Plus, Check, Pencil, Trash2, Eye, X, XCircle, ArrowRight, ArrowDownToLi
  * Cambiar todos los botones "create" a color gold:
  * create: {
  *   variant: 'secondary', // secondary es gold
- *   icon: Plus,
+ *   icon: SYSTEM_ICONS.create,
  *   defaultLabel: 'Crear'
  * }
  * 
@@ -24,7 +24,7 @@ import { Plus, Check, Pencil, Trash2, Eye, X, XCircle, ArrowRight, ArrowDownToLi
  * Primero agregar variante 'success' en AccessibleButton
  * save: {
  *   variant: 'success',
- *   icon: Save,
+ *   icon: SYSTEM_ICONS.save,
  *   defaultLabel: 'Guardar'
  * }
  */
@@ -91,7 +91,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
     //   text: 'text-white',
     //   focus: 'focus:ring-gold-500'
     // },
-    icon: Plus,
+    icon: SYSTEM_ICONS.create,
     defaultLabel: 'Criar'    
   },
 
@@ -107,7 +107,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
     //   text: 'text-white',
     //   focus: 'focus:ring-primary-100'
     //},
-    icon: Check,
+    icon: SYSTEM_ICONS.save,
     defaultLabel: 'Salvar'
   },
 
@@ -117,7 +117,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   edit: {
     variant: 'primary',
-    icon: Pencil,
+    icon: SYSTEM_ICONS.edit,
     defaultLabel: 'Editar'
   },
 
@@ -127,7 +127,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   delete: {
     variant: 'danger',
-    icon: Trash2,
+    icon: SYSTEM_ICONS.delete,
     defaultLabel: 'Excluir'
   },
 
@@ -137,7 +137,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   cancel: {
     variant: 'ghost',
-    icon: X,
+    icon: SYSTEM_ICONS.close,
     defaultLabel: 'Cancelar'
   },
 
@@ -154,7 +154,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
       text: 'text-neutral-700',
       focus: 'focus:ring-neutral-400'
     },
-    icon: XCircle,
+    icon: SYSTEM_ICONS.close,
     defaultLabel: 'Cancelar'
   },
 
@@ -164,7 +164,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   view: {
     variant: 'outline',
-    icon: Eye,
+    icon: SYSTEM_ICONS.view,
     defaultLabel: 'Ver'
   },
 
@@ -174,7 +174,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   close: {
     variant: 'outline',
-    icon: X,
+    icon: SYSTEM_ICONS.close,
     defaultLabel: 'Fechar'
   },
 
@@ -184,7 +184,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   submit: {
     variant: 'primary',
-    icon: ArrowRight,
+    icon: SYSTEM_ICONS.submit,
     defaultLabel: 'Enviar'
   },
 
@@ -194,7 +194,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   download: {
     variant: 'secondary',
-    icon: ArrowDownToLine,
+    icon: SYSTEM_ICONS.download,
     defaultLabel: 'Baixar'
   },
 
@@ -204,7 +204,7 @@ export const BUTTON_CATEGORIES: Record<ButtonCategory, CategoryConfig> = {
    */
   upload: {
     variant: 'outline',
-    icon: ArrowUpFromLine,
+    icon: SYSTEM_ICONS.upload,
     defaultLabel: 'Enviar Arquivo'
   }
 };

@@ -3,7 +3,10 @@ import { LayoutDashboard, ChevronDown, User, LogOut } from 'lucide-react';
 import Logo from '../shared/Logo';
 import AuthLogin from '../auth/AuthLogin.tsx';
 import { cn } from '../../utils/cn';
-import { publicNavLinks, adminNavLinks, pageDropdownItems, pageSectionsDropdownItems } from '../home/NavBar';
+import { publicNavLinks, adminNavLinks, pageSectionsDropdownItems } from '../home/NavBar';
+import { UI_LAYOUT } from '../../config/messages';
+import { COMMON_BUTTON_COLORS } from '../../config/theme';
+import { filterPageDropdownItems } from '../../utils/postFilters';
 import { DropdownMenu } from '../shared/DropdownMenu';
 import { HamburgerButton } from './mobile/HamburgerButton';
 import { MobileMenu } from './mobile/MobileMenu';
@@ -49,13 +52,7 @@ const Header = () => {
 
   // Filtrar items del dropdown basado en si hay posts destacados
   const filteredPageDropdownItems = useMemo(() => {
-    return pageDropdownItems.filter(item => {
-      // Si es el item "Destaques", solo mostrarlo si hay posts destacados
-      if (item.href === '#social') {
-        return hasFeaturedPosts;
-      }
-      return true;
-    });
+    return filterPageDropdownItems(hasFeaturedPosts);
   }, [hasFeaturedPosts]);
 
   // Detectar si estamos en el dashboard o áreas administrativas
@@ -88,7 +85,7 @@ const Header = () => {
       <div className="container mx-auto px-4 md:px-6">
         {/* Main header with logo and navigation */}
         <div className="flex items-center justify-between gap-3"> 
-          <Link to="/" className="flex items-center flex-shrink-0" aria-label="Ir para página inicial">
+          <Link to="/" className="flex items-center flex-shrink-0" aria-label={UI_LAYOUT.HEADER.GO_TO_HOME}>
             <Logo className="h-10 md:h-11 lg:h-12" priority={true} />
           </Link>
 
@@ -98,7 +95,7 @@ const Header = () => {
               {/* Tablet: Dropdown compacto (640px - 1024px) */}
               <div className="md:block xl:hidden">
                 <DropdownMenu 
-                  label="Página"
+                  label={UI_LAYOUT.HEADER.PAGE_DROPDOWN}
                   items={filteredPageDropdownItems}
                   isScrolled={isScrolled || isSocialPage}
                 />
@@ -131,7 +128,7 @@ const Header = () => {
                 
                 {/* Dropdown con solo secciones del home */}
                 <DropdownMenu 
-                  label="Página"
+                  label={UI_LAYOUT.HEADER.PAGE_DROPDOWN}
                   items={pageSectionsDropdownItems}
                   isScrolled={isScrolled || isSocialPage}
                 />
@@ -140,10 +137,10 @@ const Header = () => {
               {/* Botones de acción */}
               <Link
                 to="/contato"
-                className="px-3 xl:px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors whitespace-nowrap"
-                aria-label="Agendar consulta jurídica"
+                className={cn("px-3 xl:px-4 py-2 rounded text-sm font-medium transition-colors whitespace-nowrap", COMMON_BUTTON_COLORS.primaryAction)}
+                aria-label={UI_LAYOUT.HEADER.SCHEDULE_CONSULTATION}
               >
-                Consulta
+                {UI_LAYOUT.HEADER.CONSULTATION_BUTTON}
               </Link>
               
               {/* Usuario autenticado: Dropdown con Dashboard y Logout */}
@@ -154,8 +151,8 @@ const Header = () => {
                     className={cn(
                       "flex items-center gap-2 px-3 lg:px-4 py-2 rounded text-sm font-medium transition-colors",
                       isScrolled || isSocialPage
-                        ? "bg-gold-100 text-primary-800 hover:bg-gold-200"
-                        : "bg-gold-500/20 text-white hover:bg-gold-500/30"
+                        ? COMMON_BUTTON_COLORS.goldLight
+                        : COMMON_BUTTON_COLORS.goldTransparent
                     )}
                     aria-expanded={showUserMenu}
                     aria-haspopup="true"
@@ -197,17 +194,17 @@ const Header = () => {
                             onClick={() => setShowUserMenu(false)}
                           >
                             <LayoutDashboard size={16} />
-                            Dashboard
+                            {UI_LAYOUT.HEADER.DASHBOARD_BUTTON}
                           </Link>
                         </div>
 
                         <div className="border-t border-gray-200 pt-1">
                           <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            className={cn("w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors", COMMON_BUTTON_COLORS.logoutDanger)}
                           >
                             <LogOut size={16} />
-                            Sair
+                            {UI_LAYOUT.HEADER.LOGOUT}
                           </button>
                         </div>
                       </div>
@@ -248,7 +245,7 @@ const Header = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-2 py-1.5 bg-gold-100 text-primary-800 hover:bg-gold-200 rounded-lg transition-colors"
+                  className={cn("flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors", COMMON_BUTTON_COLORS.goldLight)}
                   aria-expanded={showUserMenu}
                   aria-haspopup="true"
                 >

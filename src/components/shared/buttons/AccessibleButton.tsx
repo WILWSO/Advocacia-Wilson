@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonCategory, getCategoryConfig } from './buttonCategories';
+import { BUTTON_VARIANTS, BUTTON_SIZES } from '../../../config/theme';
 
 /**
  * Interface que define las propiedades del componente AccessibleButton
@@ -80,39 +81,19 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   const baseClasses = `
     inline-flex items-center justify-center font-medium rounded transition-all duration-200
     focus:outline-none focus:ring-2 focus:ring-offset-2
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
+    disabled:opacity-50 disabled:pointer-events-none
     active:scale-95
   `;
 
   /**
-   * Mapeo de variantes de color del botón
-   * - primary: Azul principal del brand
-   * - secondary: Dorado/gold del brand
-   * - outline: Borde sin relleno
-   * - ghost: Transparente con hover sutil
-   * - danger: Rojo para acciones destructivas (eliminar, cancelar)
-   * - warning: Amber/amarillo para acciones de advertencia
+   * ✅ SSoT: Variantes importadas desde config/theme.ts
    */
-  const variantClasses = {
-    primary: 'bg-primary-800 hover:bg-primary-900 text-white focus:ring-primary-500',
-    secondary: 'bg-gold-600 hover:bg-gold-700 text-white focus:ring-gold-500',
-    outline: 'border-2 border-primary-800 text-primary-800 hover:bg-primary-800 hover:text-white focus:ring-primary-500',
-    ghost: 'text-primary-800 hover:bg-primary-50 focus:ring-primary-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
-    warning: 'bg-amber-600 hover:bg-amber-700 text-white focus:ring-amber-500',
-    neutral: 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-neutral-400',
-    teste: 'px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors'
-  };
+  const variantClasses = BUTTON_VARIANTS;
 
   /**
-   * Mapeo de tamaños del botón con padding y texto
-   * sm: Pequeño, md: Mediano (default), lg: Grande
+   * ✅ SSoT: Tamaños importados desde config/theme.ts
    */
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
-  };
+  const sizeClasses = BUTTON_SIZES;
 
   /**
    * Determina si el botón debe estar deshabilitado

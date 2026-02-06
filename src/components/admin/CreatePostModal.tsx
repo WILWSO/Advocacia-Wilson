@@ -8,6 +8,9 @@ import {
 import { cn } from '../../utils/cn';
 import { extractYouTubeId } from '../../utils/youtubeUtils';
 import { FormModal } from '../shared/modales/FormModal';
+import { useUnsavedChanges } from '../../hooks/forms/useUnsavedChanges';
+import { ADMIN_UI } from '../../config/messages';
+import { ADMIN_CLASSES } from '../../config/theme';
 import type { Post } from '../../types/post';
 
 interface CreatePostModalProps {
@@ -34,9 +37,33 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
     publicado: true
   });
 
+  // Datos iniciales para detectar cambios
+  const initialData = editingPost ? {
+    titulo: editingPost.titulo,
+    conteudo: editingPost.conteudo,
+    tipo: editingPost.tipo,
+    image_url: editingPost.image_url || '',
+    video_url: editingPost.video_url || '',
+    tags: editingPost.tags.join(', '),
+    destaque: editingPost.destaque,
+    publicado: editingPost.publicado
+  } : {
+    titulo: '',
+    conteudo: '',
+    tipo: 'article' as Post['tipo'],
+    image_url: '',
+    video_url: '',
+    tags: '',
+    destaque: false,
+    publicado: true
+  };
+
+  // Hook para detectar cambios no guardados
+  const { hasChanges, updateCurrent, resetInitial } = useUnsavedChanges(initialData);
+
   useEffect(() => {
     if (editingPost) {
-      setFormData({
+      const data = {
         titulo: editingPost.titulo,
         conteudo: editingPost.conteudo,
         tipo: editingPost.tipo,
@@ -45,20 +72,30 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
         tags: editingPost.tags.join(', '),
         destaque: editingPost.destaque,
         publicado: editingPost.publicado
-      });
+      };
+      setFormData(data);
+      resetInitial(data);
     } else {
-      setFormData({
+      const data = {
         titulo: '',
         conteudo: '',
-        tipo: 'article',
+        tipo: 'article' as Post['tipo'],
         image_url: '',
         video_url: '',
         tags: '',
         destaque: false,
         publicado: true
-      });
+      };
+      setFormData(data);
+      resetInitial(data);
     }
-  }, [editingPost, isOpen]);
+  }, [editingPost, isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Actualizar formData y notificar cambios
+  const handleChange = (newData: typeof formData) => {
+    setFormData(newData);
+    updateCurrent(newData);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +116,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
         comentarios: 0
       })
     });
+    resetInitial(formData); // Marcar como guardado
   };
 
   const typeIcons = {
@@ -93,22 +131,23 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}
-      title={editingPost ? 'Editar Conteúdo' : 'Criar Novo Conteúdo'}
-      submitLabel={editingPost ? 'Atualizar' : 'Criar'}
-      cancelLabel="Cancelar"
+      title={editingPost ? ADMIN_UI.POST.MODAL_TITLE_EDIT : ADMIN_UI.POST.MODAL_TITLE_CREATE}
+      submitLabel={editingPost ? ADMIN_UI.POST.SUBMIT_UPDATE : ADMIN_UI.POST.SUBMIT_CREATE}
+      cancelLabel={ADMIN_UI.POST.CANCEL}
       maxWidth="2xl"
+      hasUnsavedChanges={hasChanges}
     >
             {/* Tipo de conteúdo */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-3">
-                Tipo de Conteúdo
+                {ADMIN_UI.POST.TYPE_LABEL}
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {(['article', 'video', 'image', 'announcement'] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, tipo: type }))}
+                    onClick={() => handleChange({ ...formData, tipo: type })}
                     className={cn(
                       "flex flex-col items-center p-3 rounded-lg border transition-all",
                       formData.tipo === type 
@@ -118,10 +157,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   >
                     {typeIcons[type]}
                     <span className="mt-1 text-xs font-medium capitalize">
-                      {type === 'article' && 'Artigo'}
-                      {type === 'video' && 'Vídeo'}
-                      {type === 'image' && 'Imagem'}
-                      {type === 'announcement' && 'Anúncio'}
+                      {ADMIN_UI.POST_TYPES[type]}
                     </span>
                   </button>
                 ))}
@@ -131,15 +167,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             {/* Título */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-neutral-700 mb-2">
-                Título *
+                {ADMIN_UI.POST.TITLE_REQUIRED}
               </label>
               <input
                 id="title"
                 type="text"
                 value={formData.titulo}
-                onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Digite o título do conteúdo..."
+                onChange={(e) => handleChange({ ...formData, titulo: e.target.value })}
+                className={ADMIN_CLASSES.formInput}
+                placeholder={ADMIN_UI.POST.TITLE_PLACEHOLDER}
                 required
               />
             </div>
@@ -147,15 +183,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             {/* Conteúdo */}
             <div>
               <label htmlFor="content" className="block text-sm font-medium text-neutral-700 mb-2">
-                Conteúdo *
+                {ADMIN_UI.POST.CONTENT_REQUIRED}
               </label>
               <textarea
                 id="content"
                 value={formData.conteudo}
-                onChange={(e) => setFormData(prev => ({ ...prev, conteudo: e.target.value }))}
+                onChange={(e) => handleChange({ ...formData, conteudo: e.target.value })}
                 rows={6}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Escreva o conteúdo aqui..."
+                className={ADMIN_CLASSES.formTextarea}
+                placeholder={ADMIN_UI.POST.CONTENT_PLACEHOLDER}
                 required
               />
             </div>
@@ -164,15 +200,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             {(formData.tipo === 'image' || formData.tipo === 'article' || formData.tipo === 'announcement') && (
               <div>
                 <label htmlFor="mediaUrl" className="block text-sm font-medium text-neutral-700 mb-2">
-                  URL da Imagem
+                  {ADMIN_UI.POST.IMAGE_URL_LABEL}
                 </label>
                 <input
                   id="mediaUrl"
                   type="url"
                   value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Cole a URL da imagem aqui..."
+                  onChange={(e) => handleChange({ ...formData, image_url: e.target.value })}
+                  className={ADMIN_CLASSES.formInput}
+                  placeholder={ADMIN_UI.POST.IMAGE_URL_PLACEHOLDER}
                 />
               </div>
             )}
@@ -180,18 +216,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             {formData.tipo === 'video' && (
               <div>
                 <label htmlFor="videoUrl" className="block text-sm font-medium text-neutral-700 mb-2">
-                  URL do Vídeo (YouTube)
+                  {ADMIN_UI.POST.VIDEO_URL_LABEL}
                 </label>
                 <input
                   id="videoUrl"
                   type="url"
                   value={formData.video_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
+                  onChange={(e) => handleChange({ ...formData, video_url: e.target.value })}
+                  className={ADMIN_CLASSES.formInput}
+                  placeholder={ADMIN_UI.POST.VIDEO_URL_PLACEHOLDER}
                 />
                 <p className="text-xs text-neutral-500 mt-1">
-                  Suporta links do YouTube (youtube.com e youtu.be)
+                  {ADMIN_UI.POST.VIDEO_URL_HELPER}
                 </p>
               </div>
             )}
@@ -199,15 +235,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             {/* Tags */}
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-neutral-700 mb-2">
-                Tags (separadas por vírgula)
+                {ADMIN_UI.POST.TAGS_LABEL}
               </label>
               <input
                 id="tags"
                 type="text"
                 value={formData.tags}
-                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="direito, civil, penal, trabalhista..."
+                onChange={(e) => handleChange({ ...formData, tags: e.target.value })}
+                className={ADMIN_CLASSES.formInput}
+                placeholder={ADMIN_UI.POST.TAGS_PLACEHOLDER}
               />
             </div>
 
@@ -217,20 +253,20 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 <input
                   type="checkbox"
                   checked={formData.destaque}
-                  onChange={(e) => setFormData(prev => ({ ...prev, destaque: e.target.checked }))}
+                  onChange={(e) => handleChange({ ...formData, destaque: e.target.checked })}
                   className="mr-2 text-primary-500 focus:ring-primary-500"
                 />
-                <span className="text-sm text-neutral-700">Conteúdo em destaque</span>
+                <span className="text-sm text-neutral-700">{ADMIN_UI.POST.FEATURED_LABEL}</span>
               </label>
               
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   checked={formData.publicado}
-                  onChange={(e) => setFormData(prev => ({ ...prev, publicado: e.target.checked }))}
+                  onChange={(e) => handleChange({ ...formData, publicado: e.target.checked })}
                   className="mr-2 text-primary-500 focus:ring-primary-500"
                 />
-                <span className="text-sm text-neutral-700">Publicar imediatamente</span>
+                <span className="text-sm text-neutral-700">{ADMIN_UI.POST.PUBLISH_LABEL}</span>
               </label>
             </div>
     </FormModal>

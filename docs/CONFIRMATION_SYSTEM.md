@@ -170,8 +170,9 @@ const handleStatusChange = async (processoId: string) => {
 ✅ **Personalizable**: Títulos, mensajes y textos de botones  
 ✅ **Tres variantes**: danger, warning, info  
 ✅ **Animado**: Transiciones suaves con Framer Motion  
-✅ **Accesible**: Cierre con backdrop click  
-✅ **Responsive**: Funciona en todos los tamaños de pantalla
+✅ **Accesible**: Cierre con backdrop click y botones AccessibleButton (SSoT)  
+✅ **Responsive**: Funciona en todos los tamaños de pantalla  
+✅ **SSoT**: Usa AccessibleButton con categorías configuradas centralizadamente
 
 ## Integración con NotificationContext
 
@@ -239,3 +240,9 @@ const handleDelete = async (id: string) => {
 - Las animaciones usan `framer-motion` con transiciones de 200ms
 - El cierre con backdrop click está habilitado por defecto
 - La función devuelve una Promise<boolean> que resuelve con `true` (confirmar) o `false` (cancelar)
+- **Botones SSoT**: Usa `AccessibleButton` con categorías:
+  - Cancelar: `category="cancel"` (botón outline neutral)
+  - Danger: `category="delete"` (botón rojo)
+  - Warning: `category="edit"` (botón amarillo/primary)
+  - Info: `category="save"` (botón azul/primary)
+- Todos los botones usan `size="lg"` para mejor UX en diálogos

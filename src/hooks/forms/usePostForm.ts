@@ -3,25 +3,26 @@
  * Centraliza toda la lógica de negocio: CRUD, estados, handlers, permisos
  */
 
-import { useState } from 'react'
 import { useAuthLogin } from '../../components/auth/useAuthLogin'
 import { usePosts as usePostsSociais } from '../data-access/usePosts'
-import { useNotification } from '../../components/shared/notifications/NotificationContext'
+import { useNotification } from '../../components/shared/notifications/useNotification'
+import { useModalState } from '../ui/useModalState'
 import { Post } from '../../types/post'
+import { CONFIRMATION_MESSAGES, SUCCESS_MESSAGES, ERROR_MESSAGES, AUTH_MESSAGES } from '../../config/messages'
+import { formatFormData } from '../../utils/fieldFormatters'
 
 export const usePostForm = () => {
   const { user, isAuthenticated } = useAuthLogin()
   const { posts, loading, error, createPost, updatePost, deletePost, togglePublished } = usePostsSociais()
   const { success, error: errorNotif, confirm: confirmDialog } = useNotification()
 
-  // Estados
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  // Modal con useModalState
+  const formModal = useModalState<Post>()
 
   // Crear post
   const handleCreatePost = async (postData: Partial<Post>) => {
     if (!user) {
-      errorNotif('Você precisa estar autenticado para criar conteúdo')
+      errorNotif(AUTH_MESSAGES.LOGIN_REQUIRED)
       return
     }
 
@@ -32,33 +33,39 @@ export const usePostForm = () => {
       comentarios: 0
     } as Omit<Post, 'id' | 'data_criacao' | 'data_atualizacao'>
 
-    const result = await createPost(newPostData)
+    // Formatear campos antes de enviar
+    const formattedData = formatFormData(newPostData)
+
+    const result = await createPost(formattedData)
     if (!result.error) {
-      success('Conteúdo criado com sucesso!')
+      success(SUCCESS_MESSAGES.posts.CREATED)
       handleCloseModal()
     } else {
-      errorNotif('Erro ao criar conteúdo. Tente novamente.')
+      errorNotif(ERROR_MESSAGES.SAVE_ERROR)
     }
   }
 
   // Actualizar post
   const handleUpdatePost = async (updatedPost: Partial<Post>) => {
-    if (!editingPost?.id) return
+    if (!formModal.item?.id) return
 
-    const result = await updatePost(editingPost.id, updatedPost)
+    // Formatear campos antes de enviar
+    const formattedData = formatFormData(updatedPost)
+
+    const result = await updatePost(formModal.item.id, formattedData)
     if (!result.error) {
-      success('Conteúdo atualizado com sucesso!')
+      success(SUCCESS_MESSAGES.posts.UPDATED)
       handleCloseModal()
     } else {
-      errorNotif('Erro ao atualizar conteúdo. Tente novamente.')
+      errorNotif(ERROR_MESSAGES.SAVE_ERROR)
     }
   }
 
   // Deletar post
   const handleDeletePost = async (id: string) => {
     const confirmed = await confirmDialog({
-      title: 'Excluir Conteúdo',
-      message: 'Tem certeza que deseja excluir este conteúdo? Esta ação não pode ser desfeita.',
+      title: CONFIRMATION_MESSAGES.posts.DELETE_TITLE,
+      message: CONFIRMATION_MESSAGES.posts.DELETE,
       confirmText: 'Excluir',
       cancelText: 'Cancelar',
       type: 'danger'
@@ -68,9 +75,9 @@ export const usePostForm = () => {
 
     const result = await deletePost(id)
     if (!result.error) {
-      success('Conteúdo excluído com sucesso!')
+      success(SUCCESS_MESSAGES.posts.DELETED)
     } else {
-      errorNotif('Erro ao excluir conteúdo. Tente novamente.')
+      errorNotif(ERROR_MESSAGES.DELETE_ERROR)
     }
   }
 
@@ -81,28 +88,25 @@ export const usePostForm = () => {
 
     const result = await togglePublished(id, !post.publicado)
     if (!result.error) {
-      success(post.publicado ? 'Conteúdo despublicado!' : 'Conteúdo publicado!')
+      success(post.publicado ? SUCCESS_MESSAGES.posts.UNPUBLISHED : SUCCESS_MESSAGES.posts.PUBLISHED)
     } else {
-      errorNotif('Erro ao alterar status de publicação.')
+      errorNotif(ERROR_MESSAGES.SAVE_ERROR)
     }
   }
 
   // Abrir modal para editar
   const handleEditPost = (post: Post) => {
-    setEditingPost(post)
-    setIsCreateModalOpen(true)
+    formModal.openEdit(post)
   }
 
   // Abrir modal para criar
   const handleOpenCreateModal = () => {
-    setEditingPost(null)
-    setIsCreateModalOpen(true)
+    formModal.openCreate()
   }
 
   // Fechar modal
   const handleCloseModal = () => {
-    setIsCreateModalOpen(false)
-    setEditingPost(null)
+    formModal.close()
   }
 
   return {
@@ -110,8 +114,8 @@ export const usePostForm = () => {
     posts,
     loading,
     error,
-    isCreateModalOpen,
-    editingPost,
+    isCreateModalOpen: formModal.isOpen,
+    editingPost: formModal.item,
     user,
     isAuthenticated,
 

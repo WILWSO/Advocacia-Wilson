@@ -2,6 +2,8 @@ import { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthLogin } from './useAuthLogin';
 import { Loader2 } from 'lucide-react';
+import { AUTH_UI } from '../../config/messages';
+import { AUTH_CLASSES } from '../../config/theme';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -41,7 +43,7 @@ export const ProtectedRoute = ({
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
           <Loader2 size={48} className="animate-spin text-primary-800 mx-auto mb-4" />
-          <p className="text-neutral-600">Verificando autenticação...</p>
+          <p className="text-neutral-600">{AUTH_UI.PROTECTED_ROUTE.LOADING_MESSAGE}</p>
         </div>
       </div>
     );
@@ -76,24 +78,24 @@ export const ProtectedRoute = ({
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-              Acesso Negado
+              {AUTH_UI.PROTECTED_ROUTE.ACCESS_DENIED_TITLE}
             </h2>
             <p className="text-neutral-600 mb-6">
-              Você não tem permissão para acessar esta página.
+              {AUTH_UI.PROTECTED_ROUTE.ACCESS_DENIED_MESSAGE}
             </p>
             <div className="space-y-3">
               <p className="text-sm text-neutral-500">
-                <strong>Sua função:</strong> {user?.role || 'Desconhecido'}
+                <strong>{AUTH_UI.PROTECTED_ROUTE.YOUR_ROLE}</strong> {user?.role || AUTH_UI.PROTECTED_ROUTE.UNKNOWN_ROLE}
               </p>
               <p className="text-sm text-neutral-500">
-                <strong>Funções necessárias:</strong> {requiredRoles.join(', ')}
+                <strong>{AUTH_UI.PROTECTED_ROUTE.REQUIRED_ROLES}</strong> {requiredRoles.join(', ')}
               </p>
             </div>
             <button
               onClick={() => window.history.back()}
-              className="mt-6 px-6 py-3 bg-primary-800 text-white rounded-lg font-medium hover:bg-primary-900 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className={AUTH_CLASSES.backButton}
             >
-              Voltar
+              {AUTH_UI.PROTECTED_ROUTE.BACK_BUTTON}
             </button>
           </div>
         </div>

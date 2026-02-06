@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { SectionHeader } from './SectionHeader';
 import { containerVariants, itemVariants, scrollTriggerProps } from '../../utils/animations';
 import { practiceAreasData } from '../../data/DataPracticeAreas';
+import { HOME_SECTIONS } from '../../config/messages';
+import { HOME_SECTION_CLASSES } from '../../config/theme';
 
 const PracticeAreas = () => {
   return (
     <section className="py-16 md:py-24 bg-neutral-50">
       <div className="container mx-auto px-4">
         <SectionHeader
-          overline="Nossos Serviços"
-          title="Áreas de Atuação"
-          description="Oferecemos soluções jurídicas completas em diversas áreas do Direito, combinando conhecimento técnico, experiência e visão estratégica."
+          overline={HOME_SECTIONS.PRACTICE_AREAS.OVERLINE}
+          title={HOME_SECTIONS.PRACTICE_AREAS.TITLE}
+          description={HOME_SECTIONS.PRACTICE_AREAS.DESCRIPTION}
         />
 
         <motion.div
@@ -30,9 +32,9 @@ const PracticeAreas = () => {
               <p className="text-neutral-600 mb-4">{area.description}</p>
               <Link
                 to={area.link}
-                className="text-gold-600 hover:text-gold-700 font-medium inline-flex items-center"
+                className={HOME_SECTION_CLASSES.linkMore}
               >
-                Saiba mais
+                {HOME_SECTIONS.PRACTICE_AREAS.LINK_MORE}
                 <svg
                   className="w-4 h-4 ml-1"
                   fill="none"
@@ -55,7 +57,7 @@ const PracticeAreas = () => {
         <div className="text-center mt-12">
           <Link
             to="/areas-de-atuacao"
-            className="inline-block px-6 py-3 bg-primary-800 hover:bg-primary-900 text-white rounded text-sm font-medium transition-colors"
+            className={HOME_SECTION_CLASSES.ctaButton}
           >
             Ver Todas as Áreas
           </Link>

@@ -14,6 +14,10 @@ interface FormModalProps {
   children: React.ReactNode
   className?: string
   showCancelButton?: boolean
+  /** Indica si hay cambios no guardados (muestra confirmación antes de cerrar) */
+  hasUnsavedChanges?: boolean
+  /** Mensaje personalizado de confirmación */
+  confirmMessage?: string
 }
 
 export const FormModal: React.FC<FormModalProps> = ({
@@ -27,7 +31,9 @@ export const FormModal: React.FC<FormModalProps> = ({
   cancelLabel = 'Cancelar',
   children,
   className = '',
-  showCancelButton = true
+  showCancelButton = true,
+  hasUnsavedChanges = false,
+  confirmMessage
 }) => {
   const formId = `form-${title.replace(/\s+/g, '-').toLowerCase()}`
   
@@ -71,6 +77,8 @@ export const FormModal: React.FC<FormModalProps> = ({
       maxWidth={maxWidth}
       footer={footer}
       className={className}
+      hasUnsavedChanges={hasUnsavedChanges}
+      confirmMessage={confirmMessage}
     >
       <form id={formId} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {children}

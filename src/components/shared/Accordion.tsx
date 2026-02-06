@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { ACCORDION_COLORS } from '../../config/theme';
 
 interface AccordionItem {
   id: string | number;
@@ -10,31 +11,65 @@ interface AccordionItem {
   count?: number;
   color?: 'indigo' | 'gray' | 'blue' | 'purple' | 'green';
   content: React.ReactNode;
+  notification?: {
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null;
+  headerAction?: React.ReactNode; // Botón o acción adicional en el header
 }
 
 interface AccordionProps {
-  items: AccordionItem[];
+  items?: AccordionItem[];
   allowMultiple?: boolean;
-  defaultOpen?: Array<string | number>;
+  defaultOpen?: Array<string | number> | boolean;
   className?: string;
+  // Props para uso simple (sin items array)
+  title?: string;
+  icon?: React.ReactNode;
+  color?: 'indigo' | 'gray' | 'blue' | 'purple' | 'green';
+  children?: React.ReactNode;
 }
 
 /**
  * Componente Accordion reutilizable
  * Permite expandir/colapsar secciones con animaciones suaves
  * 
- * @param items - Array de items del acordeón
+ * Dos modos de uso:
+ * 1. Con array de items (múltiples secciones)
+ * 2. Con children (sección única)
+ * 
+ * @param items - Array de items del acordeón (modo array)
+ * @param title - Título para modo simple (con children)
+ * @param icon - Ícono para modo simple
+ * @param children - Contenido para modo simple
  * @param allowMultiple - Permite abrir múltiples items simultáneamente (default: true)
- * @param defaultOpen - IDs de items abiertos por defecto
+ * @param defaultOpen - IDs de items abiertos por defecto o boolean para modo simple
  * @param className - Clases CSS adicionales
  */
 export const Accordion: React.FC<AccordionProps> = ({
   items,
+  title,
+  icon,
+  color = 'gray',
+  children,
   allowMultiple = true,
   defaultOpen = [],
   className
 }) => {
-  const [openItems, setOpenItems] = useState<Array<string | number>>(defaultOpen);
+  // Si no hay items, crear un item único con children
+  const accordionItems: AccordionItem[] = items || (title ? [{
+    id: 'single',
+    icon,
+    title,
+    color,
+    content: children
+  }] : []);
+
+  const initialOpen = Array.isArray(defaultOpen) 
+    ? defaultOpen 
+    : (defaultOpen === true ? accordionItems.map(i => i.id) : []);
+
+  const [openItems, setOpenItems] = useState<Array<string | number>>(initialOpen);
 
   const toggleItem = (id: string | number) => {
     if (allowMultiple) {
@@ -52,50 +87,16 @@ export const Accordion: React.FC<AccordionProps> = ({
 
   const isOpen = (id: string | number) => openItems.includes(id);
 
+  /**
+   * ✅ SSoT: Colores importados desde config/theme.ts
+   */
   const getColorClasses = (color?: string) => {
-    switch (color) {
-      case 'indigo':
-        return {
-          bg: 'bg-indigo-50',
-          hover: 'hover:bg-indigo-100',
-          border: 'border-indigo-200'
-        };
-      case 'gray':
-        return {
-          bg: 'bg-gray-50',
-          hover: 'hover:bg-gray-100',
-          border: 'border-gray-200'
-        };
-      case 'blue':
-        return {
-          bg: 'bg-blue-50',
-          hover: 'hover:bg-blue-100',
-          border: 'border-blue-200'
-        };
-      case 'purple':
-        return {
-          bg: 'bg-purple-50',
-          hover: 'hover:bg-purple-100',
-          border: 'border-purple-200'
-        };
-      case 'green':
-        return {
-          bg: 'bg-green-50',
-          hover: 'hover:bg-green-100',
-          border: 'border-green-200'
-        };
-      default:
-        return {
-          bg: 'bg-gray-50',
-          hover: 'hover:bg-gray-100',
-          border: 'border-gray-200'
-        };
-    }
+    return ACCORDION_COLORS[color as keyof typeof ACCORDION_COLORS] || ACCORDION_COLORS.gray;
   };
 
   return (
     <div className={cn("space-y-3", className)}>
-      {items.map((item) => {
+      {accordionItems.map((item) => {
         const colors = getColorClasses(item.color);
         const itemIsOpen = isOpen(item.id);
 
@@ -107,19 +108,42 @@ export const Accordion: React.FC<AccordionProps> = ({
               colors.border
             )}
           >
+            {/* Notificación inline sobre el título usando InlineNotification */}
+            {item.notification && (
+              <div className="p-3 border-b border-gray-200">
+                <div className={cn(
+                  "text-sm font-medium px-3 py-2 rounded-md",
+                  item.notification.type === 'success' && "bg-green-50 text-green-800",
+                  item.notification.type === 'error' && "bg-red-50 text-red-800",
+                  item.notification.type === 'warning' && "bg-yellow-50 text-yellow-800",
+                  item.notification.type === 'info' && "bg-blue-50 text-blue-800"
+                )}>
+                  {item.notification.message}
+                </div>
+              </div>
+            )}
+
             {/* Header clickeable */}
-            <button
-              onClick={() => toggleItem(item.id)}
-              className={cn(
-                "w-full flex items-center justify-between p-4 transition-colors",
-                "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
-                colors.bg,
-                colors.hover
-              )}
-              aria-expanded={itemIsOpen}
-              aria-controls={`accordion-content-${item.id}`}
-            >
-              <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex items-center justify-between gap-3 p-4 transition-colors",
+              colors.bg
+            )}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleItem(item.id);
+                }}
+                className={cn(
+                  "flex items-center gap-3 flex-1 min-w-0 text-left",
+                  "focus:outline-none",
+                  colors.hover,
+                  "rounded-lg p-2 -ml-2"
+                )}
+                aria-expanded={itemIsOpen}
+                aria-controls={`accordion-content-${item.id}`}
+              >
                 {item.icon && (
                   <div className="flex-shrink-0">
                     {item.icon}
@@ -133,15 +157,22 @@ export const Accordion: React.FC<AccordionProps> = ({
                     {item.count}
                   </span>
                 )}
-              </div>
-              <motion.div
-                animate={{ rotate: itemIsOpen ? 180 : 0 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="flex-shrink-0"
-              >
-                <ChevronDown size={20} className="text-gray-600" />
-              </motion.div>
-            </button>
+                <motion.div
+                  animate={{ rotate: itemIsOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="flex-shrink-0 ml-auto"
+                >
+                  <ChevronDown size={20} className="text-gray-600" />
+                </motion.div>
+              </button>
+              
+              {/* Header Action (botón adicional) */}
+              {item.headerAction && (
+                <div className="flex-shrink-0 -mr-2">
+                  {item.headerAction}
+                </div>
+              )}
+            </div>
 
             {/* Contenido expandible */}
             <AnimatePresence initial={false}>

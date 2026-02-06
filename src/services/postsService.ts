@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Post } from '../types/post';
+import { DB_TABLES } from '../config/database';
 
 /**
  * PostsService - Single Source of Truth para acceso a datos de posts_sociais
@@ -13,7 +14,7 @@ export class PostsService {
   static async getAllPosts(): Promise<Post[]> {
     try {
       const { data, error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .select(`
           *,
           autor:usuarios(nome, email)
@@ -42,7 +43,7 @@ export class PostsService {
   static async getPublishedPosts(limit?: number): Promise<Post[]> {
     try {
       let query = supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .select('*')
         .eq('publicado', true)
         .order('data_criacao', { ascending: false });
@@ -68,7 +69,7 @@ export class PostsService {
   static async getFeaturedPosts(limit?: number): Promise<Post[]> {
     try {
       let query = supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .select('*')
         .eq('publicado', true)
         .eq('destaque', true)
@@ -94,7 +95,7 @@ export class PostsService {
   static async getPostById(id: string): Promise<Post | null> {
     try {
       const { data, error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .select('*')
         .eq('id', id)
         .single();
@@ -114,7 +115,7 @@ export class PostsService {
   static async hasFeaturedPosts(): Promise<boolean> {
     try {
       const { count, error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .select('id', { count: 'exact', head: true })
         .eq('publicado', true)
         .eq('destaque', true);
@@ -139,7 +140,7 @@ export class PostsService {
       }
 
       const { data, error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .insert([post])
         .select()
         .single();
@@ -168,7 +169,7 @@ export class PostsService {
       }
 
       const { data, error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .update(updates)
         .eq('id', id)
         .select()
@@ -193,7 +194,7 @@ export class PostsService {
   static async updateLikes(id: string, likes: number): Promise<void> {
     try {
       const { error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .update({ likes: Math.max(0, likes) })
         .eq('id', id);
 
@@ -213,7 +214,7 @@ export class PostsService {
   static async updateComments(id: string, comentarios: number): Promise<void> {
     try {
       const { error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .update({ comentarios })
         .eq('id', id);
 
@@ -242,7 +243,7 @@ export class PostsService {
   static async deletePost(id: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('posts_sociais')
+        .from(DB_TABLES.POSTS)
         .delete()
         .eq('id', id);
 

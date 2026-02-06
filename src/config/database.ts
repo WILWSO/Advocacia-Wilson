@@ -7,33 +7,33 @@
  * @module config/database
  */
 
-/**
- * Nombres de tablas principales
- */
-export const DB_TABLES = {
-  // Tablas de negocio
-  CLIENTES: 'clientes',
-  USUARIOS: 'usuarios',
-  PROCESSOS: 'processos',
-  POSTS: 'posts',
-  COMENTARIOS: 'comentarios',
-  
-  // Tablas de archivos/documentos
-  DOCUMENTOS: 'documentos',
-  
-  // Tablas de sistema (si existen)
-  AUDIT_LOG: 'audit_log',
-  SESSIONS: 'sessions'
-} as const;
+// ✅ SSoT: STORAGE_BUCKETS importado y re-exportado desde config/storage
+import { STORAGE_BUCKETS } from './storage';
+export { STORAGE_BUCKETS };
 
 /**
- * Nombres de buckets de almacenamiento (Storage)
+ * Nombres de tablas principales
+ * ✅ Nombres actualizados para coincidir con Supabase
+ * ✅ Sincronizado con database/schema.sql (2025-01-29)
+ * ✅ Actualizado: documentos polimórfica, tablas eliminadas
  */
-export const STORAGE_BUCKETS = {
+export const DB_TABLES = {
+  // Tablas de negocio principales
+  CLIENTES: 'clientes',
+  USUARIOS: 'usuarios',
+  PROCESSOS: 'processos_juridicos',
+  AUDIENCIAS: 'audiencias',
+  
+  // Tabla de documentos (polimórfica - única para todas las entidades)
   DOCUMENTOS: 'documentos',
-  FOTOS_PERFIL: 'fotos-perfil',
-  POSTS_MEDIA: 'posts-media',
-  PUBLIC: 'public'
+  
+  // Tablas sociales
+  POSTS: 'posts_sociais',
+  COMENTARIOS: 'comentarios_sociais',
+  
+  // Tablas de sistema
+  AUDIT_LOG: 'audit_log',
+  JURISPRUDENCIAS: 'jurisprudencias'
 } as const;
 
 /**
@@ -50,6 +50,8 @@ export const COMMON_FIELDS = {
 
 /**
  * Campos específicos de cada tabla
+ * ✅ Sincronizado con database/schema.sql (2025-01-29)
+ * ✅ Actualizado: documentos polimórfica, jurisprudencias simplificada
  */
 export const TABLE_FIELDS = {
   CLIENTES: {
@@ -57,36 +59,107 @@ export const TABLE_FIELDS = {
     NOME_COMPLETO: 'nome_completo',
     EMAIL: 'email',
     TELEFONE: 'telefone',
-    CPF: 'cpf',
+    CELULAR: 'celular',
+    CPF_CNPJ: 'cpf_cnpj',
     STATUS: 'status',
     ADVOGADO_RESPONSAVEL: 'advogado_responsavel',
-    FOTO_PERFIL_URL: 'foto_perfil_url'
+    FOTO_PERFIL_URL: 'foto_perfil_url',
+    PAIS: 'pais'
   },
   USUARIOS: {
     ...COMMON_FIELDS,
     NOME: 'nome',
+    NOME_COMPLETO: 'nome_completo',
     EMAIL: 'email',
     ROLE: 'role',
-    STATUS: 'status',
-    FOTO_PERFIL_URL: 'foto_perfil_url'
+    ATIVO: 'ativo',
+    FOTO_PERFIL_URL: 'foto_perfil_url',
+    WHATSAPP: 'whatsapp',
+    DATA_NASCIMENTO: 'data_nascimento'
   },
   PROCESSOS: {
     ...COMMON_FIELDS,
     NUMERO_PROCESSO: 'numero_processo',
     TITULO: 'titulo',
+    DESCRICAO: 'descricao',
     CLIENTE_ID: 'cliente_id',
+    ADVOGADO_RESPONSAVEL: 'advogado_responsavel',
     STATUS: 'status',
-    TIPO_ACAO: 'tipo_acao',
-    AREA_DIREITO: 'area_direito'
+    POLO: 'polo',
+    AREA_DIREITO: 'area_direito',
+    COMPETENCIA: 'competencia',
+    PRIORIDADE: 'prioridade',
+    VALOR_CAUSA: 'valor_causa',
+    JURISDICAO: 'jurisdicao',
+    HONORARIOS: 'honorarios',
+    AUDIENCIAS: 'audiencias',
+    DOCUMENTOS_PROCESSO: 'documentos_processo',
+    JURISPRUDENCIA: 'jurisprudencia'
   },
   POSTS: {
     ...COMMON_FIELDS,
     TITULO: 'titulo',
     CONTEUDO: 'conteudo',
     TIPO: 'tipo',
-    STATUS: 'status',
-    AUTOR_ID: 'autor_id',
-    IMAGEM_URL: 'imagem_url'
+    PUBLICADO: 'publicado',
+    DESTAQUE: 'destaque',
+    AUTOR: 'autor',
+    IMAGE_URL: 'image_url',
+    VIDEO_URL: 'video_url',
+    YOUTUBE_ID: 'youtube_id',
+    TAGS: 'tags',
+    LIKES: 'likes',
+    COMENTARIOS: 'comentarios'
+  },
+  DOCUMENTOS: {
+    ...COMMON_FIELDS,
+    ENTITY_TYPE: 'entity_type', // 'cliente', 'processo', 'jurisprudencia', etc.
+    ENTITY_ID: 'entity_id',
+    NOME_DOCUMENTO: 'nome_documento',
+    TIPO_DOCUMENTO: 'tipo_documento',
+    DESCRICAO: 'descricao',
+    URL_ARQUIVO: 'url_arquivo',
+    TAMANHO_BYTES: 'tamanho_bytes',
+    MIME_TYPE: 'mime_type',
+    DATA_UPLOAD: 'data_upload',
+    DATA_EXPIRACAO: 'data_expiracao',
+    UPLOAD_POR: 'upload_por',
+    ATIVO: 'ativo'
+  },
+  AUDIT_LOG: {
+    ID: 'id',
+    TABLE_NAME: 'table_name',
+    RECORD_ID: 'record_id',
+    OPERATION: 'operation',
+    USUARIO_ID: 'usuario_id',
+    USUARIO_EMAIL: 'usuario_email',
+    USUARIO_NOME: 'usuario_nome',
+    OLD_DATA: 'old_data',
+    NEW_DATA: 'new_data',
+    CHANGED_FIELDS: 'changed_fields',
+    IP_ADDRESS: 'ip_address',
+    USER_AGENT: 'user_agent',
+    TIMESTAMP: 'timestamp',
+    NOTES: 'notes'
+  },
+  JURISPRUDENCIAS: {
+    ...COMMON_FIELDS,
+    TITULO: 'titulo',
+    EMENTA: 'ementa',
+    LINK: 'link',
+    DOCUMENTO: 'documento', // UUID referencia a tabla documentos
+    PROCESSOS_RELACIONADOS: 'processos_relacionados',
+    NOTAS: 'notas',
+    ATIVO: 'ativo'
+  },
+  COMENTARIOS_SOCIAIS: {
+    ID: 'id',
+    POST_ID: 'post_id',
+    AUTOR_NOME: 'autor_nome',
+    AUTOR_EMAIL: 'autor_email',
+    COMENTARIO: 'comentario',
+    DATA_CRIACAO: 'data_criacao',
+    APROVADO: 'aprovado'
   }
 } as const;
 

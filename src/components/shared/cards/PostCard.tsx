@@ -18,6 +18,7 @@ import { Post } from '../../../types/post';
 import { isNewPost, getBackgroundImage } from '../../../utils/postUtils';
 import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
+import { EXTERNAL_COMPONENT_CLASSES } from '../../../config/theme';
 
 interface PostCardProps {
   post: Post;
@@ -62,7 +63,7 @@ const VideoPost = ({ post, playingVideo, onPlayClick, isNew }: VideoPostProps) =
               }}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
+              <div className={cn("w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all group-hover:scale-110", EXTERNAL_COMPONENT_CLASSES.youtubeButton)}>
                 <Play size={28} className="text-white ml-1" fill="white" />
               </div>
             </div>
@@ -127,10 +128,10 @@ const VideoPost = ({ post, playingVideo, onPlayClick, isNew }: VideoPostProps) =
               </span>
             </div>
             <span className="text-xs text-neutral-500">
-              {new Date(post.data_criacao).toLocaleDateString('pt-BR', { 
+              {post.data_criacao ? new Date(post.data_criacao).toLocaleDateString('pt-BR', { 
                 day: '2-digit', 
                 month: 'short' 
-              })}
+              }) : 'N/A'}
             </span>
           </div>
         </div>
@@ -186,10 +187,10 @@ const ImagePost = ({ post, backgroundImage, isNew, onReadMore }: ImagePostProps)
             <span className="sm:hidden">S&N</span>
           </span>
           <span className="text-xs text-white/80 backdrop-blur-sm bg-black/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
-            {new Date(post.data_criacao).toLocaleDateString('pt-BR', { 
+            {post.data_criacao ? new Date(post.data_criacao).toLocaleDateString('pt-BR', { 
               day: '2-digit', 
               month: 'short' 
-            })}
+            }) : 'N/A'}
           </span>
         </div>
 
@@ -339,7 +340,7 @@ export const PostCard = ({
   const navigate = useNavigate();
   const { isMobile } = useResponsive();
   const isVideo = post?.tipo === 'video' && post?.youtube_id;
-  const isNew = post ? isNewPost(post.data_criacao) : false;
+  const isNew = post ? isNewPost(post?.data_criacao) : false;
   const backgroundImage = getBackgroundImage(post);
 
   const handleCardClick = () => {

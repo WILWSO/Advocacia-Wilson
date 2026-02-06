@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { FormValidator, ContactFormData } from '../../utils/FormValidator';
 import { InputSanitizer } from '../../utils/InputSanitizer';
 import { formRateLimiter } from '../../utils/RateLimiter';
+import { ERROR_MESSAGES } from '../../config/messages';
 
 export interface UseSecureFormReturn {
   formData: ContactFormData;
@@ -124,7 +125,7 @@ export const useSecureForm = (): UseSecureFormReturn => {
     } catch (error) {
       console.error('Error al enviar formulario:', error);
       setErrors({
-        submit: ['Erro interno do servidor. Tente novamente.']
+        submit: [ERROR_MESSAGES.form.INTERNAL_SERVER_ERROR]
       });
       return false;
       

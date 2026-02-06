@@ -3,6 +3,8 @@
  * Single source of truth para evitar inconsistencias entre componentes
  */
 
+import { BaseEntity, BaseFilters, BaseStats } from './common'
+
 /**
  * Tipo de post (article, video, image, announcement)
  */
@@ -16,8 +18,9 @@ export type PostAuthor = string | { nome: string; email?: string };
 /**
  * Interface principal para posts
  * Usa nomenclatura portuguesa para coincidir con schema de Supabase
+ * Extiende BaseEntity para campos de auditoría estándar
  */
-export interface Post {
+export interface Post extends Omit<BaseEntity, 'id'> {
   id?: string;
   titulo: string;
   conteudo: string;
@@ -53,9 +56,9 @@ export interface PostFormData {
 
 /**
  * Interface para comentarios de posts
+ * Extiende BaseEntity para campos de auditoría estándar
  */
-export interface Comentario {
-  id: string;
+export interface Comentario extends BaseEntity {
   post_id: string;
   autor_nome: string;
   autor_email?: string;
@@ -66,9 +69,9 @@ export interface Comentario {
 
 /**
  * Estadísticas de posts para filtros
+ * Extiende BaseStats con campos específicos
  */
-export interface PostStats {
-  total: number;
+export interface PostStats extends BaseStats {
   publicados: number;
   rascunhos: number;
   destacados: number;
@@ -76,8 +79,9 @@ export interface PostStats {
 
 /**
  * Filtros para posts
+ * Extiende BaseFilters con campos específicos
  */
-export interface PostFilters {
+export interface PostFilters extends BaseFilters {
   searchTerm: string;
   filterType: 'all' | PostType;
   filterStatus: 'all' | 'published' | 'draft';

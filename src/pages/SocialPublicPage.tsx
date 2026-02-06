@@ -14,7 +14,7 @@ import { usePosts as usePostsPublicos } from '../hooks/data-access/usePosts';
 import SEOHead from '../components/shared/SEOHead';
 import { PostsService } from '../services/postsService';
 import { SocialPostCard } from '../components/shared/cards/SocialPostCard';
-import { useNotification } from '../components/shared/notifications/NotificationContext';
+import { useNotification } from '../components/shared/notifications/useNotification';
 import { useSearchParams } from 'react-router-dom';
 import type { Post } from '../types/post';
 

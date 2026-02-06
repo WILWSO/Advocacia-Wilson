@@ -1,13 +1,17 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { teamMemberData } from '../../data/DataTeamMember';
+import { useEspecialistas } from '../../hooks/data-access/useTeamMembers';
 import useResponsive from '../../hooks/ui/useResponsive';
 import { ResponsiveContainer, ResponsiveGrid } from '../shared/ResponsiveGrid';
 import { cn } from '../../utils/cn';
 import { scrollTriggerProps, containerVariants, itemVariants } from '../../utils/animations';
 import { TeamCard } from '../shared/cards/TeamCard';
+import SkeletonCard from '../shared/cards/SkeletonCard';
+import { SectionHeader } from './SectionHeader';
+import { HOME_SECTIONS } from '../../config/messages';
 
 const Team = () => {
+  const { especialistas, loading, error } = useEspecialistas();
   const { isMobile } = useResponsive();
 
   return (
@@ -16,34 +20,11 @@ const Team = () => {
       isMobile ? "py-12" : "py-16 md:py-24"
     )}>
       <ResponsiveContainer maxWidth="6xl">
-        <div className={cn(
-          "text-center mx-auto mb-16",
-          isMobile ? "max-w-full" : "max-w-3xl"
-        )}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-sm font-medium text-gold-600 uppercase tracking-wider">
-              Nossa Equipe
-            </h2>
-            <h3 className={cn(
-              "mt-2 font-serif font-bold text-primary-900",
-              isMobile ? "text-2xl" : "text-3xl md:text-4xl"
-            )}>
-              Conheça Nossos Especialistas
-            </h3>
-            <p className={cn(
-              "mt-4 text-neutral-700 leading-relaxed",
-              isMobile ? "text-sm px-4" : "text-base"
-            )}>
-              Contamos com uma equipe de profissionais altamente qualificados e experientes,
-              comprometidos em oferecer o melhor atendimento e as soluções mais eficazes.
-            </p>
-          </motion.div>
-        </div>
+        <SectionHeader
+          overline={HOME_SECTIONS.TEAM.OVERLINE}
+          title={HOME_SECTIONS.TEAM.TITLE}
+          description={HOME_SECTIONS.TEAM.DESCRIPTION}
+        />
 
         <motion.div
           variants={containerVariants(0.2)}
@@ -60,24 +41,42 @@ const Team = () => {
             gap={{ xs: 6, md: 8, xl: 10 }}
             className="max-w-7xl mx-auto"
           >
-            {teamMemberData.slice(0, 2).map((member) => (
-              <TeamCard
-                key={member.id}
-                member={{
-                  id: member.id,
-                  name: member.name,
-                  position: member.position,
-                  image: member.image[1],
-                  specialties: member.specialties,
-                  linkedin: member.linkedin,
-                  email: member.email,
-                  imageZoom: member.imageZoom,
-                  imagePosition: member.imagePosition
-                }}
-                itemVariants={itemVariants}
-                isMobile={isMobile}
-              />
-            ))}
+            {loading ? (
+              // Loading skeleton cards
+              Array.from({ length: 2 }).map((_, index) => (
+                <SkeletonCard key={`skeleton-${index}`} />
+              ))
+            ) : error ? (
+              // Error state
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-600">Erro ao carregar especialistas</p>
+              </div>
+            ) : especialistas.length === 0 ? (
+              // Empty state
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">Nenhum especialista encontrado</p>
+              </div>
+            ) : (
+              // Render specialists data from database
+              especialistas.map((member) => (
+                <TeamCard
+                  key={member.id}
+                  member={{
+                    id: member.id,
+                    name: member.name,
+                    position: member.position,
+                    image: member.images[0], // Usar primera imagen del array
+                    specialties: member.specialties,
+                    linkedin: member.linkedin || '',
+                    email: member.email,
+                    imageZoom: member.imageZoom,
+                    imagePosition: member.imagePosition
+                  }}
+                  itemVariants={itemVariants}
+                  isMobile={isMobile}
+                />
+              ))
+            )}
           </ResponsiveGrid>
         </motion.div>
 
@@ -98,7 +97,7 @@ const Team = () => {
               isMobile ? "px-6 py-3 text-sm" : "px-8 py-4 text-base"
             )}
           >
-            <span>Conheça toda nossa equipe</span>
+            <span>{HOME_SECTIONS.TEAM.CTA_ALL_TEAM}</span>
             <motion.span
               animate={{ x: [0, 4, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}

@@ -44,31 +44,34 @@ const UsuarioCard: React.FC<UsuarioCardProps> = ({
       className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 h-full flex flex-col"
     >
       <div className="p-4 sm:p-6 flex-1 flex flex-col">
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-semibold text-base sm:text-lg text-primary-900 truncate">
-                {usuario.nome}
-              </h3>
-              {isCurrentUser && (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">
-                  Você
-                </span>
-              )}
+        {/* Header reorganizado - badges arriba */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className={cn(
+              "px-2 sm:px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 whitespace-nowrap",
+              getRoleBadgeColor(usuario.role)
+            )}>
+              <Shield size={12} />
+              <span className="hidden sm:inline">{getRoleLabel(usuario.role)}</span>
+              <span className="sm:hidden">{getRoleLabel(usuario.role).substring(0, 4)}</span>
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 truncate">
-              <Mail size={14} className="flex-shrink-0" />
-              <span className="truncate">{usuario.email}</span>
-            </p>
+            {isCurrentUser && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                Você
+              </span>
+            )}
           </div>
-          <div className={cn(
-            "px-2 sm:px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 whitespace-nowrap flex-shrink-0",
-            getRoleBadgeColor(usuario.role)
-          )}>
-            <Shield size={14} />
-            <span className="hidden sm:inline">{getRoleLabel(usuario.role)}</span>
-            <span className="sm:hidden">{getRoleLabel(usuario.role).substring(0, 4)}</span>
-          </div>
+        </div>
+        
+        {/* Nombre y email - con más espacio */}
+        <div className="mb-4">
+          <h3 className="font-semibold text-base sm:text-lg text-primary-900 mb-2 leading-tight">
+            {usuario.nome}
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 truncate">
+            <Mail size={14} className="flex-shrink-0" />
+            <span className="truncate">{usuario.email}</span>
+          </p>
         </div>
 
         <div className="mb-4 pb-4 border-b border-gray-200 flex-1">

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { cn } from '../../../utils/cn';
+import { UI_LAYOUT } from '../../../config/messages';
 
 interface HamburgerButtonProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export const HamburgerButton = ({ isOpen, onClick, isScrolled, buttonRef }: Hamb
       onClick={onClick}
       aria-expanded={isOpen}
       aria-controls="mobile-navigation"
-      aria-label={isOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+      aria-label={isOpen ? UI_LAYOUT.HEADER.CLOSE_NAV_MENU : UI_LAYOUT.HEADER.OPEN_MENU}
     >
       {/* Ícone hamburguesa animado */}
       <div className="w-6 h-5 flex flex-col justify-between relative">

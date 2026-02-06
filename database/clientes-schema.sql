@@ -27,7 +27,7 @@ CREATE TABLE clientes (
     complemento VARCHAR(100),
     bairro VARCHAR(100),
     cidade VARCHAR(100),
-    estado VARCHAR(2),
+    estado VARCHAR(50), -- UF (2 caracteres para Brasil, nombre completo para otros países)
     pais VARCHAR(100) DEFAULT 'Brasil',
     
     -- Información Adicional

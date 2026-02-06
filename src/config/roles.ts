@@ -70,7 +70,7 @@ export const ROLE_CONFIG = {
     description: 'Visualização e edição limitada',
     permissions: {
       canCreate: true,
-      canEdit: false,
+      canEdit: true,
       canDelete: false,
       canManageUsers: false,
       canManageClients: false,
@@ -138,8 +138,8 @@ export const isAssistente = (role: UsuarioRole | undefined | null): boolean => {
 };
 
 /**
- * Verifica si un usuario puede editar (admin o advogado)
+ * Verifica si un usuario puede editar (admin, advogado o assistente)
  */
 export const canEdit = (role: UsuarioRole | undefined | null): boolean => {
-  return role === USER_ROLES.ADMIN || role === USER_ROLES.ADVOGADO;
+  return role === USER_ROLES.ADMIN || role === USER_ROLES.ADVOGADO || role === USER_ROLES.ASSISTENTE;
 };

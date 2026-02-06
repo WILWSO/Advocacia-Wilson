@@ -4,6 +4,8 @@ import { User, Calendar, AlertCircle, CheckCircle, Clock, Eye } from 'lucide-rea
 import { ProcessoJuridico } from '../../../types/processo';
 import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
+import { formatShortDate } from '../../../utils/dateUtils';
+import { PROCESSO_STATUS_COLORS, PROCESSO_PRIORITY_COLORS } from '../../../config/theme';
 import AccessibleButton from '../buttons/AccessibleButton';
 
 interface ProcessoCardProps {
@@ -28,12 +30,7 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
   const { isMobile } = useResponsive();
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'em_aberto': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'em_andamento': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'fechado': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+    return PROCESSO_STATUS_COLORS[status as keyof typeof PROCESSO_STATUS_COLORS] || PROCESSO_STATUS_COLORS.em_aberto;
   };
 
   const getStatusIcon = (status: string) => {
@@ -55,13 +52,7 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
   };
 
   const getPrioridadeColor = (prioridade?: string) => {
-    switch (prioridade) {
-      case 'urgente': return 'bg-red-100 text-red-800 border-red-300';
-      case 'alta': return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'media': return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'baixa': return 'bg-gray-100 text-gray-700 border-gray-300';
-      default: return 'bg-gray-100 text-gray-700 border-gray-300';
-    }
+    return PROCESSO_PRIORITY_COLORS[prioridade as keyof typeof PROCESSO_PRIORITY_COLORS] || PROCESSO_PRIORITY_COLORS.media;
   };
 
   const getPrioridadeText = (prioridade?: string) => {
@@ -87,11 +78,9 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
       className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
     >
       <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="font-semibold text-lg text-primary-900 line-clamp-2 flex-1">
-            {processo.titulo}
-          </h3>
-          <div className="flex flex-col gap-2 items-end ml-2">
+        {/* Header reorganizado - badges arriba */}
+        <div className="flex justify-end items-start mb-3">
+          <div className="flex flex-col gap-2 items-end">
             <div className={cn(
               "px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 whitespace-nowrap",
               getStatusColor(processo.status)
@@ -122,6 +111,13 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
           </div>
         </div>
 
+        {/* Título - con espacio completo */}
+        <div className="mb-4">
+          <h3 className="font-semibold text-lg text-primary-900 leading-tight mb-3">
+            {processo.titulo}
+          </h3>
+        </div>
+
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
           {processo.descricao}
         </p>
@@ -136,7 +132,7 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
           
           <div className="flex items-center text-sm text-gray-500">
             <Calendar size={14} className="mr-2" />
-            {processo.data_criacao ? new Date(processo.data_criacao).toLocaleDateString('pt-BR') : 'N/A'}
+            {processo.data_criacao ? formatShortDate(processo.data_criacao) : 'N/A'}
           </div>
 
           {processo.usuarios && (
@@ -148,16 +144,19 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
         </div>
 
         <div className={cn(
-          "flex gap-2",
-          isMobile ? "flex-col" : "flex-row"
+          "flex gap-2 mt-auto pt-2",
+          isMobile ? "flex-col" : "flex-row justify-center"
         )}>
           <AccessibleButton
             onClick={() => onView(processo)}
             variant="ghost"
-            size="md"
-            leftIcon={<Eye size={16} />}
+            size="sm"
+            leftIcon={<Eye size={14} />}
             aria-label={`Ver detalhes do processo ${processo.titulo}`}
-            className="flex-1"
+            className={cn(
+              "transition-all duration-200",
+              isMobile ? "w-full" : "flex-1 min-w-[100px] max-w-[140px]"
+            )}
           >
             Ver
           </AccessibleButton>
@@ -166,9 +165,12 @@ const ProcessoCard: React.FC<ProcessoCardProps> = ({
             <AccessibleButton
               onClick={() => onEdit(processo)}
               variant="primary"
-              size="md"
+              size="sm"
               aria-label={`Editar processo ${processo.titulo}`}
-              className="flex-1"
+              className={cn(
+                "transition-all duration-200",
+                isMobile ? "w-full" : "flex-1 min-w-[100px] max-w-[140px]"
+              )}
             >
               Editar
             </AccessibleButton>

@@ -4,8 +4,10 @@ import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import Logo from '../../shared/Logo';
 import { cn } from '../../../utils/cn';
-import { publicNavLinks, pageDropdownItems } from '../../home/NavBar';
+import { publicNavLinks } from '../../home/NavBar';
 import { useFeaturedPosts } from '../../../hooks/features/useFeaturedPosts';
+import { UI_LAYOUT } from '../../../config/messages';
+import { filterPageDropdownItems } from '../../../utils/postFilters';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -21,12 +23,7 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
 
   // Filtrar items del dropdown basado en si hay posts destacados
   const filteredPageDropdownItems = useMemo(() => {
-    return pageDropdownItems.filter(item => {
-      if (item.href === '#social') {
-        return hasFeaturedPosts;
-      }
-      return true;
-    });
+    return filterPageDropdownItems(hasFeaturedPosts);
   }, [hasFeaturedPosts]);
 
   const handleSectionClick = (href: string) => {
@@ -92,7 +89,7 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
               <Link 
                 to="/" 
                 className="flex items-center"
-                aria-label="Ir para página inicial"
+                aria-label={UI_LAYOUT.HEADER.GO_TO_HOME}
                 onClick={onClose}
               >
                 <Logo className="h-8" priority={true} />
@@ -100,7 +97,7 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
               <button
                 className="p-2 text-neutral-500 hover:text-primary-800 hover:bg-neutral-50 rounded-lg transition-colors"
                 onClick={onClose}
-                aria-label="Fechar menu"
+                aria-label={UI_LAYOUT.HEADER.CLOSE_MENU}
               >
                 <svg 
                   width="20" 
@@ -152,7 +149,7 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
                   onClick={() => setPaginaExpanded(!paginaExpanded)}
                   className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group hover:bg-primary-50 hover:text-primary-800 text-neutral-700"
                 >
-                  <span className="font-medium">Página</span>
+                  <span className="font-medium">{UI_LAYOUT.HEADER.PAGE_DROPDOWN}</span>
                   <ChevronDown 
                     size={16} 
                     className={cn(
@@ -216,14 +213,14 @@ export const MobileMenu = ({ isOpen, onClose, menuRef }: MobileMenuProps) => {
                   Precisa de ajuda jurídica?
                 </h3>
                 <p className="text-xs text-neutral-600 mb-3">
-                  Agende sua consulta gratuita hoje mesmo
+                  {UI_LAYOUT.MOBILE_MENU.CONSULTATION_CTA}
                 </p>
                 <Link
-                  to="/contato"
+                  to={UI_LAYOUT.MOBILE_MENU.CONTACT_LINK}
                   className="block w-full px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white text-center rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   onClick={onClose}
                 >
-                  Agendar Consulta
+                  {UI_LAYOUT.MOBILE_MENU.SCHEDULE_BUTTON}
                 </Link>
               </div>
             </div>

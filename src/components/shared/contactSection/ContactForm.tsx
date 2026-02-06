@@ -4,6 +4,7 @@ import { useSecureForm } from '../../../hooks/utils/useSecureForm';
 import { getButtonClasses, getInputClasses, getLabelClasses } from '../../../utils/formStyles';
 import { useInlineNotification } from '../../../hooks/ui/useInlineNotification';
 import { InlineNotification } from '../notifications/InlineNotification';
+import { EXTERNAL_COMPONENT_CLASSES } from '../../../config/theme';
 
 // ═══════════════════════════════════════════════════════════════
 // COMPONENTES INTERNOS (PRIVADOS)
@@ -266,7 +267,7 @@ export const ContactForm = () => {
 
           {/* Error general */}
           {errors.submit && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded flex items-center text-red-700">
+            <div className={`mb-4 p-3 rounded flex items-center ${EXTERNAL_COMPONENT_CLASSES.errorBg} ${EXTERNAL_COMPONENT_CLASSES.errorBorder} ${EXTERNAL_COMPONENT_CLASSES.errorText}`}>
               <AlertCircle size={16} className="mr-2 flex-shrink-0" />
               <span className="text-sm">{errors.submit[0]}</span>
             </div>

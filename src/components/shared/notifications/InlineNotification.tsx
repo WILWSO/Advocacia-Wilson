@@ -2,8 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { cn } from '../../../utils/cn';
+import { NOTIFICATION_COLORS } from '../../../config/theme';
 
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
+type NotificationSize = 'sm' | 'base' | 'lg';
 
 interface InlineNotificationProps {
   type: NotificationType;
@@ -11,6 +13,7 @@ interface InlineNotificationProps {
   onClose?: () => void;
   duration?: number;
   className?: string;
+  size?: NotificationSize; // Tamaño del texto: 'sm' | 'base' | 'lg'
 }
 
 /**
@@ -22,7 +25,8 @@ export const InlineNotification: React.FC<InlineNotificationProps> = ({
   message,
   onClose,
   duration = 0,
-  className
+  className,
+  size = 'base' // Por defecto: text-base (16px)
 }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
@@ -43,39 +47,32 @@ export const InlineNotification: React.FC<InlineNotificationProps> = ({
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5" />;
+        return <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />;
       case 'error':
-        return <AlertCircle className="w-5 h-5" />;
+        return <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5" />;
+        return <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />;
       case 'info':
-        return <Info className="w-5 h-5" />;
+        return <Info className="w-4 h-4 sm:w-5 sm:h-5" />;
     }
   };
 
-  const getStyles = () => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 text-green-800 border-green-200';
-      case 'error':
-        return 'bg-red-50 text-red-800 border-red-200';
-      case 'warning':
-        return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-      case 'info':
-        return 'bg-blue-50 text-blue-800 border-blue-200';
-    }
-  };
+  /**
+   * ✅ SSoT: Usa NOTIFICATION_COLORS de config/theme
+   * Consolidado: una sola función para estilos y color de icono
+   */
+  const colors = NOTIFICATION_COLORS[type];
+  const colorStyles = `${colors.bg} ${colors.text} ${colors.border}`;
+  const iconColor = colors.icon;
 
-  const getIconColor = () => {
-    switch (type) {
-      case 'success':
-        return 'text-green-600';
-      case 'error':
-        return 'text-red-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'info':
-        return 'text-blue-600';
+  const getTextSize = () => {
+    switch (size) {
+      case 'sm':
+        return 'text-xs sm:text-sm';      // 12px → 14px
+      case 'base':
+        return 'text-sm sm:text-base';    // 14px → 16px (por defecto)
+      case 'lg':
+        return 'text-base sm:text-lg';    // 16px → 18px
     }
   };
 
@@ -98,14 +95,14 @@ export const InlineNotification: React.FC<InlineNotificationProps> = ({
     >
       <div
         className={cn(
-          'flex items-start gap-3 p-4 rounded-lg border shadow-sm',
-          getStyles()
+          'flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border shadow-sm',
+          colorStyles
         )}
       >
-        <div className={cn('flex-shrink-0 mt-0.5', getIconColor())}>
+        <div className={cn('flex-shrink-0 mt-0.5 sm:mt-0', iconColor)}>
           {getIcon()}
         </div>
-        <p className="flex-1 text-sm font-medium leading-relaxed">{message}</p>
+        <p className={cn('flex-1 font-medium leading-relaxed', getTextSize())}>{message}</p>
         {onClose && (
           <button
             type="button"
@@ -116,14 +113,11 @@ export const InlineNotification: React.FC<InlineNotificationProps> = ({
             }}
             className={cn(
               'flex-shrink-0 rounded p-1 transition-colors',
-              type === 'success' && 'hover:bg-green-100',
-              type === 'error' && 'hover:bg-red-100',
-              type === 'warning' && 'hover:bg-yellow-100',
-              type === 'info' && 'hover:bg-blue-100'
+              colors.bgHover
             )}
             aria-label="Fechar notificação"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Post } from '../../types/post'
 import { PostsService } from '../../services/postsService'
+import { ERROR_MESSAGES } from '../../config/messages'
 
 /**
  * Hook para gerenciar posts sociais
@@ -23,7 +24,7 @@ export const usePosts = () => {
 
       setPosts(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar posts')
+      setError(err instanceof Error ? err.message : ERROR_MESSAGES.posts.LOAD_ERROR)
     } finally {
       setLoading(false)
     }
@@ -39,7 +40,7 @@ export const usePosts = () => {
       await fetchPosts()
       return { data, error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao criar post'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.posts.CREATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -55,7 +56,7 @@ export const usePosts = () => {
       await fetchPosts()
       return { data, error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar post'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.posts.UPDATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -71,7 +72,7 @@ export const usePosts = () => {
       await fetchPosts()
       return { error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao excluir post'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.posts.DELETE_ERROR
       setError(errorMsg)
       return { error: errorMsg }
     }

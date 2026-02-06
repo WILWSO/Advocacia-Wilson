@@ -1,4 +1,7 @@
 import React from 'react';
+import { UI_LAYOUT } from '../../config/messages';
+import { COMMON_BUTTON_COLORS } from '../../config/theme';
+import { cn } from '../../utils/cn';
 
 interface SkipLinkProps {
   href: string;
@@ -14,13 +17,13 @@ const SkipLink: React.FC<SkipLinkProps> = ({
   return (
     <a
       href={href}
-      className={`
-        absolute left-[-9999px] top-4 z-[9999] px-4 py-2 
-        bg-primary-900 text-white rounded text-sm font-medium
-        focus:left-4 focus:outline-none focus:ring-2 focus:ring-gold-500
-        transition-all duration-200
-        ${className}
-      `}
+      className={cn(
+        "absolute left-[-9999px] top-4 z-[9999] px-4 py-2 rounded text-sm font-medium transition-all duration-200",
+        "focus:left-4 focus:outline-none focus:ring-2 focus:ring-offset-2",
+        COMMON_BUTTON_COLORS.skipLink,
+        COMMON_BUTTON_COLORS.skipLinkFocus,
+        className
+      )}
       tabIndex={0}
     >
       {children}
@@ -30,18 +33,15 @@ const SkipLink: React.FC<SkipLinkProps> = ({
 
 const SkipLinks: React.FC = () => {
   return (
-    <nav aria-label="Links de navegação rápida" role="navigation">
+    <nav aria-label={UI_LAYOUT.SKIP_LINKS.SKIP_NAV_LABEL} role="navigation">
       <SkipLink href="#main-content">
-        Pular para o conteúdo principal
+        {UI_LAYOUT.SKIP_LINKS.TO_MAIN_CONTENT}
       </SkipLink>
       <SkipLink href="#main-navigation">
-        Pular para a navegação
+        {UI_LAYOUT.SKIP_LINKS.TO_NAVIGATION}
       </SkipLink>
       <SkipLink href="#footer">
-        Pular para o rodapé
-      </SkipLink>
-      <SkipLink href="#contact-form">
-        Pular para o formulário de contato
+        {UI_LAYOUT.SKIP_LINKS.TO_FOOTER}
       </SkipLink>
     </nav>
   );

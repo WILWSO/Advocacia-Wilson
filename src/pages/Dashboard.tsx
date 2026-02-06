@@ -1,6 +1,6 @@
 import React from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
-import { FileText, Users, User, MessageSquare } from 'lucide-react'
+import { FileText, Users, User, MessageSquare, Calendar } from 'lucide-react'
 import AdminHeader from '../components/layout/AdminHeader'
 import SideBar from '../components/admin/SideBar'
 import { useResponsive } from '../hooks/ui/useResponsive'
@@ -17,6 +17,11 @@ const Dashboard: React.FC = () => {
   const location = useLocation()
 
   const navItems: NavItem[] = [
+    {
+      path: '/admin/agenda',
+      label: 'Agenda',
+      icon: <Calendar size={20} />
+    },
     {
       path: '/admin/processos',
       label: 'Processos',
@@ -41,7 +46,7 @@ const Dashboard: React.FC = () => {
 
   const NavItemComponent = ({ item }: { item: NavItem }) => {
     const isActive = location.pathname === item.path || 
-                     (item.path === '/admin/processos' && location.pathname === '/admin')
+                     (item.path === '/admin/agenda' && location.pathname === '/admin')
     
     return (
       <NavLink
@@ -76,14 +81,14 @@ const Dashboard: React.FC = () => {
 
         {/* Fixed Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30">
-          <div className="grid grid-cols-4 gap-1 p-2">
+          <div className="grid grid-cols-5 gap-1 p-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) => cn(
                   "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg transition-colors",
-                  isActive || (item.path === '/admin/processos' && location.pathname === '/admin')
+                  isActive || (item.path === '/admin/agenda' && location.pathname === '/admin')
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 )}

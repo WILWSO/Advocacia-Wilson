@@ -12,8 +12,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
 import { getTypeIcon, getTypeColor, formatDate, truncateText } from '../../utils/postUtils';
+import { formatCompactDate } from '../../utils/dateUtils';
 import { useMultiplePostsLike } from '../../hooks/features/useLikes';
 import { PostsService } from '../../services/postsService';
+import { EXTERNAL_COMPONENT_CLASSES } from '../../config/theme';
 import type { Post } from '../../types/post';
 
 interface SocialFeedProps {
@@ -71,7 +73,7 @@ const PostPreview: React.FC<{
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-            <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
+            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all group-hover:scale-110", EXTERNAL_COMPONENT_CLASSES.youtubeButton)}>
               <Play size={28} className="text-white ml-1" fill="white" />
             </div>
           </div>
@@ -125,7 +127,7 @@ const PostPreview: React.FC<{
           )}>
             <Calendar size={compact ? 12 : 14} className="mr-1" />
             <span className="hidden sm:inline">{post.data_criacao ? formatDate(post.data_criacao) : ''}</span>
-            <span className="sm:hidden">{post.data_criacao ? new Date(post.data_criacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</span>
+            <span className="sm:hidden">{post.data_criacao ? formatCompactDate(post.data_criacao) : ''}</span>
           </div>
         </div>
 
@@ -238,7 +240,9 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
           destaque: post.destaque ?? false,
           publicado: post.publicado ?? true,
           likes: post.likes || 0,
-          comentarios: post.comentarios || 0
+          comentarios: post.comentarios || 0,
+          created_at: post.data_criacao || new Date().toISOString(),
+          updated_at: post.data_atualizacao || post.data_criacao || new Date().toISOString()
         }));
 
         setPosts(formattedPosts);

@@ -8,6 +8,7 @@ import { cn } from '../../utils/cn';
 import { PostCard } from '../shared/cards/PostCard';
 import { usePostsCarousel } from '../../hooks/features/usePostsCarousel';
 import { useVideoPlayer } from '../../hooks/ui/useVideoPlayer';
+import { HOME_SECTIONS } from '../../config/messages';
 
 const Hero = () => {
   const { isMobile, isTablet } = useResponsive();
@@ -164,7 +165,7 @@ const Hero = () => {
                     )}
                     aria-describedby="cta-help"
                   >
-                    <span>Agende uma Consulta</span>
+                    <span>{HOME_SECTIONS.HERO.CTA_CONSULTATION}</span>
                     <ArrowRight 
                       size={isMobile ? 18 : 20} 
                       className="group-hover:translate-x-1 transition-transform" 
@@ -181,9 +182,9 @@ const Hero = () => {
                         : "bg-white/10 hover:bg-white/20 border-2 border-white/90 hover:border-white text-white rounded-lg backdrop-blur-md shadow-xl hover:shadow-2xl px-8 py-4 text-lg hover:backdrop-blur-lg",
                       "focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-900"
                     )}
-                    aria-label="Conhecer todas as áreas de atuação jurídica do escritório"
+                    aria-label={HOME_SECTIONS.HERO.CTA_AREAS_ARIA}
                   >
-                    <span>Áreas de Atuação</span>
+                    <span>{HOME_SECTIONS.HERO.CTA_AREAS}</span>
                     {!isMobile && (
                       <Play 
                         size={16} 

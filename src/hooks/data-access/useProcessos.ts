@@ -1,12 +1,20 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ProcessoJuridico } from '../../types/processo'
+import { DB_TABLES } from '../../config/database'
+import { ERROR_MESSAGES } from '../../config/messages'
+
+interface UseProcessosOptions {
+  enablePolling?: boolean;
+  pollingInterval?: number;
+  autoFetch?: boolean;
+}
 
 /**
  * Hook para gerenciar processos jurídicos
  * @returns Objeto contendo lista de processos, loading, error e métodos CRUD
  */
-export const useProcessos = () => {
+export const useProcessos = (options?: UseProcessosOptions) => {
   const [processos, setProcessos] = useState<ProcessoJuridico[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -15,13 +23,17 @@ export const useProcessos = () => {
     status?: string
     advogado?: string
     limite?: number
+    silent?: boolean // Para polling sin mostrar loading
   }) => {
-    setLoading(true)
+    // No mostrar loading si es una actualización silenciosa (polling)
+    if (!filters?.silent) {
+      setLoading(true)
+    }
     setError(null)
 
     try {
       let query = supabase
-        .from('processos_juridicos')
+        .from(DB_TABLES.PROCESSOS)
         .select(`
           *,
           usuarios:advogado_responsavel (
@@ -61,9 +73,11 @@ export const useProcessos = () => {
 
       setProcessos(processosTransformados)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar processos')
+      setError(err instanceof Error ? err.message : ERROR_MESSAGES.processos.LOAD_ERROR)
     } finally {
-      setLoading(false)
+      if (!filters?.silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -77,24 +91,19 @@ export const useProcessos = () => {
         throw new Error('Usuário não autenticado')
       }
 
-      const { data, error: supabaseError } = await supabase
-        .from('processos_juridicos')
+      const { error: supabaseError } = await supabase
+        .from(DB_TABLES.PROCESSOS)
         .insert([processo])
-        .select()
 
       if (supabaseError) {
         console.error('Erro Supabase ao criar processo:', supabaseError)
-        throw new Error(`Erro ao criar processo: ${supabaseError.message}`)
+        throw new Error(`${ERROR_MESSAGES.processos.CREATE_ERROR}: ${supabaseError.message}`)
       }
 
-      if (data && data.length > 0) {
-        await fetchProcessos() // Recarregar lista
-        return { data: data[0], error: null }
-      }
-      
+      await fetchProcessos() // Recarregar lista
       return { data: null, error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao criar processo'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.processos.CREATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -110,21 +119,20 @@ export const useProcessos = () => {
         throw new Error('Usuário não autenticado')
       }
 
-      const { data, error: supabaseError } = await supabase
-        .from('processos_juridicos')
+      const { error: supabaseError } = await supabase
+        .from(DB_TABLES.PROCESSOS)
         .update(updates)
         .eq('id', id)
-        .select()
 
       if (supabaseError) {
         console.error('Erro Supabase ao atualizar processo:', supabaseError)
-        throw new Error(`Erro ao atualizar processo: ${supabaseError.message}`)
+        throw new Error(`${ERROR_MESSAGES.processos.UPDATE_ERROR}: ${supabaseError.message}`)
       }
 
       await fetchProcessos() // Recarregar lista
-      return { data, error: null }
+      return { data: null, error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar processo'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.processos.UPDATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -135,7 +143,7 @@ export const useProcessos = () => {
     
     try {
       const { error: supabaseError } = await supabase
-        .from('processos_juridicos')
+        .from(DB_TABLES.PROCESSOS)
         .delete()
         .eq('id', id)
 
@@ -144,11 +152,38 @@ export const useProcessos = () => {
       await fetchProcessos() // Recarregar lista
       return { error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao excluir processo'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.processos.DELETE_ERROR
       setError(errorMsg)
       return { error: errorMsg }
     }
   }, [fetchProcessos])
+
+  // Auto-fetch inicial (si está habilitado)
+  // SIEMPRE ejecutar useEffect, solo condicionar la lógica interna
+  useEffect(() => {
+    if (options?.autoFetch !== false) {
+      fetchProcessos();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Polling periódico
+  // SIEMPRE ejecutar useEffect, solo condicionar la lógica interna
+  useEffect(() => {
+    if (!options?.enablePolling) {
+      return; // No hacer nada pero el hook se ejecuta
+    }
+
+    const interval = options.pollingInterval || 30000;
+
+    const pollingId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        // Llamar fetchProcessos en modo silencioso (sin loading)
+        fetchProcessos({ silent: true });
+      }
+    }, interval);
+
+    return () => clearInterval(pollingId);
+  }, [options?.enablePolling, options?.pollingInterval, fetchProcessos]);
 
   return {
     processos,

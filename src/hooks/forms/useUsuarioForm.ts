@@ -3,7 +3,7 @@
  * Centraliza toda la lógica de negocio: CRUD, upload de fotos, cambio de contraseña, estados, handlers, permisos
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAuthLogin as useAuth } from '../../components/auth/useAuthLogin'
 import { useUsuarios } from '../data-access/useUsuarios'
 import { useNotification } from '../../components/shared/notifications/useNotification'
@@ -37,7 +37,7 @@ export const useUsuarioForm = () => {
   const [isUpdating, setIsUpdating] = useState(false)
 
   // Datos iniciales para detectar cambios - Modal Crear
-  const createInitialData: UsuarioFormData = {
+  const createInitialData: UsuarioFormData = useMemo(() => ({
     titulo: '',
     nome: '',
     nome_completo: '',
@@ -62,7 +62,7 @@ export const useUsuarioForm = () => {
     educacao: [],
     especialidades: [],
     bio: ''
-  };
+  }), []);
 
   // Datos iniciales para detectar cambios - Modal Editar
   const editInitialData: UsuarioFormData = editingUsuario ? {
@@ -93,10 +93,10 @@ export const useUsuarioForm = () => {
   } : createInitialData;
 
   // Datos iniciales para detectar cambios - Modal Password
-  const passwordInitialData: PasswordForm = {
+  const passwordInitialData: PasswordForm = useMemo(() => ({
     newPassword: '',
     confirmPassword: ''
-  };
+  }), []);
 
   // Form data
   const [formData, setFormData] = useState<UsuarioFormData>(editingUsuario ? editInitialData : createInitialData)
@@ -143,14 +143,14 @@ export const useUsuarioForm = () => {
       setFormData(createInitialData);
       resetCreateForm(createInitialData);
     }
-  }, [editingUsuario, showCreateForm, resetEditForm, resetCreateForm]);
+  }, [editingUsuario, showCreateForm, resetEditForm, resetCreateForm, createInitialData]);
 
   useEffect(() => {
     if (changingPassword) {
       setPasswordForm(passwordInitialData);
       resetPasswordForm(passwordInitialData);
     }
-  }, [changingPassword, resetPasswordForm]);
+  }, [changingPassword, resetPasswordForm, passwordInitialData]);
 
   // Handler para actualizar formData y detectar cambios - Create/Edit
   // Mantiene strings vacíos para prevenir warnings de React en inputs controlados
@@ -164,18 +164,22 @@ export const useUsuarioForm = () => {
   };
 
   // Handler para aplicar formateo en tiempo real a campos específicos
-  const handleFieldChange = (field: keyof UsuarioFormData, value: string) => {
+  const handleFieldChange = (field: keyof UsuarioFormData, value: string | boolean | string[]) => {
     let formattedValue = value;
     
-    // Formatear campos VARCHAR a MAYÚSCULAS en tiempo real (excepto 'titulo' que debe quedar como usuario escribe)
-    if (['nome', 'nome_completo', 'numero_documento', 'endereco', 'cidade', 'estado', 'pais'].includes(field)) {
-      formattedValue = value.toUpperCase();
+    // Si es string, aplicar formateo
+    if (typeof value === 'string') {
+      // Formatear campos VARCHAR a MAYÚSCULAS en tiempo real (excepto 'titulo' que debe quedar como usuario escribe)
+      if (['nome', 'nome_completo', 'numero_documento', 'endereco', 'cidade', 'estado', 'pais'].includes(field)) {
+        formattedValue = value.toUpperCase();
+      }
+      // Formatear email a minúsculas en tiempo real
+      else if (field === 'email') {
+        formattedValue = value.toLowerCase();
+      }
+      // 'titulo' y otros campos TEXT permanecen sin formatear
     }
-    // Formatear email a minúsculas en tiempo real
-    else if (field === 'email') {
-      formattedValue = value.toLowerCase();
-    }
-    // 'titulo' y otros campos TEXT permanecen sin formatear
+    // Para boolean y arrays, usar valor directamente
     
     handleFormChange({ ...formData, [field]: formattedValue });
   };
@@ -195,6 +199,7 @@ export const useUsuarioForm = () => {
       email: '',
       password: '',
       role: 'assistente',
+      posicao: 'Associado', // Campo obligatorio
       ativo: true,
       foto_perfil_url: '',
       data_nascimento: '',
@@ -280,7 +285,7 @@ export const useUsuarioForm = () => {
     // Formatear campos antes de enviar
     const formattedData = formatFormData({...formData} as unknown as Record<string, unknown>)
 
-    const { error } = await createUsuario(formattedData as any)
+    const { error } = await createUsuario(formattedData as unknown as Omit<Usuario, 'id'> & { password: string })
     
     if (!error) {
       setShowCreateForm(false)
@@ -378,10 +383,11 @@ export const useUsuarioForm = () => {
       bio: formData.bio
     }
 
-    // Solo admin puede cambiar role y status
+    // Solo admin puede cambiar role, status y posicao
     if (isAdmin) {
       updates.role = formData.role
       updates.ativo = formData.ativo
+      updates.posicao = formData.posicao // ✨ MOVIENDO POSICAO AQUÍ
     }
 
     // Formatear campos antes de enviar
@@ -483,6 +489,7 @@ export const useUsuarioForm = () => {
       email: usuario.email,
       password: '',
       role: usuario.role,
+      posicao: usuario.posicao, // Campo obligatorio
       ativo: usuario.ativo,
       foto_perfil_url: usuario.foto_perfil_url || '',
       data_nascimento: usuario.data_nascimento || '',
@@ -567,9 +574,10 @@ export const useUsuarioForm = () => {
       successToast(SUCCESS_MESSAGES.usuarios.PHOTO_UPLOADED)
       
       e.target.value = ''
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao fazer upload:', error)
-      errorNotif(error.message || ERROR_MESSAGES.usuarios.PHOTO_UPLOAD_ERROR)
+      const errorMsg = error instanceof Error ? error.message : ERROR_MESSAGES.usuarios.PHOTO_UPLOAD_ERROR;
+      errorNotif(errorMsg)
     } finally {
       setUploadingPhoto(false)
       setTimeout(() => setUploadProgress(0), 1000)

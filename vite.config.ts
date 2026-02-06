@@ -8,6 +8,8 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   build: {
+    // Source maps para desarrollo (false para producción)
+    sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -24,8 +26,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
   },
   server: {
-    // Configuración para evitar problemas de caché en desarrollo
-    force: true,
     // Headers de seguridad para desarrollo
     headers: {
       // Protección XSS
@@ -36,8 +36,8 @@ export default defineConfig({
       'X-Frame-Options': 'SAMEORIGIN',
       // Política de referrer
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-      // Content Security Policy con soporte para Google Maps y YouTube
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.googleapis.com https://maps.gstatic.com *.googlemaps.com; connect-src 'self' https: https://maps.googleapis.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.youtube.com https://youtube.com;",
+      // Content Security Policy con soporte para Google Maps, YouTube y Workers (Vite HMR)
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.googleapis.com https://maps.gstatic.com *.googlemaps.com; connect-src 'self' https: https://maps.googleapis.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.youtube.com https://youtube.com;",
       // Permissions Policy (removiendo 'location' que causaba warning)
       'Permissions-Policy': 'camera=(), microphone=(), payment=()'
     }
@@ -49,7 +49,7 @@ export default defineConfig({
       'X-Content-Type-Options': 'nosniff', 
       'X-Frame-Options': 'SAMEORIGIN',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.googleapis.com https://maps.gstatic.com *.googlemaps.com; connect-src 'self' https: https://maps.googleapis.com; frame-src https://www.google.com https://maps.google.com;",
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' https://maps.googleapis.com https://maps.gstatic.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.googleapis.com https://maps.gstatic.com *.googlemaps.com; connect-src 'self' https: https://maps.googleapis.com; frame-src https://www.google.com https://maps.google.com;",
       'Permissions-Policy': 'camera=(), microphone=(), location=(), payment=()',
       // Strict Transport Security (HSTS) - solo para HTTPS
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'

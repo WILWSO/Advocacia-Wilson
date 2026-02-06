@@ -72,7 +72,7 @@ const LoginPage = () => {
                 Email
               </label>
               <div className="relative">
-                <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400" />
                 <input
                   id="email"
                   type="email"
@@ -80,7 +80,7 @@ const LoginPage = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-neutral-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-300 rounded-lg text-neutral-900 placeholder:text-primary-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white disabled:bg-neutral-100 disabled:border-neutral-200 transition-all"
                   placeholder="seu@email.com"
                   autoComplete="email"
                 />
@@ -93,7 +93,7 @@ const LoginPage = () => {
                 Senha
               </label>
               <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -101,8 +101,8 @@ const LoginPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="w-full pl-10 pr-12 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-neutral-50 disabled:cursor-not-allowed transition-colors"
-                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-3 bg-white border-2 border-neutral-300 rounded-lg text-neutral-900 placeholder:text-primary-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white disabled:bg-neutral-100 disabled:border-neutral-200 transition-all"
+                  placeholder="senha"
                   autoComplete="current-password"
                 />
                 <button
@@ -132,7 +132,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isSubmitting || !email || !password}
-              className="w-full py-3 bg-primary-800 text-white rounded-lg font-semibold hover:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-primary-800 text-white rounded-lg font-semibold hover:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-neutral-300 transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

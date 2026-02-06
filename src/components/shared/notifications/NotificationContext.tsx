@@ -1,7 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useContext } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Info, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
+import AccessibleButton from '../buttons/AccessibleButton';
+import { getIcon as getSystemIcon } from '../../../config/icons';
+import { NOTIFICATION_COLORS } from '../../../config/theme';
 
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -38,12 +41,12 @@ interface NotificationContextType {
   }) => Promise<boolean>;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotification = () => {
+export const useNotification = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotification debe ser usado dentro de NotificationProvider');
+    throw new Error('useNotification must be used within a NotificationProvider');
   }
   return context;
 };
@@ -145,29 +148,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const getStyles = (type: NotificationType) => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 text-green-800 border-green-200';
-      case 'error':
-        return 'bg-red-50 text-red-800 border-red-200';
-      case 'warning':
-        return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-      case 'info':
-        return 'bg-blue-50 text-blue-800 border-blue-200';
-    }
+    const colors = NOTIFICATION_COLORS[type];
+    return `${colors.bg} ${colors.text} ${colors.border}`;
   };
 
   const getIconColor = (type: NotificationType) => {
-    switch (type) {
-      case 'success':
-        return 'text-green-600';
-      case 'error':
-        return 'text-red-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'info':
-        return 'text-blue-600';
-    }
+    return NOTIFICATION_COLORS[type].icon;
   };
 
   return (
@@ -219,23 +205,24 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <button
+                  <AccessibleButton
                     onClick={confirmDialog.onCancel}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    variant="warning"
+                    size="lg"
+                    className="flex-1"
+                    leftIcon={<ArrowLeft className="w-5 h-5" />}
                   >
                     {confirmDialog.cancelText}
-                  </button>
-                  <button
+                  </AccessibleButton>
+                  <AccessibleButton
                     onClick={confirmDialog.onConfirm}
-                    className={cn(
-                      'flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium',
-                      confirmDialog.type === 'danger' && 'bg-red-600 hover:bg-red-700',
-                      confirmDialog.type === 'warning' && 'bg-yellow-600 hover:bg-yellow-700',
-                      confirmDialog.type === 'info' && 'bg-blue-600 hover:bg-blue-700'
-                    )}
+                    variant="ghost"
+                    size="lg"
+                    className="flex-1"
+                    leftIcon={getSystemIcon('close')}
                   >
                     {confirmDialog.confirmText}
-                  </button>
+                  </AccessibleButton>
                 </div>
               </motion.div>
             </div>
@@ -281,3 +268,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     </NotificationContext.Provider>
   );
 };
+
+// Asegurar export por defecto para HMR
+export default NotificationProvider;

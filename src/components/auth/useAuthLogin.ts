@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../../lib/supabase';
 import { Usuario } from '../../types/usuario';
+import { DB_TABLES } from '../../config/database';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -36,7 +37,7 @@ export const useAuthLogin = create<AuthState>((set, get) => ({
       if (data.user) {
         // Buscar información adicional del usuario en la tabla usuarios
         const { data: userData } = await supabase
-          .from('usuarios')
+          .from(DB_TABLES.USUARIOS)
           .select('*')
           .eq('email', data.user.email)
           .single();
@@ -107,7 +108,7 @@ export const useAuthLogin = create<AuthState>((set, get) => ({
       if (user) {
         // Buscar información adicional del usuario
         const { data: userData } = await supabase
-          .from('usuarios')
+          .from(DB_TABLES.USUARIOS)
           .select('*')
           .eq('id', user.id)
           .single();

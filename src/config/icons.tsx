@@ -15,6 +15,7 @@
  * <SocialIcon size={16} />
  */
 
+import React from 'react';
 import { 
   Home,
   Users,
@@ -55,7 +56,12 @@ import {
   User,
   LogOut,
   Menu,
-  Settings
+  Settings,
+  MapPin,
+  Gavel,
+  UserRound,
+  Send,
+  ArrowRight
 } from 'lucide-react';
 
 /**
@@ -91,6 +97,8 @@ export const SYSTEM_ICONS = {
   view: Eye,
   close: X,
   save: CheckCircle,
+  send: Send,
+  submit: ArrowRight,
   
   // ==================== ARCHIVOS/MEDIA ====================
   upload: Upload,
@@ -126,22 +134,46 @@ export const SYSTEM_ICONS = {
   logout: LogOut,
   settings: Settings,
   
+  // ==================== NUEVOS ICONOS ESPECÍFICOS ====================
+  mapPin: MapPin,           // Local/Ubicación (audiencias)
+  gavel: Gavel,             // Procesos jurídicos/Justicia
+  userRound: UserRound,     // Presencial/Persona física
+  
 } as const;
 
 /**
  * Helper para renderizar iconos con tamaño consistente
+ * Incluye validación defensiva para prevenir errores de recursión en Firefox
  * 
  * @param iconName - Nombre del icono del mapa SYSTEM_ICONS
  * @param size - Tamaño del icono en píxeles (default: 16)
+ * @param className - Clases CSS adicionales (opcional)
  * @returns Componente JSX del icono
  * 
  * @example
  * {getIcon('social', 20)}
  * {getIcon('clientes')} // usa tamaño default de 16
+ * {getIcon('info', 20, 'text-blue-600')}
  */
-export const getIcon = (iconName: keyof typeof SYSTEM_ICONS, size = 16) => {
+export const getIcon = (
+  iconName: keyof typeof SYSTEM_ICONS, 
+  size = 16, 
+  className?: string
+) => {
   const Icon = SYSTEM_ICONS[iconName];
-  return <Icon size={size} />;
+  
+  // Validación defensiva para prevenir recursión infinita
+  if (!Icon) {
+    console.warn(`Icon "${iconName}" not found in SYSTEM_ICONS`);
+    return null;
+  }
+  
+  try {
+    return <Icon size={size} className={className} strokeWidth={1.5} />;
+  } catch (error) {
+    console.error(`Error rendering icon "${iconName}":`, error);
+    return null;
+  }
 };
 
 /**

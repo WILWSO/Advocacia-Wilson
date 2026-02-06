@@ -1,7 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '../../../utils/cn'
+import { CONFIRMATION_MESSAGES } from '../../../config/messages'
+import { useNotification } from '../notifications/useNotification'
+import AccessibleButton from '../buttons/AccessibleButton'
+import { CSS_UTILITY_MAPS } from '../../../config/theme'
 
 interface BaseModalProps {
   isOpen: boolean
@@ -13,17 +17,13 @@ interface BaseModalProps {
   showCloseButton?: boolean
   closeOnBackdropClick?: boolean
   className?: string
+  /** Indica si hay cambios no guardados (muestra confirmación antes de cerrar) */
+  hasUnsavedChanges?: boolean
+  /** Mensaje personalizado de confirmación */
+  confirmMessage?: string
 }
 
-const maxWidthClasses = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-  '2xl': 'max-w-2xl',
-  '4xl': 'max-w-4xl',
-  '5xl': 'max-w-5xl'
-}
+const maxWidthClasses = CSS_UTILITY_MAPS.maxWidth;
 
 export const BaseModal: React.FC<BaseModalProps> = ({
   isOpen,
@@ -34,13 +34,36 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   footer,
   showCloseButton = true,
   closeOnBackdropClick = true,
-  className = ''
+  className = '',
+  hasUnsavedChanges = false,
+  confirmMessage
 }) => {
+  const { confirm } = useNotification();
+
+  // Handler de cierre con confirmación si hay cambios
+  // Usar useCallback para evitar recrear la función en cada render
+  const handleClose = useCallback(async () => {
+    if (hasUnsavedChanges) {
+      const confirmed = await confirm({
+        title: 'Descartar alterações?',
+        message: confirmMessage || CONFIRMATION_MESSAGES.DISCARD_CHANGES,
+        confirmText: 'Descartar',
+        cancelText: 'Continuar editando',
+        type: 'warning'
+      });
+      if (confirmed) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  }, [hasUnsavedChanges, confirmMessage, confirm, onClose]);
+
   // Handle Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose()
+        handleClose()
       }
     }
 
@@ -54,7 +77,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       document.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen, onClose])
+  }, [isOpen, handleClose])
 
   return (
     <AnimatePresence mode="wait">
@@ -65,7 +88,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={closeOnBackdropClick ? onClose : undefined}
+          onClick={closeOnBackdropClick ? handleClose : undefined}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
@@ -97,14 +120,16 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 {title}
               </h2>
               {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-md hover:bg-neutral-100 transition-colors"
+                <AccessibleButton
+                  onClick={handleClose}
+                  variant="ghost"
+                  size="sm"
                   aria-label="Fechar modal"
                   type="button"
+                  className="!p-2"
                 >
-                  <X size={30} className="text-neutral-500" />
-                </button>
+                  <X size={24} />
+                </AccessibleButton>
               )}
             </div>
 

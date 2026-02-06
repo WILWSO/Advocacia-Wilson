@@ -5,6 +5,7 @@
 
 import { DocumentoArquivo } from './documento'
 import type { ClienteStatus } from './cliente'
+import { BaseEntity } from './common'
 
 
 
@@ -47,6 +48,9 @@ export interface Honorarios {
 
 /**
  * Audiencia programada
+ * NOTA: Este tipo se mantiene para compatibilidad pero las audiencias
+ * ahora se gestionan en la tabla 'audiencias' separada.
+ * Ver src/types/audiencia.ts para el nuevo modelo.
  */
 export interface Audiencia {
   data: string
@@ -58,14 +62,14 @@ export interface Audiencia {
 
 /**
  * Interface principal para proceso jurídico
- * Coincide con schema de Supabase
+ * Extiende BaseEntity para campos de auditoría estándar
  */
-export interface ProcessoJuridico {
-  id?: string
+export interface ProcessoJuridico extends BaseEntity {
   titulo: string
-  descricao: string
+  descricao?: string
   status: ProcessoStatus
-  advogado_responsavel?: string
+  advogado_responsavel: string  // Campo obligatorio
+  polo: ProcessoPolo  // Campo obligatorio
   data_criacao?: string
   data_atualizacao?: string
   cliente_nome?: string
@@ -73,7 +77,6 @@ export interface ProcessoJuridico {
   cliente_telefone?: string
   numero_processo?: string
   cliente_id?: string
-  polo?: ProcessoPolo
   area_direito?: string
   prioridade?: ProcessoPrioridade
   valor_causa?: string
@@ -82,11 +85,10 @@ export interface ProcessoJuridico {
   // Campos JSONB
   jurisdicao?: Jurisdicao
   honorarios?: Honorarios
-  audiencias?: Audiencia[]
   documentos_processo?: DocumentoArquivo[]
   links_processo?: ProcessoLink[]
   jurisprudencia?: Jurisprudencia[]
-  // Campos de auditoría
+  // Campos de auditoría legacy (mapped from BaseEntity)
   creado_por?: string
   atualizado_por?: string
 }
@@ -129,7 +131,6 @@ export interface ProcessoFormData {
     valor_honorarios: string
     detalhes: string
   }
-  audiencias: Audiencia[]
   documentos_processo: DocumentoArquivo[]
   links_processo: ProcessoLink[]
   jurisprudencia: Jurisprudencia[]

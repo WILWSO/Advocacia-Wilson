@@ -143,4 +143,206 @@ export class FormValidator {
       errors: allErrors
     };
   }
+
+  /**
+   * Valida campo requerido genérico
+   */
+  static validateRequired(value: string, fieldName: string = 'Campo'): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!value || value.trim().length === 0) {
+      errors.push(`${fieldName} é obrigatório`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida URL
+   */
+  static validateURL(url: string, fieldName: string = 'Link'): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!url || url.trim().length === 0) {
+      errors.push(`${fieldName} é obrigatório`);
+    } else {
+      try {
+        new URL(url.trim());
+        // Validar que sea http o https
+        if (!url.trim().match(/^https?:\/\//i)) {
+          errors.push(`${fieldName} deve começar com http:// ou https://`);
+        }
+      } catch {
+        errors.push(`${fieldName} deve ser uma URL válida`);
+      }
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida título genérico
+   */
+  static validateTitulo(titulo: string, minLength: number = 3, maxLength: number = 200): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!titulo || titulo.trim().length === 0) {
+      errors.push('Título é obrigatório');
+    } else if (titulo.trim().length < minLength) {
+      errors.push(`Título deve ter pelo menos ${minLength} caracteres`);
+    } else if (titulo.length > maxLength) {
+      errors.push(`Título não pode exceder ${maxLength} caracteres`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida ementa de jurisprudência
+   */
+  static validateEmenta(ementa: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!ementa || ementa.trim().length === 0) {
+      errors.push('Ementa é obrigatória');
+    } else if (ementa.trim().length < 10) {
+      errors.push('Ementa deve ter pelo menos 10 caracteres');
+    } else if (ementa.length > 5000) {
+      errors.push('Ementa não pode exceder 5000 caracteres');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida CPF brasileiro
+   */
+  static validateCPF(cpf: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!cpf || cpf.trim().length === 0) {
+      return { isValid: true, errors: [] }; // CPF é opcional
+    }
+    
+    // Remove caracteres não numéricos
+    const cleanCPF = cpf.replace(/[^\d]/g, '');
+    
+    if (cleanCPF.length !== 11) {
+      errors.push('CPF deve ter 11 dígitos');
+      return { isValid: false, errors };
+    }
+    
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1+$/.test(cleanCPF)) {
+      errors.push('CPF inválido');
+      return { isValid: false, errors };
+    }
+    
+    // Validação dos dígitos verificadores
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+    }
+    let digit = 11 - (sum % 11);
+    if (digit >= 10) digit = 0;
+    
+    if (digit !== parseInt(cleanCPF.charAt(9))) {
+      errors.push('CPF inválido');
+      return { isValid: false, errors };
+    }
+    
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+    }
+    digit = 11 - (sum % 11);
+    if (digit >= 10) digit = 0;
+    
+    if (digit !== parseInt(cleanCPF.charAt(10))) {
+      errors.push('CPF inválido');
+      return { isValid: false, errors };
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida CNPJ brasileiro
+   */
+  static validateCNPJ(cnpj: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!cnpj || cnpj.trim().length === 0) {
+      return { isValid: true, errors: [] }; // CNPJ é opcional
+    }
+    
+    // Remove caracteres não numéricos
+    const cleanCNPJ = cnpj.replace(/[^\d]/g, '');
+    
+    if (cleanCNPJ.length !== 14) {
+      errors.push('CNPJ deve ter 14 dígitos');
+      return { isValid: false, errors };
+    }
+    
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1+$/.test(cleanCNPJ)) {
+      errors.push('CNPJ inválido');
+      return { isValid: false, errors };
+    }
+    
+    // Validação do primeiro dígito verificador
+    let length = cleanCNPJ.length - 2;
+    let numbers = cleanCNPJ.substring(0, length);
+    const digits = cleanCNPJ.substring(length);
+    let sum = 0;
+    let pos = length - 7;
+    
+    for (let i = length; i >= 1; i--) {
+      sum += parseInt(numbers.charAt(length - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    
+    let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (result !== parseInt(digits.charAt(0))) {
+      errors.push('CNPJ inválido');
+      return { isValid: false, errors };
+    }
+    
+    // Validação do segundo dígito verificador
+    length = length + 1;
+    numbers = cleanCNPJ.substring(0, length);
+    sum = 0;
+    pos = length - 7;
+    
+    for (let i = length; i >= 1; i--) {
+      sum += parseInt(numbers.charAt(length - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    
+    result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (result !== parseInt(digits.charAt(1))) {
+      errors.push('CNPJ inválido');
+      return { isValid: false, errors };
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
 }

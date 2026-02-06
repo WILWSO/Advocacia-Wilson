@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ComentarioProcesso } from '../../types/processo'
+import { ERROR_MESSAGES } from '../../config/messages'
 
 /**
  * Hook para gerenciar comentários de processos
@@ -33,7 +34,7 @@ export const useComentarios = (processoId: string) => {
 
       setComentarios(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar comentários')
+      setError(err instanceof Error ? err.message : ERROR_MESSAGES.comentarios.LOAD_ERROR)
     } finally {
       setLoading(false)
     }
@@ -57,7 +58,7 @@ export const useComentarios = (processoId: string) => {
       await fetchComentarios() // Recarregar comentários
       return { data, error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao adicionar comentário'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.comentarios.ADD_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }

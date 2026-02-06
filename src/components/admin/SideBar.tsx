@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { getIcon } from '../../config/icons';
 import { cn } from '../../utils/cn';
+import { ADMIN_UI } from '../../config/messages';
 
 interface NavItem {
   path: string;
@@ -11,23 +12,28 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
+    path: '/admin/agenda',
+    label: ADMIN_UI.SIDEBAR.AGENDA,
+    icon: getIcon('calendar', 20)
+  },
+  {
     path: '/admin/processos',
-    label: 'Processos',
+    label: ADMIN_UI.SIDEBAR.PROCESSOS,
     icon: getIcon('processos', 20)
   },
   {
     path: '/admin/clientes',
-    label: 'Clientes',
+    label: ADMIN_UI.SIDEBAR.CLIENTES,
     icon: getIcon('clientes', 20)
   },
   {
     path: '/admin/usuarios',
-    label: 'Usuários',
+    label: ADMIN_UI.SIDEBAR.USUARIOS,
     icon: getIcon('usuarios', 20)
   },
   {
     path: '/admin/social',
-    label: 'Social',
+    label: ADMIN_UI.SIDEBAR.SOCIAL,
     icon: getIcon('socialAdmin', 20)
   }
 ];
@@ -40,7 +46,7 @@ const SideBar: React.FC = () => {
       <nav className="p-4 space-y-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
-                          (item.path === '/admin/processos' && location.pathname === '/admin');
+                          (item.path === '/admin/agenda' && location.pathname === '/admin');
           
           return (
             <NavLink

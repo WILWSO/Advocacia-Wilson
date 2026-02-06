@@ -5,6 +5,7 @@
 
 /**
  * Interface para documentos almacenados en Supabase Storage
+ * Usado con DocumentManager y campo JSONB documentos_cliente
  */
 export interface DocumentoArquivo {
   nome: string

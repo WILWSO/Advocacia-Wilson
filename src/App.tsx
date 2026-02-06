@@ -23,6 +23,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 
 // Páginas administrativas
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const AgendaPage = lazy(() => import('./pages/AgendaPage'));
 const ProcessosPage = lazy(() => import('./pages/ProcessosPage'));
 const ClientesPage = lazy(() => import('./pages/ClientesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
@@ -86,10 +87,11 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              {/* Redirigir /admin a /admin/processos */}
-              <Route index element={<Navigate to="/admin/processos" replace />} />
+              {/* Redirigir /admin a /admin/agenda (primera página a cargar) */}
+              <Route index element={<Navigate to="/admin/agenda" replace />} />
             
             {/* Subrutas del área administrativa */}
+            <Route path="agenda" element={<AgendaPage />} />
             <Route path="processos" element={<ProcessosPage />} />
             <Route path="clientes" element={<ClientesPage />} />
             <Route path="usuarios" element={<UsuariosPage />} />

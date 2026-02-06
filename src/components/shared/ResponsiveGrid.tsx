@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { CSS_UTILITY_MAPS } from '../../config/theme';
 
 interface ResponsiveGridProps {
   children: React.ReactNode;
@@ -201,21 +202,8 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
   };
 
   // Mapear valores de alineación
-  const alignClasses = {
-    start: 'items-start',
-    center: 'items-center',
-    end: 'items-end',
-    stretch: 'items-stretch',
-  };
-
-  const justifyClasses = {
-    start: 'justify-start',
-    center: 'justify-center',
-    end: 'justify-end',
-    between: 'justify-between',
-    around: 'justify-around',
-    evenly: 'justify-evenly',
-  };
+  const alignClasses = CSS_UTILITY_MAPS.align;
+  const justifyClasses = CSS_UTILITY_MAPS.justify;
 
   return (
     <div

@@ -1,5 +1,6 @@
 import { FileText, Video, ImageIcon, ExternalLink } from 'lucide-react';
 import { PostType } from '../types/post';
+import { formatDate as formatDateUtil, formatDateTimeLong } from './dateUtils';
 
 /**
  * Retorna el ícono correspondiente al tipo de post
@@ -29,23 +30,14 @@ export const getTypeColor = (type: PostType) => {
 
 /**
  * Formatea una fecha al formato brasileño
+ * @deprecated Use formatDate desde utils/dateUtils.ts
+ * Re-exportado aquí por compatibilidad con código existente
+ * 
  * @param date - Fecha como Date o string ISO
  * @param includeTime - Si debe incluir hora y minutos (default: false)
  */
 export const formatDate = (date: Date | string, includeTime = false): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  const options: Intl.DateTimeFormatOptions = {
-    day: '2-digit',
-    month: includeTime ? 'long' : 'short',
-    year: 'numeric',
-    ...(includeTime && {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  };
-
-  return new Intl.DateTimeFormat('pt-BR', options).format(dateObj);
+  return includeTime ? formatDateTimeLong(date, 'pt-BR') : formatDateUtil(date, 'pt-BR');
 };
 
 /**
@@ -59,7 +51,8 @@ export const truncateText = (text: string, maxLength: number): string => {
  * Verifica si un post es nuevo (menos de 48 horas)
  * Migrado desde services/postsService.ts
  */
-export const isNewPost = (dateString: string): boolean => {
+export const isNewPost = (dateString?: string): boolean => {
+  if (!dateString) return false;
   return new Date(dateString).getTime() > Date.now() - 48 * 60 * 60 * 1000;
 };
 

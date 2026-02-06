@@ -1,13 +1,15 @@
 
 import { motion } from 'framer-motion';
 import { Linkedin, Mail, PhoneCall, FileText, Award, BookOpen, Instagram } from 'lucide-react';
-import { teamMemberData } from '../data/DataTeamMember';
+import { useEquipeMembers } from '../hooks/data-access/useTeamMembers';
 import { company } from '../data/DataCompany';
 import SEOHead from '../components/shared/SEOHead';
 import OptimizedImage from '../components/shared/OptimizedImage';
+import SkeletonCard from '../components/shared/cards/SkeletonCard';
 
 
 const TeamPage = () => {
+  const { equipe, loading, error } = useEquipeMembers();
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
@@ -64,9 +66,27 @@ const TeamPage = () => {
         <div className="container mx-auto px-4">
           <div className="space-y-16">
             
-            {teamMemberData
-            .filter(member => member.active) //verifica se o membro está activo
-            .map((member, index) => ( 
+            {loading ? (
+              // Loading skeleton cards
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={`skeleton-${index}`} className="bg-white rounded-lg shadow-custom overflow-hidden">
+                  <SkeletonCard />
+                </div>
+              ))
+            ) : error ? (
+              // Error state
+              <div className="text-center py-12">
+                <p className="text-red-600 text-lg">Erro ao carregar membros da equipe</p>
+                <p className="text-gray-500 mt-2">Tente recarregar a página</p>
+              </div>
+            ) : equipe.length === 0 ? (
+              // Empty state
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">Nenhum membro da equipe encontrado</p>
+              </div>
+            ) : (
+              // Render team members from database
+              equipe.map((member, index) => ( 
               <motion.div
                 key={member.id}
                 initial="hidden"
@@ -81,7 +101,7 @@ const TeamPage = () => {
                   <div className="md:col-span-1">
                     <div className="h-full relative overflow-hidden rounded-lg aspect-[4/5] min-h-[300px]">
                       <OptimizedImage
-                        src={member.image[0]}
+                        src={member.images[0] || member.images[1]} 
                         alt={`Foto profissional do advogado ${member.name}`}
                         className="object-cover w-full h-full"
                         sizes="(max-width: 768px) 100vw, 33vw"
@@ -198,7 +218,8 @@ const TeamPage = () => {
                   </div>
                 </div>
               </motion.div>
-            ))}
+              ))
+            )}
 
           </div>
         </div>

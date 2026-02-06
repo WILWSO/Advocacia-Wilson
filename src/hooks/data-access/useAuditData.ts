@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { DB_TABLES } from '../../config/database'
 
 interface UsuarioInfo {
   nome: string
@@ -34,7 +35,7 @@ export const useAuditData = (
         // Buscar información del creador
         if (creadoPor) {
           const { data: criador, error: criadorError } = await supabase
-            .from('usuarios')
+            .from(DB_TABLES.USUARIOS)
             .select('nome, email')
             .eq('id', creadoPor)
             .single()
@@ -54,7 +55,7 @@ export const useAuditData = (
         // Buscar información del último actualizador (solo si es diferente del creador)
         if (atualizadoPor && atualizadoPor !== creadoPor) {
           const { data: atualizador, error: atualizadorError } = await supabase
-            .from('usuarios')
+            .from(DB_TABLES.USUARIOS)
             .select('nome, email')
             .eq('id', atualizadoPor)
             .single()

@@ -16,6 +16,7 @@ import { footerQuickLinks } from '../home/NavBar';
 import { ResponsiveGrid, ResponsiveContainer } from '../shared/ResponsiveGrid';
 import { useResponsive } from '../../hooks/ui/useResponsive';
 import { cn } from '../../utils/cn';
+import { UI_LAYOUT } from '../../config/messages';
 
 const Footer: React.FC = () => {
   const { isMobile } = useResponsive();
@@ -27,7 +28,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-primary-900 text-white relative overflow-hidden">
+    <footer id="footer" className="bg-primary-900 text-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-gradient-to-br from-gold-400/20 via-transparent to-primary-800/20" />
@@ -91,7 +92,7 @@ const Footer: React.FC = () => {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                        aria-label={`Visite nosso ${social.name}`}
+                        aria-label={`${UI_LAYOUT.FOOTER.VISIT_SOCIAL} ${social.name}`}
                       >
                         <Icon size={18} />
                       </motion.a>
@@ -110,7 +111,7 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h3 className="text-lg font-semibold text-gold-400 border-b-2 border-gold-400 pb-2 inline-block">
-                Links Rápidos
+                {UI_LAYOUT.FOOTER.QUICK_LINKS_TITLE}
               </h3>
               <ul className="space-y-3">
                 {footerQuickLinks.map((link, index) => (
@@ -141,7 +142,7 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <h3 className="text-lg font-semibold text-gold-400 border-b-2 border-gold-400 pb-2 inline-block">
-                Áreas de Atuação
+                {UI_LAYOUT.FOOTER.PRACTICE_AREAS_TITLE}
               </h3>
               <ul className="space-y-3">
                 {company.areasAtuacao.slice(0, 5).map((area, index) => (
@@ -217,7 +218,7 @@ const Footer: React.FC = () => {
               <p className="text-neutral-400 text-sm">
                 © {new Date().getFullYear()} {company.nome}. 
                 <br className={isMobile ? "block" : "hidden"} />
-                <span className="ml-1">Todos os direitos reservados.</span>
+                <span className="ml-1">{UI_LAYOUT.FOOTER.COPYRIGHT}</span>
               </p>
             </motion.div>
 
@@ -235,13 +236,13 @@ const Footer: React.FC = () => {
                 to="/privacidade" 
                 className="hover:text-gold-400 transition-colors duration-200"
               >
-                Política de Privacidade
+                {UI_LAYOUT.FOOTER.PRIVACY_POLICY}
               </Link>
               <Link 
                 to="/termos" 
                 className="hover:text-gold-400 transition-colors duration-200"
               >
-                Termos de Uso
+                {UI_LAYOUT.FOOTER.TERMS_OF_USE}
               </Link>
             </motion.div>
           </ResponsiveGrid>

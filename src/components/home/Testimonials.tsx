@@ -4,6 +4,9 @@ import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import OptimizedImage from '../shared/OptimizedImage';
 import { SectionHeader } from './SectionHeader';
 import { testimonialsData } from '../../data/DataTestimonials';
+import { HOME_SECTIONS } from '../../config/messages';
+import { HOME_SECTION_CLASSES } from '../../config/theme';
+import { cn } from '../../utils/cn';
 
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -20,9 +23,9 @@ const Testimonials = () => {
     <section className="py-16 md:py-24 bg-primary-900 text-white">
       <div className="container mx-auto px-4">
         <SectionHeader
-          overline="Depoimentos"
-          title="O Que Nossos Clientes Dizem"
-          description="A satisfação de nossos clientes é o reflexo do nosso compromisso com a excelência e dedicação em cada caso."
+          overline={HOME_SECTIONS.TESTIMONIALS.OVERLINE}
+          title={HOME_SECTIONS.TESTIMONIALS.TITLE}
+          description={HOME_SECTIONS.TESTIMONIALS.DESCRIPTION}
           overlineClassName="text-gold-300"
           titleClassName="text-white"
           descriptionClassName="text-neutral-300"
@@ -64,8 +67,8 @@ const Testimonials = () => {
           <div className="flex justify-center mt-8 space-x-4">
             <button
               onClick={prevTestimonial}
-              className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 flex items-center justify-center transition-colors"
-              aria-label="Depoimento anterior"
+              className={HOME_SECTION_CLASSES.carouselButton}
+              aria-label={HOME_SECTIONS.TESTIMONIALS.ARIA_PREV}
             >
               <ChevronLeft size={20} />
             </button>
@@ -74,17 +77,18 @@ const Testimonials = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                    index === currentIndex ? 'bg-gold-500' : 'bg-primary-700 hover:bg-primary-600'
-                  }`}
-                  aria-label={`Ir para o depoimento ${index + 1}`}
+                  className={cn(
+                    "w-2.5 h-2.5 rounded-full transition-colors",
+                    index === currentIndex ? HOME_SECTION_CLASSES.carouselDotActive : HOME_SECTION_CLASSES.carouselDotInactive
+                  )}
+                  aria-label={`${HOME_SECTIONS.TESTIMONIALS.ARIA_GO_TO} ${index + 1}`}
                 ></button>
               ))}
             </div>
             <button
               onClick={nextTestimonial}
-              className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 flex items-center justify-center transition-colors"
-              aria-label="Próximo depoimento"
+              className={HOME_SECTION_CLASSES.carouselButton}
+              aria-label={HOME_SECTIONS.TESTIMONIALS.ARIA_NEXT}
             >
               <ChevronRight size={20} />
             </button>

@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Usuario } from '../../types/usuario'
+import { DB_TABLES } from '../../config/database'
+import { ERROR_MESSAGES } from '../../config/messages'
 
 /**
  * Hook para gerenciar usuários do sistema
@@ -17,7 +19,7 @@ export const useUsuarios = () => {
 
     try {
       let query = supabase
-        .from('usuarios')
+        .from(DB_TABLES.USUARIOS)
         .select('*')
         .order('nome')
 
@@ -31,7 +33,7 @@ export const useUsuarios = () => {
 
       setUsuarios(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar usuários')
+      setError(err instanceof Error ? err.message : ERROR_MESSAGES.usuarios.LOAD_ERROR)
     } finally {
       setLoading(false)
     }
@@ -50,15 +52,37 @@ export const useUsuarios = () => {
 
       if (authError) throw authError
 
-      // Crear registro en tabla usuarios
+      // Esperar un momento antes del insert manual
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Crear registro en tabla usuarios con todos los campos
       const { data, error: supabaseError } = await supabase
-        .from('usuarios')
+        .from(DB_TABLES.USUARIOS)
         .insert([{
           id: authData.user.id,
           email: usuario.email,
           nome: usuario.nome,
+          nome_completo: usuario.nome_completo || null,
           role: usuario.role,
-          ativo: usuario.ativo
+          posicao: usuario.posicao, // Campo obligatorio
+          ativo: usuario.ativo ?? true,
+          titulo: usuario.titulo || null,
+          foto_perfil_url: usuario.foto_perfil_url || null,
+          data_nascimento: usuario.data_nascimento || null,
+          tipo_documento: usuario.tipo_documento || null,
+          numero_documento: usuario.numero_documento || null,
+          whatsapp: usuario.whatsapp || null,
+          redes_sociais: usuario.redes_sociais || null,
+          endereco: usuario.endereco || null,
+          numero: usuario.numero || null,
+          cidade: usuario.cidade || null,
+          estado: usuario.estado || null,
+          cep: usuario.cep || null,
+          pais: usuario.pais || 'Brasil',
+          equipe: usuario.equipe ?? false,
+          educacao: usuario.educacao || null,
+          especialidades: usuario.especialidades || null,
+          bio: usuario.bio || null
         }])
         .select()
 
@@ -71,7 +95,7 @@ export const useUsuarios = () => {
       await fetchUsuarios()
       return { data: data?.[0], error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao criar usuário'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.usuarios.CREATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -82,17 +106,20 @@ export const useUsuarios = () => {
     
     try {
       const { data, error: supabaseError } = await supabase
-        .from('usuarios')
+        .from(DB_TABLES.USUARIOS)
         .update(updates)
         .eq('id', id)
         .select()
 
-      if (supabaseError) throw supabaseError
+      if (supabaseError) {
+        console.error('❌ Error de Supabase:', supabaseError);
+        throw supabaseError;
+      }
 
       await fetchUsuarios()
       return { data: data?.[0], error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar usuário'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.usuarios.UPDATE_ERROR
       setError(errorMsg)
       return { data: null, error: errorMsg }
     }
@@ -111,7 +138,7 @@ export const useUsuarios = () => {
 
       return { error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar senha'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.usuarios.PASSWORD_UPDATE_ERROR
       setError(errorMsg)
       return { error: errorMsg }
     }
@@ -121,23 +148,31 @@ export const useUsuarios = () => {
     setError(null)
     
     try {
-      // Eliminar de tabla usuarios
+      // PASO 1: Intentar eliminar de Supabase Auth primero (manejar 404 silenciosamente)
+      try {
+        await supabase.auth.admin.deleteUser(id)
+      } catch (authError: any) {
+        // Solo lanzar el error si NO es 404 (usuario no encontrado en Auth)
+        if (authError?.status !== 404) {
+          throw authError
+        }
+        // Si es 404, el usuario no existe en Auth pero puede existir en la tabla
+        // Continuar con la eliminación de la tabla usuarios
+        console.warn(`🔄 Usuario ${id} no encontrado en Supabase Auth (404) - eliminando solo de la tabla usuarios. Esto es normal si el usuario fue eliminado previamente del sistema de autenticación.`)
+      }
+
+      // PASO 2: Eliminar de tabla usuarios
       const { error: dbError } = await supabase
-        .from('usuarios')
+        .from(DB_TABLES.USUARIOS)
         .delete()
         .eq('id', id)
 
       if (dbError) throw dbError
 
-      // Eliminar de Supabase Auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(id)
-
-      if (authError) throw authError
-
       await fetchUsuarios()
       return { error: null }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao excluir usuário'
+      const errorMsg = err instanceof Error ? err.message : ERROR_MESSAGES.usuarios.DELETE_ERROR
       setError(errorMsg)
       return { error: errorMsg }
     }

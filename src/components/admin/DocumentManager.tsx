@@ -5,7 +5,10 @@ import { StorageService } from '../../services/storageService'
 import AccessibleButton from '../shared/buttons/AccessibleButton'
 import { useInlineNotification } from '../../hooks/ui/useInlineNotification'
 import { InlineNotification } from '../shared/notifications/InlineNotification'
-import { useNotification } from '../shared/notifications/NotificationContext'
+import { useNotification } from '../shared/notifications/useNotification'
+import { formatShortDate } from '../../utils/dateUtils'
+import { ADMIN_UI } from '../../config/messages'
+import { formatFileSize, getFileIcon } from '../../utils/fileHelpers'
 
 export interface DocumentItem {
   nome: string
@@ -25,6 +28,7 @@ interface DocumentManagerProps {
   uploadLabel?: string
   showUploadButton?: boolean
   readOnly?: boolean
+  onNotification?: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void
 }
 
 export const DocumentManager: React.FC<DocumentManagerProps> = ({
@@ -43,7 +47,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   ],
   uploadLabel = 'Adicionar Documento',
   showUploadButton = true,
-  readOnly = false
+  readOnly = false,
+  onNotification
 }) => {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -57,13 +62,25 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     // Validar tamanho
     const maxSizeBytes = maxSize * 1024 * 1024
     if (file.size > maxSizeBytes) {
-      warning(`O arquivo é muito grande. Tamanho máximo: ${maxSize}MB`)
+      const errorMsg = ADMIN_UI.DOCUMENT.ERROR_FILE_TOO_LARGE.replace('{maxSize}', maxSize.toString())
+      
+      if (onNotification) {
+        onNotification(errorMsg, 'warning')
+      } else {
+        warning(errorMsg)
+      }
       return
     }
 
     // Validar tipo
     if (!allowedTypes.includes(file.type)) {
-      warning('Tipo de arquivo não permitido. Use: PDF, DOC, DOCX, JPG, PNG')
+      const errorMsg = ADMIN_UI.DOCUMENT.ERROR_FILE_TYPE
+      
+      if (onNotification) {
+        onNotification(errorMsg, 'warning')
+      } else {
+        warning(errorMsg)
+      }
       return
     }
 
@@ -74,17 +91,17 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       // Usar ID temporal si no hay entityId
       const targetId = entityId || `temp-${Date.now()}`
 
-      // Upload usando StorageService
-      const publicUrl = await StorageService.uploadFile(bucketName, file, targetId)
+      // Upload usando StorageService (retorna filePath para buckets privados)
+      const filePath = await StorageService.uploadFile(bucketName, file, targetId)
 
-      if (!publicUrl) {
-        throw new Error('Erro ao fazer upload do arquivo')
+      if (!filePath) {
+        throw new Error(ADMIN_UI.DOCUMENT.ERROR_UPLOAD)
       }
 
-      // Crear objeto documento
+      // Crear objeto documento - guardamos filePath para buckets privados
       const newDoc: DocumentItem = {
         nome: file.name,
-        url: publicUrl, // Guardamos la URL pública como referencia (contiene el path)
+        url: filePath, // Para buckets privados, guardamos el path (no URL pública)
         tipo: file.type,
         tamanho: file.size,
         data_upload: new Date().toISOString()
@@ -94,13 +111,19 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       onDocumentsChange([...documents, newDoc])
 
       setUploadProgress(100)
-      success('Documento enviado com sucesso!')
+      
+      // NO mostrar mensaje de éxito para evitar confusión - usuario debe guardar el formulario
       
       // Reset input
       e.target.value = ''
     } catch (error) {
       console.error('Erro ao fazer upload:', error)
-      errorNotif('Erro ao enviar documento. Tente novamente.')
+      
+      if (onNotification) {
+        onNotification(ADMIN_UI.DOCUMENT.ERROR_SEND || 'Erro ao enviar documento', 'error')
+      } else {
+        errorNotif(ADMIN_UI.DOCUMENT.ERROR_SEND)
+      }
     } finally {
       setUploading(false)
       setTimeout(() => setUploadProgress(0), 1000)
@@ -112,26 +135,36 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       await StorageService.viewDocument(doc, bucketName)
     } catch (error) {
       console.error('Erro ao visualizar documento:', error)
-      alert('Erro ao visualizar documento. Verifique as permissões no Supabase Storage.')
+      alert(ADMIN_UI.DOCUMENT.ERROR_VIEW)
     }
   }
 
   const handleDownloadDocument = async (doc: DocumentItem) => {
     try {
       await StorageService.downloadDocument(doc, bucketName)
-      success('Download iniciado com sucesso!')
+      
+      if (onNotification) {
+        onNotification(ADMIN_UI.DOCUMENT.SUCCESS_DOWNLOAD || 'Documento baixado com sucesso', 'success')
+      } else {
+        success(ADMIN_UI.DOCUMENT.SUCCESS_DOWNLOAD)
+      }
     } catch (error) {
       console.error('Erro ao baixar documento:', error)
-      errorNotif('Erro ao baixar documento. Tente novamente.')
+      
+      if (onNotification) {
+        onNotification(ADMIN_UI.DOCUMENT.ERROR_DOWNLOAD || 'Erro ao baixar documento', 'error')
+      } else {
+        errorNotif(ADMIN_UI.DOCUMENT.ERROR_DOWNLOAD)
+      }
     }
   }
 
   const handleDeleteDocument = async (doc: DocumentItem, index: number) => {
     const confirmed = await confirmDialog({
-      title: 'Excluir Documento',
-      message: `Deseja realmente remover o documento "${doc.nome}"? Esta ação não pode ser desfeita.`,
-      confirmText: 'Excluir',
-      cancelText: 'Cancelar',
+      title: ADMIN_UI.DOCUMENT.DELETE_TITLE,
+      message: ADMIN_UI.DOCUMENT.DELETE_MESSAGE.replace('{name}', doc.nome),
+      confirmText: ADMIN_UI.DOCUMENT.DELETE_CONFIRM,
+      cancelText: ADMIN_UI.DOCUMENT.DELETE_CANCEL,
       type: 'danger'
     });
 
@@ -147,52 +180,53 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       const newDocs = documents.filter((_, i) => i !== index)
       onDocumentsChange(newDocs)
       
-      success('Documento removido com sucesso!')
+      if (onNotification) {
+        onNotification(ADMIN_UI.DOCUMENT.SUCCESS_DELETE || 'Documento removido com sucesso', 'success')
+      } else {
+        success(ADMIN_UI.DOCUMENT.SUCCESS_DELETE)
+      }
     } catch (error) {
       console.error('Erro ao remover documento:', error)
-      errorNotif('Erro ao remover documento. Tente novamente.')
+      
+      if (onNotification) {
+        onNotification(ADMIN_UI.DOCUMENT.ERROR_DELETE || 'Erro ao remover documento', 'error')
+      } else {
+        errorNotif(ADMIN_UI.DOCUMENT.ERROR_DELETE)
+      }
     }
-  }
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-  }
-
-  const getFileIcon = (tipo: string) => {
-    if (tipo.includes('pdf')) return <FileText className="text-red-500" size={24} />
-    if (tipo.includes('image')) return <FileText className="text-blue-500" size={24} />
-    return <FileText className="text-gray-500" size={24} />
   }
 
   return (
     <div className="space-y-4">
-      {/* Notificación inline */}
-      <AnimatePresence mode="wait">
-        {notification.show && (
-          <InlineNotification
-            type={notification.type}
-            message={notification.message}
-            onClose={hide}
-            className="mb-2"
-          />
-        )}
-      </AnimatePresence>
+      {/* Notificación inline - solo mostrar si NO hay callback onNotification (modo standalone) */}
+      {!onNotification && (
+        <AnimatePresence mode="wait">
+          {notification.show && (
+            <InlineNotification
+              type={notification.type}
+              message={notification.message}
+              onClose={hide}
+              className="mb-2"
+            />
+          )}
+        </AnimatePresence>
+      )}
       
-      {/* Upload Button */}
+      {/* Input siempre renderizado (oculto) para acceso externo */}
+      {!readOnly && (
+        <input
+          type="file"
+          id={`file-upload-${bucketName}`}
+          onChange={handleFileUpload}
+          disabled={uploading}
+          className="hidden"
+          accept={allowedTypes.join(',')}
+        />
+      )}
+      
+      {/* Upload Button - solo si showUploadButton=true */}
       {showUploadButton && !readOnly && (
         <div>
-          <input
-            type="file"
-            id={`file-upload-${bucketName}`}
-            onChange={handleFileUpload}
-            disabled={uploading}
-            className="hidden"
-            accept={allowedTypes.join(',')}
-          />
           <label htmlFor={`file-upload-${bucketName}`} className="cursor-pointer inline-block">
             <AccessibleButton
               type="button"
@@ -203,7 +237,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               aria-label={uploadLabel}
               className="w-full sm:w-auto pointer-events-none"
             >
-              {uploading ? 'Enviando...' : uploadLabel}
+              {uploading ? ADMIN_UI.DOCUMENT.UPLOADING : uploadLabel}
             </AccessibleButton>
           </label>
           
@@ -236,7 +270,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                     {doc.nome}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formatFileSize(doc.tamanho)} • {new Date(doc.data_upload).toLocaleDateString('pt-BR')}
+                    {formatFileSize(doc.tamanho)} • {formatShortDate(doc.data_upload)}
                   </p>
                 </div>
               </div>
@@ -247,7 +281,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleViewDocument(doc)}
-                  aria-label={`Visualizar ${doc.nome}`}
+                  aria-label={ADMIN_UI.DOCUMENT.VIEW_ARIA.replace('{name}', doc.nome)}
                   className="!p-2"
                 >
                   <Eye size={16} />
@@ -258,7 +292,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDownloadDocument(doc)}
-                  aria-label={`Baixar ${doc.nome}`}
+                  aria-label={ADMIN_UI.DOCUMENT.DOWNLOAD_ARIA.replace('{name}', doc.nome)}
                   className="!p-2"
                 >
                   <Download size={16} />
@@ -270,7 +304,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteDocument(doc, index)}
-                    aria-label={`Remover ${doc.nome}`}
+                    aria-label={ADMIN_UI.DOCUMENT.DELETE_ARIA.replace('{name}', doc.nome)}
                     className="!p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 size={16} />
@@ -283,7 +317,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       ) : (
         <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
           <FileText className="mx-auto text-gray-400 mb-2" size={32} />
-          <p className="text-sm text-gray-600">Nenhum documento anexado</p>
+          <p className="text-sm text-gray-600">{ADMIN_UI.DOCUMENT.EMPTY_TEXT}</p>
         </div>
       )}
     </div>

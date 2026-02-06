@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 import { Lock } from 'lucide-react'
+import { ADMIN_UI } from '../../config/messages'
 
 interface RestrictedFormFieldProps {
   label: string
@@ -17,32 +18,25 @@ export const RestrictedFormField: React.FC<RestrictedFormFieldProps> = ({
   required = false,
   helperText,
   isRestricted = false,
-  restrictionMessage = 'Você não tem permissão para editar este campo',
+  restrictionMessage = ADMIN_UI.RESTRICTED_FIELD.DEFAULT_MESSAGE,
   className = ''
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
       <label className="block text-sm font-medium text-gray-700">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && !isRestricted && <span className="text-red-500 ml-1">*</span>}
         {isRestricted && (
-          <Lock className="inline-block ml-2 text-amber-600" size={14} />
+          <span className="inline-flex items-center ml-2 gap-1">
+            <Lock className="text-amber-600" size={14} />
+            <span className="text-amber-600 font-semibold text-xs">({restrictionMessage})</span>
+          </span>
         )}
       </label>
 
       {isRestricted ? (
-        <div className="relative">
-          <div className="pointer-events-none opacity-60">
-            {children}
-          </div>
-          <div className="absolute inset-0 bg-amber-50/50 border border-amber-200 rounded-md flex items-center justify-center cursor-not-allowed">
-            <div className="text-center px-4">
-              <Lock className="mx-auto text-amber-600 mb-1" size={20} />
-              <p className="text-xs text-amber-700 font-medium">
-                {restrictionMessage}
-              </p>
-            </div>
-          </div>
+        <div className="pointer-events-none opacity-70">
+          {children}
         </div>
       ) : (
         <>
@@ -72,6 +66,15 @@ export const RestrictedInput: React.FC<RestrictedInputProps> = ({
   className = '',
   ...inputProps
 }) => {
+  // Clase base para inputs
+  const baseInputClass = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors';
+  
+  // Clase para inputs restringidos (amarillito)
+  const restrictedInputClass = 'w-full px-3 py-2 border border-amber-300 rounded-md bg-amber-50 text-gray-700';
+  
+  // Asegurar que value nunca sea null/undefined (React controlled input requirement)
+  const safeValue = inputProps.value ?? '';
+  
   return (
     <RestrictedFormField
       label={label}
@@ -82,9 +85,10 @@ export const RestrictedInput: React.FC<RestrictedInputProps> = ({
     >
       <input
         {...inputProps}
+        value={safeValue}
         required={required}
         disabled={isRestricted || inputProps.disabled}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+        className={`${isRestricted ? restrictedInputClass : baseInputClass} ${className}`}
       />
     </RestrictedFormField>
   )
@@ -108,6 +112,15 @@ export const RestrictedSelect: React.FC<RestrictedSelectProps> = ({
   className = '',
   ...selectProps
 }) => {
+  // Clase base para selects
+  const baseSelectClass = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors';
+  
+  // Clase para selects restringidos (amarillito)
+  const restrictedSelectClass = 'w-full px-3 py-2 border border-amber-300 rounded-md bg-amber-50 text-gray-700';
+  
+  // Asegurar que value nunca sea null/undefined (React controlled input requirement)
+  const safeValue = selectProps.value ?? '';
+  
   return (
     <RestrictedFormField
       label={label}
@@ -118,9 +131,10 @@ export const RestrictedSelect: React.FC<RestrictedSelectProps> = ({
     >
       <select
         {...selectProps}
+        value={safeValue}
         required={required}
         disabled={isRestricted || selectProps.disabled}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+        className={`${isRestricted ? restrictedSelectClass : baseSelectClass} ${className}`}
       >
         {children}
       </select>
@@ -144,6 +158,15 @@ export const RestrictedTextarea: React.FC<RestrictedTextareaProps> = ({
   className = '',
   ...textareaProps
 }) => {
+  // Clase base para textareas
+  const baseTextareaClass = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors';
+  
+  // Clase para textareas restringidos (amarillito)
+  const restrictedTextareaClass = 'w-full px-3 py-2 border border-amber-300 rounded-md bg-amber-50 text-gray-700 resize-none';
+  
+  // Asegurar que value nunca sea null/undefined (React controlled input requirement)
+  const safeValue = textareaProps.value ?? '';
+  
   return (
     <RestrictedFormField
       label={label}
@@ -154,9 +177,10 @@ export const RestrictedTextarea: React.FC<RestrictedTextareaProps> = ({
     >
       <textarea
         {...textareaProps}
+        value={safeValue}
         required={required}
         disabled={isRestricted || textareaProps.disabled}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+        className={`${isRestricted ? restrictedTextareaClass : baseTextareaClass} ${className}`}
       />
     </RestrictedFormField>
   )
