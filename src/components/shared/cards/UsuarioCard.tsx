@@ -5,7 +5,8 @@ import { Usuario } from '../../../types/usuario';
 import { useResponsive } from '../../../hooks/ui/useResponsive';
 import { cn } from '../../../utils/cn';
 import { getRoleBadgeColor, getRoleLabel } from '../../../utils/roleHelpers';
-import AccessibleButton from '../buttons/AccessibleButton';
+import AccessibleButton from '../buttons/AccessibleButton'
+import { formatShortDate } from '../../../utils/dateUtils';
 
 interface UsuarioCardProps {
   usuario: Usuario;
@@ -95,20 +96,23 @@ const UsuarioCard: React.FC<UsuarioCardProps> = ({
         </div>
 
         <div className={cn(
-          "flex gap-2",
-          isMobile ? "flex-col" : "flex-row"
+          "flex gap-2 mt-auto pt-2",
+          isMobile ? "flex-col" : "flex-row justify-center"
         )}>
           {/* Botão Ver: Todos podem ver seus próprios dados, admin vê todos */}
           {(isAdmin || isCurrentUser) && (
             <AccessibleButton
               onClick={() => onView(usuario)}
               variant="primary"
-              size="md"
-              leftIcon={<Eye size={16} />}
+              size="sm"
+              leftIcon={<Eye size={14} />}
               aria-label={`Ver detalhes de ${usuario.nome}`}
-              className="flex-1"
+              className={cn(
+                "transition-all duration-200",
+                isMobile ? "w-full" : "flex-1 min-w-[100px] max-w-[140px]"
+              )}
             >
-              Ver Detalhes
+              {isMobile ? "Ver Detalhes" : "Ver"}
             </AccessibleButton>
           )}
           
@@ -117,10 +121,13 @@ const UsuarioCard: React.FC<UsuarioCardProps> = ({
             <AccessibleButton
               onClick={() => onChangePassword(usuario)}
               variant="warning"
-              size="md"
-              leftIcon={<Shield size={16} />}
+              size="sm"
+              leftIcon={<Shield size={14} />}
               aria-label={`Alterar senha de ${usuario.nome}`}
-              className="flex-1"
+              className={cn(
+                "transition-all duration-200",
+                isMobile ? "w-full" : "flex-1 min-w-[100px] max-w-[140px]"
+              )}
             >
               Senha
             </AccessibleButton>

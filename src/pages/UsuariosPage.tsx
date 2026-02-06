@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
 import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
-import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
+import { ResponsiveGrid, ResponsiveContainer } from '../components/shared/ResponsiveGrid'
 import { useResponsive } from '../hooks/ui/useResponsive'
 import { getRoleBadgeColor, getRoleLabel } from '../utils/roleHelpers'
 import { cn } from '../utils/cn'
@@ -16,7 +16,7 @@ import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
-import { RestrictedInput, RestrictedSelect } from '../components/admin/RestrictedFormField'
+import { RestrictedInput, RestrictedSelect, RestrictedFormField } from '../components/admin/RestrictedFormField'
 
 // Main Component
 const UsuariosPage: React.FC = () => {
@@ -68,7 +68,11 @@ const UsuariosPage: React.FC = () => {
           </div>
 
           {/* filters.stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <ResponsiveGrid
+            cols={{ xs: 1, sm: 2, lg: 4 }}
+            gap={{ xs: 4, sm: 4, lg: 4 }}
+            className="mb-8"
+          >
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center">
                 <User className="h-8 w-8 text-blue-500" />
@@ -118,11 +122,14 @@ const UsuariosPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </ResponsiveGrid>
 
           {/* Filters */}
           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ResponsiveGrid
+              cols={{ xs: 1, sm: 2, lg: 3 }}
+              gap={{ xs: 4, sm: 4, lg: 4 }}
+            >
               <div className="lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Buscar
@@ -169,18 +176,26 @@ const UsuariosPage: React.FC = () => {
                   <option value="inativo">Inativos</option>
                 </select>
               </div>
-            </div>
+            </ResponsiveGrid>
           </div>
 
           {/* Lista de usuarios */}
           {usuarioForm.loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <ResponsiveGrid
+              cols={{ xs: 1, sm: 1, md: 2, lg: 2, xl: 3, '2xl': 4 }}
+              gap={{ xs: 3, sm: 4, md: 5, lg: 6, xl: 7 }}
+              className="animate-pulse"
+            >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <SkeletonCard key={i} />
               ))}
-            </div>
+            </ResponsiveGrid>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <ResponsiveGrid
+              cols={{ xs: 1, sm: 1, md: 2, lg: 2, xl: 3, '2xl': 4 }}
+              gap={{ xs: 3, sm: 4, md: 5, lg: 6, xl: 7 }}
+              className="transition-all duration-300 ease-in-out"
+            >
               {filters.usuariosFiltrados.map((usuario, index) => (
                 <UsuarioCard
                   key={usuario.id}
@@ -191,7 +206,7 @@ const UsuariosPage: React.FC = () => {
                   index={index}
                 />
               ))}
-            </div>
+            </ResponsiveGrid>
           )}
 
           {filters.usuariosFiltrados.length === 0 && !usuarioForm.loading && (
@@ -354,10 +369,12 @@ const UsuariosPage: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Senha *
-                  </label>
+                <RestrictedFormField
+                  label="Senha"
+                  required
+                  helperText="Mínimo 6 caracteres"
+                  isRestricted={false}
+                >
                   <div className="relative">
                     <input
                       type={usuarioForm.showPassword ? "text" : "password"}
@@ -377,8 +394,7 @@ const UsuariosPage: React.FC = () => {
                       {usuarioForm.showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
-                </div>
+                </RestrictedFormField>
 
               {/* Contacto - REDES SOCIAIS */}
               <div className="space-y-4">
