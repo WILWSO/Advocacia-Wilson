@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText } from 'lucide-react'
+import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText, Briefcase } from 'lucide-react'
 import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
 import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
@@ -196,6 +196,7 @@ const UsuariosPage: React.FC = () => {
       isSubmitting={false}
       submitLabel="Criar Usuário"
       maxWidth="4xl"
+      hasUnsavedChanges={usuarioForm.hasCreateFormChanges}
     >
               {/* Notificación inline */}
               <AnimatePresence mode="wait">
@@ -368,6 +369,51 @@ const UsuariosPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
                 </div>
+
+              {/* Contacto - REDES SOCIAIS */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Redes Sociais</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      LinkedIn
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      value={usuarioForm.formData.redes_sociais?.linkedin || ''}
+                      onChange={(e) => usuarioForm.setFormData({
+                        ...usuarioForm.formData,
+                        redes_sociais: {
+                          ...usuarioForm.formData.redes_sociais,
+                          linkedin: e.target.value
+                        }
+                      })}
+                      placeholder="https://linkedin.com/in/seu-perfil"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Instagram
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      value={usuarioForm.formData.redes_sociais?.instagram || ''}
+                      onChange={(e) => usuarioForm.setFormData({
+                        ...usuarioForm.formData,
+                        redes_sociais: {
+                          ...usuarioForm.formData.redes_sociais,
+                          instagram: e.target.value
+                        }
+                      })}
+                      placeholder="https://instagram.com/seu-perfil"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {/* Perfil Profesional */}
               <div className="space-y-4">
@@ -615,6 +661,7 @@ const UsuariosPage: React.FC = () => {
       isSubmitting={usuarioForm.isUpdating}
       submitLabel="Salvar"
       maxWidth="4xl"
+      hasUnsavedChanges={usuarioForm.hasEditFormChanges}
     >
               {/* Notificación inline */}
               <AnimatePresence mode="wait">
@@ -790,6 +837,51 @@ const UsuariosPage: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.data_nascimento}
                       onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, data_nascimento: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contacto - REDES SOCIAIS */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Redes Sociais</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      LinkedIn
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      value={usuarioForm.formData.redes_sociais?.linkedin || ''}
+                      onChange={(e) => usuarioForm.setFormData({
+                        ...usuarioForm.formData,
+                        redes_sociais: {
+                          ...usuarioForm.formData.redes_sociais,
+                          linkedin: e.target.value
+                        }
+                      })}
+                      placeholder="https://linkedin.com/in/seu-perfil"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Instagram
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      value={usuarioForm.formData.redes_sociais?.instagram || ''}
+                      onChange={(e) => usuarioForm.setFormData({
+                        ...usuarioForm.formData,
+                        redes_sociais: {
+                          ...usuarioForm.formData.redes_sociais,
+                          instagram: e.target.value
+                        }
+                      })}
+                      placeholder="https://instagram.com/seu-perfil"
                     />
                   </div>
                 </div>
@@ -1017,6 +1109,7 @@ const UsuariosPage: React.FC = () => {
         onSubmit={usuarioForm.handleUpdatePassword}
         submitLabel="Alterar Senha"
         maxWidth="md"
+        hasUnsavedChanges={usuarioForm.hasPasswordFormChanges}
       >
             {/* Notificación inline */}
             <AnimatePresence mode="wait">
@@ -1306,6 +1399,67 @@ const UsuariosPage: React.FC = () => {
                       {usuarioForm.viewingUsuario.pais && <p>{usuarioForm.viewingUsuario.pais}</p>}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Información Profesional */}
+              {(usuarioForm.viewingUsuario.equipe || (usuarioForm.viewingUsuario.educacao && usuarioForm.viewingUsuario.educacao.length > 0) || (usuarioForm.viewingUsuario.especialidades && usuarioForm.viewingUsuario.especialidades.length > 0) || usuarioForm.viewingUsuario.bio) && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                    <Briefcase size={20} />
+                    Informações Profissionais
+                  </h3>
+                  
+                  {/* Equipe */}
+                  {usuarioForm.viewingUsuario.equipe !== undefined && (
+                    <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                      <label className="block text-xs font-semibold text-amber-700 uppercase mb-1">Parte da Equipe</label>
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium",
+                        usuarioForm.viewingUsuario.equipe ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'
+                      )}>
+                        {usuarioForm.viewingUsuario.equipe ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                        {usuarioForm.viewingUsuario.equipe ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Educação / Formação */}
+                  {usuarioForm.viewingUsuario.educacao && usuarioForm.viewingUsuario.educacao.length > 0 && (
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                      <label className="block text-xs font-semibold text-indigo-700 uppercase mb-2">Educação / Formação</label>
+                      <ul className="space-y-2">
+                        {usuarioForm.viewingUsuario.educacao.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2 text-gray-900">
+                            <CheckCircle size={16} className="text-indigo-600 mt-1 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Especialidades */}
+                  {usuarioForm.viewingUsuario.especialidades && usuarioForm.viewingUsuario.especialidades.length > 0 && (
+                    <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                      <label className="block text-xs font-semibold text-teal-700 uppercase mb-2">Especialidades</label>
+                      <div className="flex flex-wrap gap-2">
+                        {usuarioForm.viewingUsuario.especialidades.map((item, index) => (
+                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-white border border-teal-300 rounded-full text-sm text-teal-900 font-medium">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Biografia */}
+                  {usuarioForm.viewingUsuario.bio && (
+                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-2">Biografia</label>
+                      <p className="text-slate-900 leading-relaxed whitespace-pre-wrap">{usuarioForm.viewingUsuario.bio}</p>
+                    </div>
+                  )}
                 </div>
               )}
 

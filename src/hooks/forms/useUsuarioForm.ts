@@ -128,7 +128,11 @@ export const useUsuarioForm = () => {
         cidade: editingUsuario.cidade || '',
         estado: editingUsuario.estado || '',
         cep: editingUsuario.cep || '',
-        pais: editingUsuario.pais || 'Brasil'
+        pais: editingUsuario.pais || 'Brasil',
+        equipe: editingUsuario.equipe ?? false,
+        educacao: editingUsuario.educacao || [],
+        especialidades: editingUsuario.especialidades || [],
+        bio: editingUsuario.bio || ''
       };
       setFormData(data);
       resetEditForm(data);

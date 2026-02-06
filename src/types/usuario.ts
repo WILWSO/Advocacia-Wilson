@@ -4,16 +4,16 @@
  */
 
 import type { UsuarioRole } from '../config/roles';
+import { BaseEntity, BaseFilters, BaseStats, ActiveStatus } from './common';
 
 // Re-exportar el tipo centralizado
 export type { UsuarioRole } from '../config/roles';
 
 /**
  * Interface principal para Usuario
- * Coincide con schema de Supabase
+ * Extiende BaseEntity para campos de auditoría estándar
  */
-export interface Usuario {
-  id?: string
+export interface Usuario extends BaseEntity {
   // Información básica
   email: string
   titulo?: string
@@ -30,19 +30,27 @@ export interface Usuario {
   // Contacto
   whatsapp?: string
   redes_sociais?: {
-    [key: string]: string
+    linkedin?: string
+    instagram?: string
+    twitter?: string
+    facebook?: string
   }
   // Dirección
   endereco?: string
   numero?: string
-  localidade?: string
+  cidade?: string
   estado?: string
   cep?: string
   pais?: string
-  // Metadata
+  // Perfil profesional
+  equipe?: boolean
+  educacao?: string[]
+  especialidades?: string[]
+  bio?: string
+  // Metadata adicional
   data_criacao?: string
   data_atualizacao?: string
-  // Campos de auditoría
+  // Campos de auditoría legacy (mapped from BaseEntity)
   creado_por?: string
   atualizado_por?: string
 }
@@ -65,14 +73,21 @@ export interface UsuarioFormData {
   numero_documento?: string
   whatsapp?: string
   redes_sociais?: {
-    [key: string]: string
+    linkedin?: string
+    instagram?: string
+    twitter?: string
+    facebook?: string
   }
   endereco?: string
   numero?: string
-  localidade?: string
+  cidade?: string
   estado?: string
   cep?: string
   pais?: string
+  equipe?: boolean
+  educacao?: string[]
+  especialidades?: string[]
+  bio?: string
 }
 
 /**
@@ -85,9 +100,9 @@ export interface PasswordForm {
 
 /**
  * Estadísticas de usuarios
+ * Extiende BaseStats con campos específicos
  */
-export interface UsuarioStats {
-  total: number
+export interface UsuarioStats extends BaseStats {
   ativos: number
   admins: number
   advogados: number
@@ -96,8 +111,9 @@ export interface UsuarioStats {
 
 /**
  * Filtros de búsqueda de usuarios
+ * Extiende BaseFilters con campos específicos
  */
-export interface UsuarioFilters {
+export interface UsuarioFilters extends BaseFilters {
   busca: string
   filtroRole: string
   filtroStatus: string
