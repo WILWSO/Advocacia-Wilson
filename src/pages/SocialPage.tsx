@@ -8,12 +8,13 @@ import {
   FileEdit
 } from 'lucide-react';
 import { useAuthLogin } from '../components/auth/useAuthLogin';
-import { ResponsiveContainer } from '../components/shared/ResponsiveGrid';
 import { usePostForm } from '../hooks/forms/usePostForm';
 import { usePostFilters } from '../hooks/filters/usePostFilters';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import CreatePostModal from '../components/admin/CreatePostModal';
 import { SocialPostCard } from '../components/shared/cards/SocialPostCard';
+import { AdminPageLayout } from '../components/layout/AdminPageLayout';
+import { PAGES_UI } from '../config/messages';
 import type { Post } from '../types/post';
 
 const SocialPage: React.FC = () => {
@@ -41,41 +42,25 @@ const SocialPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-neutral-50 min-h-full">
-      {/* Header da página */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <ResponsiveContainer maxWidth="7xl" className="p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-primary-900 mb-2">Administração Social</h1>
-                <p className="text-gray-600">
-                  Gerencie notícias, vídeos e conteúdos importantes
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                {/* Botão de Novo Conteúdo */}
-                <AccessibleButton
-                  category="create"
-                  onClick={() => postForm.handleOpenCreateModal()}
-                  aria-label="Criar novo conteúdo"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  Novo Conteúdo
-                </AccessibleButton>
-              </div>
-            </div>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Estadísticas */}
-      <ResponsiveContainer maxWidth="7xl" className="py-6">
+    <AdminPageLayout
+      title={PAGES_UI.SOCIAL.TITLE}
+      description={PAGES_UI.SOCIAL.DESCRIPTION}
+      headerAction={
+        <AccessibleButton
+          category="create"
+          onClick={() => postForm.handleOpenCreateModal()}
+          aria-label="Criar novo conteúdo"
+          size="lg"
+        >
+          {PAGES_UI.SOCIAL.NEW_BUTTON}
+        </AccessibleButton>
+      }
+    >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-neutral-600">Total</p>
+                  <p className="text-sm text-neutral-600">{PAGES_UI.STATS.TOTAL}</p>
                   <p className="text-2xl font-bold text-neutral-900">{filters.stats.total}</p>
                 </div>
                 <FileText className="text-primary-500" size={24} />
@@ -84,7 +69,7 @@ const SocialPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-neutral-600">Publicados</p>
+                  <p className="text-sm text-neutral-600">{PAGES_UI.STATS.PUBLICADOS}</p>
                   <p className="text-2xl font-bold text-green-600">{filters.stats.publicados}</p>
                 </div>
                 <Star className="text-green-500" size={24} />
@@ -93,7 +78,7 @@ const SocialPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-neutral-600">Rascunhos</p>
+                  <p className="text-sm text-neutral-600">{PAGES_UI.STATS.RASCUNHOS}</p>
                   <p className="text-2xl font-bold text-neutral-600">{filters.stats.rascunhos}</p>
                 </div>
                 <FileEdit className="text-neutral-500" size={24} />
@@ -102,7 +87,7 @@ const SocialPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm p-4 border border-neutral-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-neutral-600">Destaque</p>
+                  <p className="text-sm text-neutral-600">{PAGES_UI.STATS.DESTAQUES}</p>
                   <p className="text-2xl font-bold text-gold-600">{filters.stats.destacados}</p>
                 </div>
                 <Star className="text-gold-500 fill-current" size={24} />
@@ -121,7 +106,7 @@ const SocialPage: React.FC = () => {
                     type="text"
                     value={filters.searchTerm}
                     onChange={(e) => filters.setSearchTerm(e.target.value)}
-                    placeholder="Buscar conteúdos..."
+                    placeholder={PAGES_UI.SOCIAL.FILTERS.SEARCH_PLACEHOLDER}
                     className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
@@ -157,12 +142,12 @@ const SocialPage: React.FC = () => {
           {/* Lista de Posts */}
           {postForm.loading && (
             <div className="text-center py-12">
-              <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-primary-500 hover:bg-primary-400 transition ease-in-out duration-150 cursor-not-allowed">
+              <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-primary-500 hover:bg-primary-400 transition ease-in-out duration-150">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Carregando conteúdos...
+                {PAGES_UI.SOCIAL.EMPTY.LOADING}
               </div>
             </div>
           )}
@@ -204,7 +189,7 @@ const SocialPage: React.FC = () => {
                 <FileText size={48} className="mx-auto" />
               </div>
               <h3 className="text-lg font-medium text-neutral-600 mb-2">
-                Nenhum conteúdo encontrado
+                {PAGES_UI.SOCIAL.EMPTY.TITLE}
               </h3>
               <p className="text-neutral-500">
                 {filters.searchTerm || filters.filterType !== 'all' || filters.filterStatus !== 'all'
@@ -213,7 +198,6 @@ const SocialPage: React.FC = () => {
               </p>
             </div>
           )}
-        </ResponsiveContainer>
 
         {/* Modal de Criação/Edição */}
         <CreatePostModal
@@ -222,7 +206,7 @@ const SocialPage: React.FC = () => {
           onSave={postForm.editingPost ? postForm.handleUpdatePost : postForm.handleCreatePost}
           editingPost={postForm.editingPost}
         />
-      </div>
+    </AdminPageLayout>
     );
   };
 

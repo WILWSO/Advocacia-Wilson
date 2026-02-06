@@ -1,59 +1,93 @@
-﻿import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { Plus, Search, User, Calendar, AlertCircle, CheckCircle, Clock, Eye, FileText, Download, Mail, Phone, Link as LinkIcon, Scale, ExternalLink } from 'lucide-react'
+import { Plus, Search, User, AlertCircle, CheckCircle, Clock, Eye, FileText, Download, Mail, Phone, Link as LinkIcon, Scale, ExternalLink, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useProcessos } from '../hooks/data-access/useProcessos'
 import { useUsuarios } from '../hooks/data-access/useUsuarios'
 import { useAuthLogin as useAuth } from '../components/auth/useAuthLogin'
-import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
 import { useResponsive } from '../hooks/ui/useResponsive'
 import { cn } from '../utils/cn'
 import { DocumentoArquivo } from '../types/documento'
 import { ProcessoLink, Jurisprudencia, ProcessoWithRelations } from '../types/processo'
 import { StorageService } from '../services/storageService'
+import { STORAGE_BUCKETS } from '../config/storage'
 import { AuditInfo } from '../components/shared/AuditInfo'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
 import ProcessoCard from '../components/shared/cards/ProcessoCard'
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
-import { CrudListManager } from '../components/admin/CrudListManager'
+import { CrudListManager, CrudAddButton } from '../components/admin/CrudListManager'
+import { RestrictedInput, RestrictedSelect } from '../components/admin/RestrictedFormField'
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
+import { Collapse } from '../components/shared/Collapse'
 import { Accordion } from '../components/shared/Accordion'
 import { useProcessoForm } from '../hooks/forms/useProcessoForm'
 import { useProcessoFilters } from '../hooks/filters/useProcessoFilters'
+import { useClienteForm } from '../hooks/forms/useClienteForm'
+import { AdminPageLayout } from '../components/layout/AdminPageLayout'
+import { PAGES_UI } from '../config/messages'
 
 // Componente de gestión de procesos jurídicos
 const ProcessosPage: React.FC = () => {
   useResponsive()
   const { user } = useAuth()
-  const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso } = useProcessos()
+  const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso } = useProcessos({
+    enablePolling: true,
+    pollingInterval: 30000,
+  })
   const { usuarios } = useUsuarios()
   
   const [viewingProcesso, setViewingProcesso] = useState<ProcessoWithRelations | null>(null)
+  
+  // Estados para notificaciones inline del acordeón
+  const [documentosNotification, setDocumentosNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null)
+  
+  const [linksNotification, setLinksNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null)
+  
+  const [jurisprudenciasNotification, setJurisprudenciasNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null)
   
   // Hook de formulario con toda la lógica centralizada
   const processoForm = useProcessoForm({
     onSuccess: fetchProcessos,
     createProcesso,
-    updateProcesso
+    updateProcesso,
+    processos: processos as ProcessoWithRelations[]
   })
+  
+  // Hook para gestión de clientes (crear desde ProcessosPage)
+  const clienteForm = useClienteForm()
   
   // Hook de filtros (cast a ProcessoWithRelations para compatibilidad)
   const filters = useProcessoFilters(processos as ProcessoWithRelations[])
+  
+  // Ref para el input de upload de documentos
+  const documentUploadInputRef = useRef<HTMLInputElement>(null)
+  
+  // Estado para controlar apertura del Collapse de documentos
+  const [documentosCollapseOpen, setDocumentosCollapseOpen] = useState(false)
 
   // Cargar procesos al montar el componente
   useEffect(() => {
     fetchProcessos()
   }, [fetchProcessos])
 
-  
   // Handlers para documentos (usan StorageService - SSoT)
   const handleViewDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
     try {
-      await StorageService.viewDocument(doc, 'documentos_processo')
+      // ✅ SSoT: Usa STORAGE_BUCKETS de config/storage.ts
+      await StorageService.viewDocument(doc, STORAGE_BUCKETS.documentosProcesso)
     } catch (error) {
       console.error('Erro ao visualizar documento:', error)
     }
@@ -62,7 +96,8 @@ const ProcessosPage: React.FC = () => {
   const handleDownloadDocument = async (doc: DocumentoArquivo) => {
     if (!doc.url) return
     try {
-      await StorageService.downloadDocument(doc, 'documentos_processo')
+      // ✅ SSoT: Usa STORAGE_BUCKETS de config/storage.ts
+      await StorageService.downloadDocument(doc, STORAGE_BUCKETS.documentosProcesso)
     } catch (error) {
       console.error('Erro ao baixar documento:', error)
     }
@@ -84,37 +119,24 @@ const ProcessosPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-full">
-      <ResponsiveContainer maxWidth="7xl" className="p-6 lg:p-8">
-        
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-primary-900 mb-2">
-                  Gestão de Processos
-                </h1>
-                <p className="text-gray-600">
-                  Gerencie processos jurídicos e acompanhe o andamento das atividades
-                </p>
-              </div>
-              
-              {/* Botão de novo processo */}
-              {processoForm.canEdit && (
-                <AccessibleButton
-                  category="create"
-                  onClick={() => processoForm.setShowCreateForm(true)}
-                  aria-label="Criar novo processo"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  Novo Processo
-                </AccessibleButton> // Fim do botão
-              )} 
-            </div>
-          </div>
+    <AdminPageLayout
+      title="Gestão de Processos"
+      description="Gerencie processos jurídicos e acompanhe o andamento das atividades"
+      headerAction={
+        processoForm.canEdit ? (
+          <AccessibleButton
+            category="create"
+            onClick={() => processoForm.setShowCreateForm(true)}
+            aria-label="Criar novo processo"
+            size="lg"
+          >
+            Novo Processo
+          </AccessibleButton>
+        ) : undefined
+      }
+    >
 
-        {/* Stats */}
+        {/* Stats --*/}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex items-center">
@@ -198,7 +220,9 @@ const ProcessosPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">Todos</option>
-                {usuarios.map(usuario => (
+                {usuarios
+                  .filter(usuario => ['admin', 'advogado'].includes(usuario.role))
+                  .map(usuario => (
                   <option key={usuario.id} value={usuario.id}>
                     {usuario.nome}
                   </option>
@@ -236,7 +260,7 @@ const ProcessosPage: React.FC = () => {
 
         {filters.processosFiltrados.length === 0 && !loading && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Nenhum processo encontrado</p>
+            <p className="text-gray-500 text-lg">{PAGES_UI.PROCESSOS.EMPTY.TITLE}</p>
           </div>
         )}
 
@@ -245,22 +269,13 @@ const ProcessosPage: React.FC = () => {
         isOpen={processoForm.showCreateForm}
         onClose={processoForm.resetForm}
         onSubmit={processoForm.handleSubmit}
-        title={processoForm.editingProcesso ? 'Editar Processo' : 'Novo Processo'}
-        submitLabel={processoForm.editingProcesso ? 'Atualizar' : 'Salvar'}
-        cancelLabel="Cancelar"
+        title={processoForm.editingProcesso ? PAGES_UI.PROCESSOS.MODAL.TITLE_EDIT : PAGES_UI.PROCESSOS.MODAL.TITLE_NEW}
+        submitLabel={processoForm.editingProcesso ? PAGES_UI.PROCESSOS.MODAL.SUBMIT_UPDATE : PAGES_UI.PROCESSOS.MODAL.SUBMIT_SAVE}
+        cancelLabel={PAGES_UI.PROCESSOS.MODAL.CANCEL}
         maxWidth="4xl"
+        hasUnsavedChanges={processoForm.hasChanges}
       >
-              {/* Notificación inline */}
-              <AnimatePresence mode="wait">
-                {processoForm.notification.show && (
-                  <InlineNotification
-                    type={processoForm.notification.type}
-                    message={processoForm.notification.message}
-                    onClose={processoForm.hide}
-                    className="mb-4"
-                  />
-                )}
-              </AnimatePresence>
+              {/* Notificaciones ahora aparecen sobre cada item del acordeón */}
               
               {/* Seção 1: Informações Básicas */}
               <div>
@@ -268,86 +283,55 @@ const ProcessosPage: React.FC = () => {
                   Informações Básicas
                 </h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Título do Processo *
-                      {!processoForm.isAdmin && processoForm.editingProcesso && (
-                        <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
-                      )}
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      autoFocus
-                      className={cn(
-                        "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                        !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
-                      )}
-                      value={processoForm.formData.titulo}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, titulo: e.target.value})}
-                      placeholder="Ex: Ação de Indenização por Danos Morais"
-                      disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
-                    />
-                  </div>
+                  <RestrictedInput
+                    label="Título do Processo"
+                    required
+                    autoFocus
+                    type="text"
+                    placeholder="Ex: Ação de Indenização por Danos Morais"
+                    value={processoForm.formData.titulo}
+                    onChange={(e) => processoForm.handleFormChange({...processoForm.formData, titulo: e.target.value})}
+                    isRestricted={!processoForm.isAdmin && processoForm.editingProcesso !== null}
+                    restrictionMessage="Apenas Admin pode alterar"
+                  />
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descrição *
+                      Descrição
                     </label>
                     <textarea
-                      required
                       rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.descricao}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, descricao: e.target.value})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, descricao: e.target.value})}
                       placeholder="Descreva os detalhes do processo..."
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Número do Processo
-                        {!processoForm.isAdmin && processoForm.editingProcesso && (
-                          <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
-                        )}
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Ex: 1001234-12.2024.8.07.0001"
-                        className={cn(
-                          "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                          !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
-                        )}
-                        value={processoForm.formData.numero_processo}
-                        onChange={(e) => processoForm.setFormData({...processoForm.formData, numero_processo: e.target.value})}
-                        disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
-                      />
-                    </div>
+                    <RestrictedInput
+                      label="Número do Processo"
+                      type="text"
+                      placeholder="Ex: 1001234-12.2024.8.07.0001"
+                      required
+                      value={processoForm.formData.numero_processo}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, numero_processo: e.target.value})}
+                      isRestricted={!processoForm.isAdmin && processoForm.editingProcesso !== null}
+                      restrictionMessage="Apenas Admin pode alterar"
+                    />
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status *
-                        {processoForm.isAssistente && (
-                          <span className="ml-2 text-xs text-amber-600">(Apenas admin e advogado podem editar)</span>
-                        )}
-                      </label>
-                      <select
-                        required
-                        disabled={processoForm.isAssistente}
-                        className={cn(
-                          "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                          processoForm.isAssistente && "bg-gray-100 cursor-not-allowed opacity-75"
-                        )}
-                        value={processoForm.formData.status}
-                        onChange={(e) => processoForm.setFormData({...processoForm.formData, status: e.target.value})}
-                        title={processoForm.isAssistente ? 'Apenas administradores e advogados podem alterar o status' : ''}
-                      >
-                        <option value="em_aberto">Em Aberto</option>
-                        <option value="em_andamento">Em Andamento</option>
-                        <option value="fechado">Fechado</option>
-                      </select>
-                    </div>
+                    <RestrictedSelect
+                      label="Status"
+                      required
+                      value={processoForm.formData.status}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, status: e.target.value})}
+                      isRestricted={processoForm.isAssistente}
+                      restrictionMessage={PAGES_UI.PROCESSOS.PERMISSIONS.ADMIN_LAWYER}
+                    >
+                      <option value="em_aberto">Em Aberto</option>
+                      <option value="em_andamento">Em Andamento</option>
+                      <option value="fechado">Fechado</option>
+                    </RestrictedSelect>
                   </div>
                 </div>
               </div>
@@ -361,14 +345,11 @@ const ProcessosPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Selecione o Cliente *
-                        </label>
-                        <select
+                        <RestrictedSelect
+                          label="Selecione o Cliente"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                           value={processoForm.formData.cliente_id}
-                          onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_id: e.target.value})}
+                          onChange={(e) => processoForm.handleClienteChange(e.target.value)}
                         >
                           <option value="">Selecione um cliente</option>
                           {processoForm.clientes.map(cliente => (
@@ -376,14 +357,14 @@ const ProcessosPage: React.FC = () => {
                               {cliente.nome_completo}
                             </option>
                           ))}
-                        </select>
+                        </RestrictedSelect>
                       </div>
                       <div className="flex items-end">
                         <AccessibleButton
                           type="button"
                           onClick={() => {
-                            processoForm.setShowNewClienteModal(true)
-                            processoForm.setShowCreateForm(false)
+                            // No cerrar el modal de processos, solo abrir el de cliente encima
+                            clienteForm.handleCreate()
                           }}
                           variant="primary"
                           size="md"
@@ -397,18 +378,16 @@ const ProcessosPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Polo do Cliente
-                      </label>
-                      <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      <RestrictedSelect
+                        label="Polo do Cliente"
+                        required
                         value={processoForm.formData.polo}
-                        onChange={(e) => processoForm.setFormData({...processoForm.formData, polo: e.target.value as 'ativo' | 'passivo' | ''})}
+                        onChange={(e) => processoForm.handleFormChange({...processoForm.formData, polo: e.target.value as 'ativo' | 'passivo' | ''})}
                       >
                         <option value="">Selecione o polo</option>
                         <option value="ativo">Ativo (Autor/Requerente)</option>
                         <option value="passivo">Passivo (Réu/Requerido)</option>
-                      </select>
+                      </RestrictedSelect>
                     </div>
                   </div>
 
@@ -420,10 +399,10 @@ const ProcessosPage: React.FC = () => {
                       </label>
                       <input
                         type="email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                        disabled
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-600"
                         value={processoForm.formData.cliente_email}
-                        onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_email: e.target.value})}
-                        placeholder="cliente@exemplo.com"
+                        placeholder="Será carregado ao selecionar o cliente"
                       />
                     </div>
 
@@ -434,10 +413,10 @@ const ProcessosPage: React.FC = () => {
                       </label>
                       <input
                         type="tel"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                        disabled
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-600"
                         value={processoForm.formData.cliente_telefone}
-                        onChange={(e) => processoForm.setFormData({...processoForm.formData, cliente_telefone: e.target.value})}
-                        placeholder="(xx) xxxxx-xxxx"
+                        placeholder="Será carregado ao selecionar o cliente"
                       />
                     </div>
                   </div>
@@ -457,7 +436,7 @@ const ProcessosPage: React.FC = () => {
                     <select
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.area_direito}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, area_direito: e.target.value})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, area_direito: e.target.value})}
                     >
                       <option value="">Selecione uma área</option>
                       <option value="Direito Civil">Direito Civil</option>
@@ -475,13 +454,12 @@ const ProcessosPage: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Prioridade *
+                      Prioridade
                     </label>
                     <select
-                      required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.prioridade}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, prioridade: e.target.value})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, prioridade: e.target.value})}
                     >
                       <option value="baixa">Baixa</option>
                       <option value="media">Média</option>
@@ -490,30 +468,23 @@ const ProcessosPage: React.FC = () => {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Advogado Responsável
-                      {!processoForm.isAdmin && processoForm.editingProcesso && (
-                        <span className="ml-2 text-xs text-amber-600">(Apenas admin pode editar)</span>
-                      )}
-                    </label>
-                    <select
-                      className={cn(
-                        "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500",
-                        !processoForm.isAdmin && processoForm.editingProcesso && "bg-gray-100 cursor-not-allowed opacity-75"
-                      )}
-                      value={processoForm.formData.advogado_responsavel}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, advogado_responsavel: e.target.value})}
-                      disabled={!processoForm.isAdmin && processoForm.editingProcesso !== null}
-                    >
-                      <option value="">Selecione um advogado</option>
-                      {usuarios.map(usuario => (
-                        <option key={usuario.id} value={usuario.id}>
-                          {usuario.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <RestrictedSelect
+                    label="Advogado Responsável"
+                    required
+                    value={processoForm.formData.advogado_responsavel}
+                    onChange={(e) => processoForm.handleFormChange({...processoForm.formData, advogado_responsavel: e.target.value})}
+                    isRestricted={!processoForm.isAdmin && processoForm.editingProcesso !== null}
+                    restrictionMessage="Apenas Admin pode alterar"
+                  >
+                    <option value="">Selecione um advogado</option>
+                    {usuarios
+                      .filter(usuario => ['admin', 'advogado'].includes(usuario.role))
+                      .map(usuario => (
+                      <option key={usuario.id} value={usuario.id}>
+                        {usuario.nome} {usuario.role === 'admin' ? '👑' : ''}
+                      </option>
+                    ))}
+                  </RestrictedSelect>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -526,7 +497,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="0,00"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.valor_causa}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, valor_causa: e.target.value})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, valor_causa: e.target.value})}
                     />
                   </div>
 
@@ -538,7 +509,7 @@ const ProcessosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.competencia}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, competencia: e.target.value as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | ''})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, competencia: e.target.value as 'federal' | 'estadual' | 'trabalhista' | 'eleitoral' | ''})}
                       placeholder="Ex: Federal, Estadual, Trabalhista, Eleitoral"
                     />
                   </div>
@@ -551,7 +522,7 @@ const ProcessosPage: React.FC = () => {
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.atividade_pendente}
-                      onChange={(e) => processoForm.setFormData({...processoForm.formData, atividade_pendente: e.target.value})}
+                      onChange={(e) => processoForm.handleFormChange({...processoForm.formData, atividade_pendente: e.target.value})}
                       placeholder="Descreva as atividades pendentes do processo..."
                     />
                   </div>
@@ -574,7 +545,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="Ex: SP, RJ, MG"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 uppercase"
                       value={processoForm.formData.jurisdicao.uf}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         jurisdicao: {...processoForm.formData.jurisdicao, uf: e.target.value.toUpperCase()}
                       })}
@@ -590,7 +561,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="Ex: São Paulo"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.jurisdicao.municipio}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         jurisdicao: {...processoForm.formData.jurisdicao, municipio: e.target.value}
                       })}
@@ -606,7 +577,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="Ex: 1ª Vara Cível"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.jurisdicao.vara}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         jurisdicao: {...processoForm.formData.jurisdicao, vara: e.target.value}
                       })}
@@ -622,7 +593,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="Ex: Dr. João Silva"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.jurisdicao.juiz}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         jurisdicao: {...processoForm.formData.jurisdicao, juiz: e.target.value}
                       })}
@@ -648,7 +619,7 @@ const ProcessosPage: React.FC = () => {
                       placeholder="0,00"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.honorarios.valor_honorarios}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         honorarios: {...processoForm.formData.honorarios, valor_honorarios: e.target.value}
                       })}
@@ -663,7 +634,7 @@ const ProcessosPage: React.FC = () => {
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={processoForm.formData.honorarios.detalhes}
-                      onChange={(e) => processoForm.setFormData({
+                      onChange={(e) => processoForm.handleFormChange({
                         ...processoForm.formData, 
                         honorarios: {...processoForm.formData.honorarios, detalhes: e.target.value}
                       })}
@@ -673,192 +644,325 @@ const ProcessosPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Seção 6: Documentos */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200">
-                  <FileText size={20} className="text-gray-700" />
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Documentos do Processo
-                  </h3>
-                </div>
+              {/* Seção 6: Documentos, Links e Jurisprudências */}
+              <div className="space-y-4">
+                {/* Documentos do Processo */}
+                <Collapse
+                  id="documentos"
+                  icon={<FileText size={20} />}
+                  title="Documentos do Processo"
+                  count={processoForm.formData.documentos_processo?.length || 0}
+                  color="gray"
+                  notification={documentosNotification}
+                  open={documentosCollapseOpen}
+                  onOpenChange={setDocumentosCollapseOpen}
+                  headerAction={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const uploadInput = document.getElementById('external-file-upload-documentos') as HTMLInputElement
+                        if (uploadInput) {
+                          uploadInput.click()
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors text-sm font-medium"
+                    >
+                      <Upload size={16} />
+                      <span className="hidden sm:inline">Adicionar</span>
+                    </button>
+                  }
+                >
+                  <DocumentManager
+                    documents={processoForm.formData.documentos_processo as DocumentItem[]}
+                    onDocumentsChange={(docs) => processoForm.handleFormChange({ ...processoForm.formData, documentos_processo: docs as DocumentoArquivo[] })}
+                    bucketName={STORAGE_BUCKETS.documentosProcesso}
+                    entityId={processoForm.editingProcesso?.id}
+                    uploadLabel={PAGES_UI.PROCESSOS.SECTIONS.DOCUMENTS}
+                    showUploadButton={false}
+                    readOnly={false}
+                    onNotification={(message, type) => {
+                      setDocumentosNotification({ message, type });
+                      setTimeout(() => setDocumentosNotification(null), 5000);
+                    }}
+                  />
+                </Collapse>
 
-                <DocumentManager
-                  documents={processoForm.formData.documentos_processo as DocumentItem[]}
-                  onDocumentsChange={(docs) => processoForm.setFormData({ ...processoForm.formData, documentos_processo: docs as DocumentoArquivo[] })}
-                  bucketName="documentos_processo"
-                  entityId={processoForm.editingProcesso?.id}
-                  uploadLabel="Adicionar Documento"
-                  showUploadButton={true}
-                  readOnly={false}
-                />
+                {/* Links do Processo */}
+                <Collapse
+                  id="links"
+                  icon={<LinkIcon size={20} />}
+                  title="Links do Processo"
+                  count={processoForm.linksCrud.items?.length || 0}
+                  color="blue"
+                  notification={linksNotification}
+                  defaultOpen={false}
+                  headerAction={
+                    <CrudAddButton
+                      onClick={() => processoForm.setShowLinksModal(true)}
+                      disabled={!processoForm.canEdit}
+                      color="blue"
+                      label="Adicionar Link"
+                      ariaLabel="Adicionar novo link ao processo"
+                    />
+                  }
+                >
+                  <CrudListManager
+                        title=""
+                        icon={<LinkIcon size={20} />}
+                        color="blue"
+                        items={processoForm.linksCrud.items}
+                        tempItem={processoForm.linksCrud.tempItem}
+                        setTempItem={processoForm.linksCrud.setTempItem}
+                        isEditing={processoForm.linksCrud.isEditing}
+                        showAddModal={processoForm.showLinksModal}
+                        setShowAddModal={processoForm.setShowLinksModal}
+                        onAdd={processoForm.handleAddLink}
+                        onUpdate={processoForm.handleUpdateLink}
+                        onDelete={processoForm.linksCrud.deleteItem}
+                        onEdit={processoForm.linksCrud.startEdit}
+                        onCancelEdit={processoForm.linksCrud.cancelEdit}
+                        onNotification={(message, type) => {
+                          setLinksNotification({ message, type });
+                          setTimeout(() => setLinksNotification(null), 5000);
+                        }}
+                        fields={[
+                          { name: 'titulo', label: 'Título do Link', type: 'text', placeholder: 'Ex: Consulta processo TJ-SP', required: true },
+                          { name: 'link', label: 'URL do Link', type: 'url', placeholder: 'https://...', required: true },
+                        ]}
+                        renderItem={(link, index) => (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <LinkIcon size={16} className="text-blue-600 flex-shrink-0" />
+                              <p className="text-sm font-medium text-gray-900">Link #{index + 1}</p>
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2">{link.titulo}</p>
+                            <a
+                              href={link.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:underline flex items-center gap-1 break-all"
+                            >
+                              <ExternalLink size={12} />
+                              {link.link}
+                            </a>
+                          </div>
+                        )}
+                        canEdit={processoForm.canEdit}
+                        emptyText="Nenhum link adicionado"
+                        confirmDeleteText="Deseja realmente remover este link?"
+                      />
+                </Collapse>
+
+                {/* Jurisprudências */}
+                <Collapse
+                  id="jurisprudencias"
+                  icon={<Scale size={20} />}
+                  title="Jurisprudências"
+                  count={processoForm.jurisprudenciasCrud.items?.length || 0}
+                  color="purple"
+                  notification={jurisprudenciasNotification}
+                  defaultOpen={false}
+                  headerAction={
+                    <CrudAddButton
+                      onClick={() => processoForm.setShowJurisprudenciaModal(true)}
+                      disabled={!processoForm.canEdit}
+                      color="purple"
+                      label="Adicionar Jurisprudência"
+                      ariaLabel="Adicionar nova jurisprudência ao processo"
+                    />
+                  }
+                >
+                  <CrudListManager
+                        title=""
+                        icon={<Scale size={20} />}
+                        color="purple"
+                        items={processoForm.jurisprudenciasCrud.items}
+                        tempItem={processoForm.jurisprudenciasCrud.tempItem}
+                        setTempItem={processoForm.jurisprudenciasCrud.setTempItem}
+                        isEditing={processoForm.jurisprudenciasCrud.isEditing}
+                        showAddModal={processoForm.showJurisprudenciaModal}
+                        setShowAddModal={processoForm.setShowJurisprudenciaModal}
+                        onAdd={processoForm.handleAddJurisprudencia}
+                        onUpdate={processoForm.handleUpdateJurisprudencia}
+                        onDelete={processoForm.jurisprudenciasCrud.deleteItem}
+                        onEdit={processoForm.jurisprudenciasCrud.startEdit}
+                        onCancelEdit={processoForm.jurisprudenciasCrud.cancelEdit}
+                        onNotification={(message, type) => {
+                          setJurisprudenciasNotification({ message, type });
+                          setTimeout(() => setJurisprudenciasNotification(null), 5000);
+                        }}
+                        fields={[
+                          { name: 'ementa', label: 'Ementa da Jurisprudência', type: 'textarea', placeholder: 'Digite a ementa da jurisprudência...', required: true, fullWidth: true },
+                          { name: 'link', label: 'Link da Jurisprudência', type: 'url', placeholder: 'https://...', required: true, fullWidth: true },
+                        ]}
+                        renderItem={(juris, index) => (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Scale size={14} className="text-purple-600 flex-shrink-0" />
+                              <span className="text-sm font-bold text-purple-900">Jurisprudência #{index + 1}</span>
+                            </div>
+                            <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-2">
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{juris.ementa}</p>
+                            </div>
+                            <a
+                              href={juris.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-purple-600 hover:underline flex items-center gap-1 break-all"
+                            >
+                              <ExternalLink size={10} />
+                              {juris.link}
+                            </a>
+                          </div>
+                        )}
+                        canEdit={processoForm.canEdit}
+                        emptyText="Nenhuma jurisprudência adicionada"
+                        confirmDeleteText="Deseja realmente remover esta jurisprudência?"
+                      />
+                </Collapse>
               </div>
 
-              {/* Links do Processo - CrudListManager */}
+              {/* Modales FUERA del Collapse para que funcionen cuando está cerrado */}
+              {/* Modal de Links */}
               <CrudListManager
-                title="Links do Processo"
+                title=""
                 icon={<LinkIcon size={20} />}
                 color="blue"
-                items={processoForm.linksCrud.items}
+                items={[]} // No mostramos la lista aquí, solo el modal
                 tempItem={processoForm.linksCrud.tempItem}
                 setTempItem={processoForm.linksCrud.setTempItem}
-                editingIndex={processoForm.linksCrud.editingIndex}
                 isEditing={processoForm.linksCrud.isEditing}
                 showAddModal={processoForm.showLinksModal}
                 setShowAddModal={processoForm.setShowLinksModal}
-                showViewModal={processoForm.showLinksViewModal}
-                setShowViewModal={processoForm.setShowLinksViewModal}
                 onAdd={processoForm.handleAddLink}
                 onUpdate={processoForm.handleUpdateLink}
-                onDelete={processoForm.linksCrud.deleteItem}
-                onEdit={processoForm.linksCrud.startEdit}
+                onDelete={() => {}}
+                onEdit={() => {}}
                 onCancelEdit={processoForm.linksCrud.cancelEdit}
+                onNotification={(message, type) => {
+                  setLinksNotification({ message, type });
+                  setTimeout(() => setLinksNotification(null), 5000);
+                }}
                 fields={[
                   { name: 'titulo', label: 'Título do Link', type: 'text', placeholder: 'Ex: Consulta processo TJ-SP', required: true },
                   { name: 'link', label: 'URL do Link', type: 'url', placeholder: 'https://...', required: true },
                 ]}
-                renderItem={(link, index) => (
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <LinkIcon size={16} className="text-blue-600 flex-shrink-0" />
-                      <p className="text-sm font-medium text-gray-900">Link #{index + 1}</p>
-                    </div>
-                    <p className="text-sm text-gray-700 mb-2">{link.titulo}</p>
-                    <a
-                      href={link.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline flex items-center gap-1 break-all"
-                    >
-                      <ExternalLink size={12} />
-                      {link.link}
-                    </a>
-                  </div>
-                )}
+                renderItem={() => <div />} // No usado aquí
                 canEdit={processoForm.canEdit}
-                addButtonText="Adicionar Link"
-                emptyText="Nenhum link adicionado"
-                confirmDeleteText="Deseja realmente remover este link?"
+                emptyText=""
+                confirmDeleteText=""
               />
 
-              {/* Jurisprudências - CrudListManager */}
+              {/* Modal de Jurisprudências */}
               <CrudListManager
-                title="Jurisprudências"
+                title=""
                 icon={<Scale size={20} />}
                 color="purple"
-                items={processoForm.jurisprudenciasCrud.items}
+                items={[]} // No mostramos la lista aquí, solo el modal
                 tempItem={processoForm.jurisprudenciasCrud.tempItem}
                 setTempItem={processoForm.jurisprudenciasCrud.setTempItem}
-                editingIndex={processoForm.jurisprudenciasCrud.editingIndex}
                 isEditing={processoForm.jurisprudenciasCrud.isEditing}
                 showAddModal={processoForm.showJurisprudenciaModal}
                 setShowAddModal={processoForm.setShowJurisprudenciaModal}
-                showViewModal={processoForm.showJurisprudenciaViewModal}
-                setShowViewModal={processoForm.setShowJurisprudenciaViewModal}
                 onAdd={processoForm.handleAddJurisprudencia}
                 onUpdate={processoForm.handleUpdateJurisprudencia}
-                onDelete={processoForm.jurisprudenciasCrud.deleteItem}
-                onEdit={processoForm.jurisprudenciasCrud.startEdit}
+                onDelete={() => {}}
+                onEdit={() => {}}
                 onCancelEdit={processoForm.jurisprudenciasCrud.cancelEdit}
+                onNotification={(message, type) => {
+                  setJurisprudenciasNotification({ message, type });
+                  setTimeout(() => setJurisprudenciasNotification(null), 5000);
+                }}
                 fields={[
                   { name: 'ementa', label: 'Ementa da Jurisprudência', type: 'textarea', placeholder: 'Digite a ementa da jurisprudência...', required: true, fullWidth: true },
                   { name: 'link', label: 'Link da Jurisprudência', type: 'url', placeholder: 'https://...', required: true, fullWidth: true },
                 ]}
-                renderItem={(juris, index) => (
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Scale size={14} className="text-purple-600 flex-shrink-0" />
-                      <span className="text-sm font-bold text-purple-900">Jurisprudência #{index + 1}</span>
-                    </div>
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-2">
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{juris.ementa}</p>
-                    </div>
-                    <a
-                      href={juris.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-purple-600 hover:underline flex items-center gap-1 break-all"
-                    >
-                      <ExternalLink size={10} />
-                      {juris.link}
-                    </a>
-                  </div>
-                )}
+                renderItem={() => <div />} // No usado aquí
                 canEdit={processoForm.canEdit}
-                addButtonText="Adicionar Jurisprudência"
-                emptyText="Nenhuma jurisprudência adicionada"
-                confirmDeleteText="Deseja realmente remover esta jurisprudência?"
+                emptyText=""
+                confirmDeleteText=""
               />
 
-              {/* Audiências - CrudListManager */}
-              <CrudListManager
-                title="Audiências"
-                icon={<Calendar size={20} />}
-                color="indigo"
-                items={processoForm.audienciasCrud.items}
-                tempItem={processoForm.audienciasCrud.tempItem}
-                setTempItem={processoForm.audienciasCrud.setTempItem}
-                editingIndex={processoForm.audienciasCrud.editingIndex}
-                isEditing={processoForm.audienciasCrud.isEditing}
-                showAddModal={processoForm.showAudienciaModal}
-                setShowAddModal={processoForm.setShowAudienciaModal}
-                showViewModal={processoForm.showAudienciaViewModal}
-                setShowViewModal={processoForm.setShowAudienciaViewModal}
-                onAdd={processoForm.handleAddAudiencia}
-                onUpdate={processoForm.handleUpdateAudiencia}
-                onDelete={processoForm.audienciasCrud.deleteItem}
-                onEdit={processoForm.audienciasCrud.startEdit}
-                onCancelEdit={processoForm.audienciasCrud.cancelEdit}
-                fields={[
-                  { name: 'data', label: 'Data da Audiência', type: 'date', required: true },
-                  { name: 'horario', label: 'Horário', type: 'time', required: true },
-                  { 
-                    name: 'tipo', 
-                    label: 'Tipo', 
-                    type: 'select', 
-                    placeholder: 'Selecione o tipo', 
-                    required: true,
-                    options: [
-                      { value: 'Conciliação', label: 'Conciliação' },
-                      { value: 'Instrução', label: 'Instrução' }
-                    ]
-                  },
-                  { 
-                    name: 'forma', 
-                    label: 'Forma', 
-                    type: 'select', 
-                    placeholder: 'Selecione a forma', 
-                    required: true,
-                    options: [
-                      { value: 'Presencial', label: 'Presencial' },
-                      { value: 'Virtual', label: 'Virtual' },
-                      { value: 'Híbrida', label: 'Híbrida' }
-                    ]
-                  },
-                  { name: 'lugar', label: 'Local', type: 'text', placeholder: 'Ex: Sala 201 - Forum Cível', required: true, fullWidth: true },
-                ]}
-                renderItem={(audiencia) => (
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Calendar size={18} className="text-indigo-600 flex-shrink-0" />
-                      <p className="text-sm font-semibold text-gray-900">
-                        {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR', { 
-                          day: '2-digit', 
-                          month: '2-digit', 
-                          year: 'numeric' 
-                        })} às {audiencia.horario}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700 ml-7">
-                      <p><span className="font-medium">Tipo:</span> {audiencia.tipo}</p>
-                      <p><span className="font-medium">Forma:</span> {audiencia.forma}</p>
-                      <p className="col-span-2"><span className="font-medium">Local:</span> 📍 {audiencia.lugar}</p>
-                    </div>
-                  </div>
-                )}
-                canEdit={processoForm.canEdit}
-                addButtonText="Adicionar Audiência"
-                emptyText="Nenhuma audiência agendada"
-                confirmDeleteText="Deseja realmente remover esta audiência?"
+              {/* Input externo para upload de documentos - siempre en el DOM */}
+              <input
+                type="file"
+                id="external-file-upload-documentos"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+
+                  // Validar tamaño (50 MB)
+                  const maxSizeBytes = 50 * 1024 * 1024
+                  if (file.size > maxSizeBytes) {
+                    setDocumentosNotification({ 
+                      message: `Arquivo muito grande. Tamanho máximo: 50 MB`, 
+                      type: 'warning' 
+                    })
+                    setTimeout(() => setDocumentosNotification(null), 5000)
+                    e.target.value = ''
+                    return
+                  }
+
+                  // Validar tipo
+                  const allowedTypes = [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg',
+                    'image/png',
+                    'image/jpg'
+                  ]
+                  if (!allowedTypes.includes(file.type)) {
+                    setDocumentosNotification({ 
+                      message: 'Tipo de arquivo não permitido', 
+                      type: 'warning' 
+                    })
+                    setTimeout(() => setDocumentosNotification(null), 5000)
+                    e.target.value = ''
+                    return
+                  }
+
+                  try {
+                    // Upload usando StorageService
+                    const targetId = processoForm.editingProcesso?.id || `temp-${Date.now()}`
+                    const filePath = await StorageService.uploadFile(STORAGE_BUCKETS.documentosProcesso, file, targetId)
+
+                    if (!filePath) {
+                      throw new Error('Erro ao fazer upload')
+                    }
+
+                    // Crear objeto documento
+                    const newDoc: DocumentItem = {
+                      nome: file.name,
+                      url: filePath,
+                      tipo: file.type,
+                      tamanho: file.size,
+                      data_upload: new Date().toISOString()
+                    }
+
+                    // Agregar a la lista
+                    processoForm.handleFormChange({
+                      ...processoForm.formData,
+                      documentos_processo: [...(processoForm.formData.documentos_processo || []), newDoc]
+                    })
+                    
+                    // Abrir el Collapse para mostrar el documento
+                    setDocumentosCollapseOpen(true)
+
+                    // Reset input
+                    e.target.value = ''
+                  } catch (error) {
+                    console.error('Erro ao fazer upload:', error)
+                    setDocumentosNotification({ 
+                      message: 'Erro ao enviar documento', 
+                      type: 'error' 
+                    })
+                    setTimeout(() => setDocumentosNotification(null), 5000)
+                    e.target.value = ''
+                  }
+                }}
+                className="hidden"
+                accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/jpg"
               />
 
               {/* Información de Auditoría */}
@@ -873,122 +977,112 @@ const ProcessosPage: React.FC = () => {
 
       </FormModal>
 
-      {/* Modal de redirecionamento para cadastro de cliente */}
-      {processoForm.showNewClienteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Cadastrar Novo Cliente</h2>
+      {/* Modal de Cliente reutilizado desde useClienteForm */}
+      <FormModal
+        isOpen={clienteForm.showModal}
+        onClose={() => {
+          clienteForm.handleCloseModal()
+          // No hacer nada más, el modal de processos permanece abierto con sus datos
+        }}
+        title={clienteForm.editingCliente ? 'Editar Cliente' : 'Novo Cliente'}
+        onSubmit={async (e) => {
+          // Guardar el cliente y capturar el resultado
+          const resultado = await clienteForm.handleSave(e)
+          
+          // Si se guardó exitosamente (resultado contiene data)
+          if (resultado && resultado.data) {
+            // Recargar lista de clientes
+            await processoForm.refetchClientes()
             
+            // Seleccionar automáticamente el cliente creado en el formulario de processo
+            processoForm.handleClienteChange(resultado.data.id)
+          }
+        }}
+        maxWidth="4xl"
+        hasUnsavedChanges={clienteForm.hasChanges}
+      >
+          <div className="space-y-6">
             {/* Notificación inline */}
             <AnimatePresence mode="wait">
-              {processoForm.notification.show && (
+              {clienteForm.notification.show && (
                 <InlineNotification
-                  type={processoForm.notification.type}
-                  message={processoForm.notification.message}
-                  onClose={processoForm.hide}
+                  type={clienteForm.notification.type}
+                  message={clienteForm.notification.message}
+                  onClose={clienteForm.hide}
                   className="mb-4"
                 />
               )}
             </AnimatePresence>
-            
-            <form onSubmit={processoForm.handleCreateCliente} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome Completo *
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                  value={processoForm.newClienteForm.nome_completo}
-                  onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, nome_completo: e.target.value})}
-                />
-              </div>
 
+            {/* Informações Pessoais */}
+            <div>
+              <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                <User size={20} />
+                Informações Pessoais
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <RestrictedInput
+                    label="Nome Completo"
+                    type="text"
+                    required
+                    value={clienteForm.formData.nome_completo}
+                    onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, nome_completo: e.target.value})}
+                    isRestricted={false}
+                    restrictionMessage=""
+                  />
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Celular *
                   </label>
                   <input
                     type="tel"
                     required
                     placeholder="(xx) xxxxx-xxxx"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                    value={processoForm.newClienteForm.celular}
-                    onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, celular: e.target.value})}
+                    value={clienteForm.formData.celular}
+                    onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, celular: e.target.value})}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Email
                   </label>
                   <input
                     type="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                    value={processoForm.newClienteForm.email}
-                    onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, email: e.target.value})}
+                    value={clienteForm.formData.email || ''}
+                    onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                  value={processoForm.newClienteForm.status}
-                  onChange={(e) => processoForm.setNewClienteForm({...processoForm.newClienteForm, status: e.target.value as 'ativo' | 'inativo' | 'potencial'})}
-                >
-                  <option value="ativo">Ativo</option>
-                  <option value="potencial">Potencial</option>
-                  <option value="inativo">Inativo</option>
-                </select>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={clienteForm.formData.status}
+                    onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, status: e.target.value as 'ativo' | 'inativo' | 'potencial'})}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="ativo">Ativo</option>
+                    <option value="potencial">Potencial</option>
+                    <option value="inativo">Inativo</option>
+                  </select>
+                </div>
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <AccessibleButton
-                  type="button"
-                  onClick={() => {
-                    processoForm.setShowNewClienteModal(false)
-                    processoForm.setShowCreateForm(true)
-                    processoForm.setNewClienteForm({
-                      nome_completo: '',
-                      celular: '',
-                      email: '',
-                      status: 'ativo'
-                    })
-                  }}
-                  variant="ghost"
-                  size="lg"
-                  aria-label="Cancelar cadastro de cliente"
-                  className="flex-1 border-2 border-gray-300"
-                >
-                  Cancelar
-                </AccessibleButton>
-                <AccessibleButton
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  aria-label="Criar novo cliente"
-                  className="flex-1"
-                >
-                  Criar Cliente
-                </AccessibleButton>
-              </div>
-            </form>
+            </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-500">
-                Para cadastrar dados completos, acesse <Link to="/admin/clientes" className="text-primary-600 hover:underline">Gestão de Clientes</Link>
+                💡 Formulario simplificado. Para dados completos, use <Link to="/admin/clientes" className="text-primary-600 hover:underline">Gestão de Clientes</Link>
               </p>
             </div>
           </div>
-        </div>
-      )}
+      </FormModal>
 
       {/* Modal de Visualização de Processo */}
       <ViewModal
@@ -1220,47 +1314,6 @@ const ProcessosPage: React.FC = () => {
                   allowMultiple={false} // elegir si se permite abrir múltiples secciones al mismo tiempo
                   defaultOpen={[]} // Inicia con todas las secciones colapsadas
                   items={[
-                    // Audiências
-                    ...(viewingProcesso.audiencias && viewingProcesso.audiencias.length > 0 ? [{
-                      id: 'audiencias',
-                      icon: <Calendar size={18} className="text-indigo-600" />,
-                      title: 'Audiências',
-                      count: viewingProcesso.audiencias.length,
-                      color: 'indigo' as const,
-                      content: (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {viewingProcesso.audiencias.map((audiencia, index) => (
-                            <div key={index} className="bg-white p-4 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-colors">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Calendar size={16} className="text-indigo-600 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <div className="text-sm font-bold text-indigo-900">
-                                    {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR')} às {audiencia.horario}
-                                  </div>
-                                  <div className="text-xs text-gray-500 capitalize">
-                                    {new Date(audiencia.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="space-y-1.5 text-xs">
-                                <div className="flex">
-                                  <span className="font-semibold text-gray-600 w-16">Tipo:</span>
-                                  <span className="text-gray-900">{audiencia.tipo}</span>
-                                </div>
-                                <div className="flex">
-                                  <span className="font-semibold text-gray-600 w-16">Forma:</span>
-                                  <span className="text-gray-900">{audiencia.forma}</span>
-                                </div>
-                                <div className="flex">
-                                  <span className="font-semibold text-gray-600 w-16">Local:</span>
-                                  <span className="text-gray-900">{audiencia.lugar}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    }] : []),
                     // Documentos
                     ...(viewingProcesso.documentos_processo && viewingProcesso.documentos_processo.length > 0 ? [{
                       id: 'documentos',
@@ -1394,9 +1447,8 @@ const ProcessosPage: React.FC = () => {
           </>
         )}
       </ViewModal>
-      </ResponsiveContainer>
-    </div>
+    </AdminPageLayout>
   )
 }
 
-export default ProcessosPage
+export default ProcessosPage;

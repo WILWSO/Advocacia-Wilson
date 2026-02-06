@@ -16,7 +16,7 @@ export const getInputClasses = (hasError: boolean, isDisabled: boolean): string 
     "w-full px-4 py-2 border rounded transition-colors",
     "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent",
     hasError ? 'border-red-300 bg-red-50' : 'border-neutral-300',
-    isDisabled && 'opacity-50 cursor-not-allowed'
+    isDisabled && 'opacity-50'
   );
 };
 
@@ -29,7 +29,7 @@ export const getButtonClasses = (isSubmitting: boolean): string => {
     "w-full px-6 py-3 text-white rounded text-sm font-medium transition-all",
     "flex items-center justify-center",
     isSubmitting 
-      ? 'bg-neutral-400 cursor-not-allowed' 
+      ? 'bg-neutral-400' 
       : 'bg-primary-800 hover:bg-primary-900 active:transform active:scale-95'
   );
 };
@@ -90,21 +90,55 @@ export const TEXT_CLASSES = {
   primary: 'text-primary-800',
   primaryHover: 'hover:text-primary-800',
   muted: 'text-gray-600',
+  mutedLight: 'text-gray-500',
   error: 'text-red-600',
   success: 'text-green-600',
   warning: 'text-amber-600'
 } as const;
 
 /**
+ * Clases de descripción/subtítulos
+ */
+export const DESCRIPTION_CLASSES = {
+  sm: 'text-sm text-gray-600 mt-2',
+  base: 'text-base text-gray-600 mt-2',
+  lg: 'text-lg text-gray-600 mt-2',
+  xl: 'text-xl text-gray-600 mt-3'
+} as const;
+
+/**
+ * Espaciado estandarizado
+ */
+export const SPACING_CLASSES = {
+  gap: {
+    xs: 'gap-2',
+    sm: 'gap-3',
+    md: 'gap-4',
+    lg: 'gap-6',
+    xl: 'gap-8'
+  },
+  padding: {
+    page: 'p-6 lg:p-8',
+    section: 'p-4 md:p-6',
+    card: 'p-4 md:p-6',
+    tight: 'p-2 md:p-3'
+  },
+  margin: {
+    section: 'mt-8 md:mt-12',
+    element: 'mt-4 md:mt-6'
+  }
+} as const;
+
+/**
  * Títulos y headings
  */
 export const HEADING_CLASSES = {
-  h1: 'text-4xl md:text-5xl lg:text-6xl font-bold',
-  h2: 'text-3xl md:text-4xl lg:text-5xl font-bold',
-  h3: 'text-2xl md:text-3xl lg:text-4xl font-bold',
-  h4: 'text-xl md:text-2xl lg:text-3xl font-semibold',
-  h5: 'text-lg md:text-xl lg:text-2xl font-semibold',
-  h6: 'text-base md:text-lg lg:text-xl font-semibold'
+  h1: 'text-3xl font-bold text-primary-900 mb-2',
+  h2: 'text-2xl md:text-3xl lg:text-4xl font-bold text-primary-900 mb-2',
+  h3: 'text-xl md:text-2xl lg:text-3xl font-bold text-primary-900 mb-2',
+  h4: 'text-lg md:text-xl lg:text-2xl font-semibold text-primary-900 mb-2',
+  h5: 'text-base md:text-lg lg:text-xl font-semibold text-primary-900 mb-2',
+  h6: 'text-sm md:text-base lg:text-lg font-semibold text-primary-900 mb-2'
 } as const;
 
 // ==================== CARDS Y CONTENEDORES ====================
@@ -117,6 +151,16 @@ export const CARD_CLASSES = {
   hover: 'bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow',
   bordered: 'bg-white rounded-lg border border-gray-200 p-6',
   flat: 'bg-white rounded-lg p-6'
+} as const;
+
+/**
+ * Estilos de headers de página
+ */
+export const PAGE_HEADER_CLASSES = {
+  container: 'bg-white shadow-sm border-b border-gray-200',
+  wrapper: 'flex flex-col md:flex-row md:items-center md:justify-between',
+  content: 'flex-1 min-w-0',
+  actions: 'flex-shrink-0 mt-4 md:mt-0'
 } as const;
 
 // ==================== ESTADOS Y BADGES ====================
@@ -168,7 +212,7 @@ export const getButtonClassNames = (
   return cn(
     BUTTON_STYLES[variant],
     BUTTON_SIZES[size],
-    disabled && 'opacity-50 cursor-not-allowed'
+    disabled && 'opacity-50'
   );
 };
 
