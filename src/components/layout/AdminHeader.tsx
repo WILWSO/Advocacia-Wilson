@@ -4,7 +4,10 @@ import { Bell, LogOut, User, Settings, ChevronDown } from 'lucide-react'
 import { useAuthLogin } from '../auth/useAuthLogin'
 import Logo from '../shared/Logo'
 import { getRoleBadgeColor, getRoleLabel } from '../../utils/roleHelpers'
+import { getUserDisplayName } from '../../utils/authHelpers'
 import { cn } from '../../utils/cn'
+import { UI_LAYOUT } from '../../config/messages'
+import { COMMON_BUTTON_COLORS } from '../../config/theme'
 
 interface AdminHeaderProps {
   className?: string
@@ -37,8 +40,8 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
             {/* Notifications */}
             <button
               className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors min-touch-target"
-              title="Notificações"
-              aria-label="Ver notificações"
+              title={UI_LAYOUT.HEADER.NOTIFICATIONS}
+              aria-label={UI_LAYOUT.HEADER.VIEW_NOTIFICATIONS}
             >
               <Bell size={18} className="sm:hidden" />
               <Bell size={20} className="hidden sm:block" />
@@ -55,11 +58,11 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
               >
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {user?.nome_completo?.charAt(0).toUpperCase() || 'U'}
+                    {getUserDisplayName(user)?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium text-gray-900 leading-tight">
-                      {user?.nome_completo || 'Usuário'}
+                      {getUserDisplayName(user) || 'Usuário'}
                     </p>
                     <span className={cn(
                       "inline-block text-xs px-2 py-0.5 rounded-full border font-medium",
@@ -82,7 +85,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-40">
                     <div className="px-4 py-3 border-b border-gray-200">
                       <p className="text-sm font-medium text-gray-900">
-                        {user?.nome_completo || 'Usuário'}
+                        {getUserDisplayName(user) || 'Usuário'}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
                         {user?.email}
@@ -102,23 +105,23 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ className }) => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <User size={16} />
-                        Meu Perfil
+                        {UI_LAYOUT.HEADER.MY_PROFILE}
                       </Link>
                       <button
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       >
                         <Settings size={16} />
-                        Configurações
+                        {UI_LAYOUT.HEADER.SETTINGS}
                       </button>
                     </div>
 
                     <div className="border-t border-gray-200 pt-1">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        className={cn("w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors", COMMON_BUTTON_COLORS.logoutDanger)}
                       >
                         <LogOut size={16} />
-                        Sair
+                        {UI_LAYOUT.HEADER.LOGOUT}
                       </button>
                     </div>
                   </div>

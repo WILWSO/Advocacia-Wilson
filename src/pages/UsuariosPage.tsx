@@ -308,14 +308,14 @@ const UsuariosPage: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome *
+                      Nome Login *
                     </label>
                     <input
                       type="text"
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.nome}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, nome: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('nome', e.target.value)}
                     />
                   </div>
                 </div>
@@ -328,7 +328,7 @@ const UsuariosPage: React.FC = () => {
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.nome_completo}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, nome_completo: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('nome_completo', e.target.value)}
                   />
                 </div>
 
@@ -341,7 +341,8 @@ const UsuariosPage: React.FC = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.email}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, email: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('email', e.target.value)}
+                    autoComplete="email"
                   />
                 </div>
 
@@ -357,6 +358,7 @@ const UsuariosPage: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.password}
                       onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, password: e.target.value})}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -565,7 +567,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.endereco}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, endereco: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('endereco', e.target.value)}
                     />
                   </div>
 
@@ -591,7 +593,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.cidade}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cidade: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('cidade', e.target.value)}
                     />
                   </div>
 
@@ -603,7 +605,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.estado}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, estado: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('estado', e.target.value)}
                       placeholder="SP, RJ, MG..."
                     />
                   </div>
@@ -630,7 +632,7 @@ const UsuariosPage: React.FC = () => {
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.pais}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, pais: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('pais', e.target.value)}
                   />
                 </div>
               </div>
@@ -766,21 +768,21 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.titulo}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, titulo: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('titulo', e.target.value)}
                       placeholder="Dr., Dra., Advogado(a)"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome *
+                      Nome Login * (aparecerá menu de login)
                     </label>
                     <input
                       type="text"
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.nome}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, nome: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('nome', e.target.value)}
                     />
                   </div>
                 </div>
@@ -793,7 +795,7 @@ const UsuariosPage: React.FC = () => {
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.nome_completo}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, nome_completo: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('nome_completo', e.target.value)}
                   />
                 </div>
 
@@ -806,7 +808,8 @@ const UsuariosPage: React.FC = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.email}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, email: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('email', e.target.value)}
+                    autoComplete="email"
                   />
                 </div>
 
@@ -819,7 +822,7 @@ const UsuariosPage: React.FC = () => {
                       <select
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                         value={usuarioForm.formData.role}
-                        onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, role: e.target.value as 'admin' | 'advogado' | 'assistente'})}
+                        onChange={(e) => usuarioForm.handleFieldChange('role', e.target.value as 'admin' | 'advogado' | 'assistente')}
                       >
                         <option value="assistente">Assistente</option>
                         <option value="advogado">Advogado</option>
@@ -836,7 +839,7 @@ const UsuariosPage: React.FC = () => {
                       type="date"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.data_nascimento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, data_nascimento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('data_nascimento', e.target.value)}
                     />
                   </div>
                 </div>
@@ -897,7 +900,7 @@ const UsuariosPage: React.FC = () => {
                     id="equipe-edit"
                     className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     checked={usuarioForm.formData.equipe || false}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, equipe: e.target.checked})}
+                    onChange={(e) => usuarioForm.handleFieldChange('equipe', e.target.checked)}
                   />
                   <label htmlFor="equipe-edit" className="text-sm font-medium text-gray-700">
                     Exibir na página "Equipe"
@@ -908,7 +911,7 @@ const UsuariosPage: React.FC = () => {
                   label="Educação / Formação"
                   id="educacao-edit"
                   value={usuarioForm.formData.educacao || []}
-                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, educacao: value})}
+                  onChange={(value: string[]) => usuarioForm.handleFieldChange('educacao', value)}
                   placeholder="Ex: Bacharel em Direito - UFT"
                   helperText="Adicione cada formação separadamente"
                   maxItems={10}
@@ -918,7 +921,7 @@ const UsuariosPage: React.FC = () => {
                   label="Especialidades"
                   id="especialidades-edit"
                   value={usuarioForm.formData.especialidades || []}
-                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, especialidades: value})}
+                  onChange={(value: string[]) => usuarioForm.handleFieldChange('especialidades', value)}
                   placeholder="Ex: Direito Trabalhista"
                   helperText="Adicione cada especialidade separadamente"
                   maxItems={10}
@@ -931,7 +934,7 @@ const UsuariosPage: React.FC = () => {
                   <textarea
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 min-h-[120px]"
                     value={usuarioForm.formData.bio || ''}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, bio: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('bio', e.target.value)}
                     placeholder="Breve descrição da experiência e áreas de atuação do profissional"
                     rows={4}
                   />
@@ -1005,7 +1008,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.endereco}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, endereco: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('endereco', e.target.value)}
                     />
                   </div>
 
@@ -1017,7 +1020,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.numero}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, numero: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('numero', e.target.value)}
                     />
                   </div>
                 </div>
@@ -1031,7 +1034,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.cidade}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cidade: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('cidade', e.target.value)}
                     />
                   </div>
 
@@ -1043,7 +1046,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.estado}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, estado: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('estado', e.target.value)}
                       placeholder="SP, RJ, MG..."
                     />
                   </div>
@@ -1056,7 +1059,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.cep}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cep: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('cep', e.target.value)}
                       placeholder="00000-000"
                     />
                   </div>
@@ -1070,7 +1073,7 @@ const UsuariosPage: React.FC = () => {
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.pais}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, pais: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('pais', e.target.value)}
                   />
                 </div>
               </div>
@@ -1081,7 +1084,7 @@ const UsuariosPage: React.FC = () => {
                     type="checkbox"
                     id="ativo-edit"
                     checked={usuarioForm.formData.ativo}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, ativo: e.target.checked})}
+                    onChange={(e) => usuarioForm.handleFormChange({...usuarioForm.formData, ativo: e.target.checked})}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                   <label htmlFor="ativo-edit" className="ml-2 block text-sm text-gray-900">
@@ -1125,6 +1128,17 @@ const UsuariosPage: React.FC = () => {
             
             {usuarioForm.changingPassword && (
               <>
+              {/* Campo oculto de usuario para accesibilidad */}
+              <input
+                type="text"
+                name="username"
+                value={usuarioForm.changingPassword.email}
+                autoComplete="username"
+                style={{ display: 'none' }}
+                readOnly
+                aria-hidden="true"
+              />
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Usuário
@@ -1143,6 +1157,7 @@ const UsuariosPage: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                   value={usuarioForm.passwordForm.newPassword}
                   onChange={(e) => usuarioForm.setPasswordForm({...usuarioForm.passwordForm, newPassword: e.target.value})}
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -1157,6 +1172,7 @@ const UsuariosPage: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                   value={usuarioForm.passwordForm.confirmPassword}
                   onChange={(e) => usuarioForm.setPasswordForm({...usuarioForm.passwordForm, confirmPassword: e.target.value})}
+                  autoComplete="new-password"
                 />
               </div>
               </>
@@ -1276,12 +1292,29 @@ const UsuariosPage: React.FC = () => {
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nome Login */}
+                  <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
+                    <label className="text-xs font-semibold text-primary-700 uppercase mb-1 flex items-center gap-1">
+                      <User size={14} />
+                      Nome Login
+                    </label>
+                    <p className="text-primary-900 font-medium">
+                      {usuarioForm.viewingUsuario.titulo ? 
+                        `${usuarioForm.viewingUsuario.titulo} ${usuarioForm.viewingUsuario.nome}` : 
+                        usuarioForm.viewingUsuario.nome
+                      }
+                    </p>
+                  </div>
+
                   {usuarioForm.viewingUsuario.nome_completo && (
-                    <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-gray-50 p-4 rounded-lg">
                       <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome Completo</label>
                       <p className="text-gray-900 font-medium">{usuarioForm.viewingUsuario.nome_completo}</p>
                     </div>
                   )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <label className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
