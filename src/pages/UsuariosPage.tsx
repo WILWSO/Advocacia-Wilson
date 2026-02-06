@@ -7,6 +7,7 @@ import { useResponsive } from '../hooks/ui/useResponsive'
 import { getRoleBadgeColor, getRoleLabel } from '../utils/roleHelpers'
 import { cn } from '../utils/cn'
 import { AuditInfo } from '../components/shared/AuditInfo'
+import { ArrayInput } from '../components/shared/ArrayInput'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
 import UsuarioCard from '../components/shared/cards/UsuarioCard'
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
@@ -368,6 +369,57 @@ const UsuariosPage: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
                 </div>
 
+              {/* Perfil Profesional */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Perfil Profesional</h3>
+                
+                <div>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="equipe-create"
+                      checked={usuarioForm.formData.equipe || false}
+                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, equipe: e.target.checked})}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Exibir na página Equipe</span>
+                  </label>
+                </div>
+
+                <ArrayInput
+                  label="Educação / Formação"
+                  id="educacao-create"
+                  value={usuarioForm.formData.educacao || []}
+                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, educacao: value})}
+                  placeholder="Ex: Bacharel em Direito - UFT"
+                  helperText="Adicione cada formação separadamente"
+                  maxItems={10}
+                />
+
+                <ArrayInput
+                  label="Especialidades"
+                  id="especialidades-create"
+                  value={usuarioForm.formData.especialidades || []}
+                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, especialidades: value})}
+                  placeholder="Ex: Direito Trabalhista"
+                  helperText="Adicione cada especialidade separadamente"
+                  maxItems={10}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bio / Experiência
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                    value={usuarioForm.formData.bio || ''}
+                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, bio: e.target.value})}
+                    placeholder="Breve descrição da experiência profissional..."
+                  />
+                </div>
+              </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {usuarioForm.isAdmin && (
                     <div>
@@ -416,9 +468,9 @@ const UsuariosPage: React.FC = () => {
                     >
                       <option value="">Selecione</option>
                       <option value="CPF">CPF</option>
-                      <option value="CNPJ">CNPJ</option>
                       <option value="RG">RG</option>
                       <option value="Passaporte">Passaporte</option>
+                      <option value="Outro">Outro</option>
                     </select>
                   </div>
 
@@ -487,13 +539,13 @@ const UsuariosPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Localidade
+                      Cidade
                     </label>
                     <input
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={usuarioForm.formData.localidade}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, localidade: e.target.value})}
+                      value={usuarioForm.formData.cidade}
+                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cidade: e.target.value})}
                     />
                   </div>
 
@@ -743,6 +795,57 @@ const UsuariosPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Perfil Profesional */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Perfil Profissional</h3>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="equipe-edit"
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    checked={usuarioForm.formData.equipe || false}
+                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, equipe: e.target.checked})}
+                  />
+                  <label htmlFor="equipe-edit" className="text-sm font-medium text-gray-700">
+                    Exibir na página "Equipe"
+                  </label>
+                </div>
+
+                <ArrayInput
+                  label="Educação / Formação"
+                  id="educacao-edit"
+                  value={usuarioForm.formData.educacao || []}
+                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, educacao: value})}
+                  placeholder="Ex: Bacharel em Direito - UFT"
+                  helperText="Adicione cada formação separadamente"
+                  maxItems={10}
+                />
+
+                <ArrayInput
+                  label="Especialidades"
+                  id="especialidades-edit"
+                  value={usuarioForm.formData.especialidades || []}
+                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, especialidades: value})}
+                  placeholder="Ex: Direito Trabalhista"
+                  helperText="Adicione cada especialidade separadamente"
+                  maxItems={10}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Biografia Profissional
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 min-h-[120px]"
+                    value={usuarioForm.formData.bio || ''}
+                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, bio: e.target.value})}
+                    placeholder="Breve descrição da experiência e áreas de atuação do profissional"
+                    rows={4}
+                  />
+                </div>
+              </div>
+
               {/* Documentación */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Documentação</h3>
@@ -759,9 +862,9 @@ const UsuariosPage: React.FC = () => {
                     >
                       <option value="">Selecione</option>
                       <option value="CPF">CPF</option>
-                      <option value="CNPJ">CNPJ</option>
                       <option value="RG">RG</option>
                       <option value="Passaporte">Passaporte</option>
+                      <option value="Outro">Outro</option>
                     </select>
                   </div>
 
@@ -830,13 +933,13 @@ const UsuariosPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Localidade
+                      Cidade
                     </label>
                     <input
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
-                      value={usuarioForm.formData.localidade}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, localidade: e.target.value})}
+                      value={usuarioForm.formData.cidade}
+                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cidade: e.target.value})}
                     />
                   </div>
 
@@ -1182,7 +1285,7 @@ const UsuariosPage: React.FC = () => {
               )}
 
               {/* Endereço */}
-              {(usuarioForm.viewingUsuario.endereco || usuarioForm.viewingUsuario.localidade || usuarioForm.viewingUsuario.cep) && (
+              {(usuarioForm.viewingUsuario.endereco || usuarioForm.viewingUsuario.cidade || usuarioForm.viewingUsuario.cep) && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
                     <MapPin size={20} />
@@ -1197,7 +1300,7 @@ const UsuariosPage: React.FC = () => {
                           {usuarioForm.viewingUsuario.numero && `, ${usuarioForm.viewingUsuario.numero}`}
                         </p>
                       )}
-                      {usuarioForm.viewingUsuario.localidade && <p>{usuarioForm.viewingUsuario.localidade}</p>}
+                      {usuarioForm.viewingUsuario.cidade && <p>{usuarioForm.viewingUsuario.cidade}</p>}
                       {usuarioForm.viewingUsuario.estado && <p>{usuarioForm.viewingUsuario.estado}</p>}
                       {usuarioForm.viewingUsuario.cep && <p>CEP: {usuarioForm.viewingUsuario.cep}</p>}
                       {usuarioForm.viewingUsuario.pais && <p>{usuarioForm.viewingUsuario.pais}</p>}
