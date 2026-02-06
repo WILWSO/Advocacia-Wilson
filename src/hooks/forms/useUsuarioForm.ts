@@ -44,6 +44,7 @@ export const useUsuarioForm = () => {
     email: '',
     password: '',
     role: 'assistente',
+    posicao: 'Associado', // ✨ Valor por defecto
     ativo: true,
     foto_perfil_url: '',
     data_nascimento: '',
@@ -71,6 +72,7 @@ export const useUsuarioForm = () => {
     email: editingUsuario.email || '',
     password: '',
     role: editingUsuario.role || 'assistente',
+    posicao: editingUsuario.posicao || 'Associado', // ✨ Con fallback
     ativo: editingUsuario.ativo ?? true,
     foto_perfil_url: editingUsuario.foto_perfil_url || '',
     data_nascimento: editingUsuario.data_nascimento || '',
@@ -116,6 +118,7 @@ export const useUsuarioForm = () => {
         email: editingUsuario.email || '',
         password: '',
         role: editingUsuario.role || 'assistente',
+        posicao: editingUsuario.posicao || 'Associado', // ✨ Con fallback
         ativo: editingUsuario.ativo ?? true,
         foto_perfil_url: editingUsuario.foto_perfil_url || '',
         data_nascimento: editingUsuario.data_nascimento || '',
@@ -165,7 +168,7 @@ export const useUsuarioForm = () => {
     let formattedValue = value;
     
     // Formatear campos VARCHAR a MAYÚSCULAS en tiempo real (excepto 'titulo' que debe quedar como usuario escribe)
-    if (['nome', 'nome_completo', 'numero_documento'].includes(field)) {
+    if (['nome', 'nome_completo', 'numero_documento', 'endereco', 'cidade', 'estado', 'pais'].includes(field)) {
       formattedValue = value.toUpperCase();
     }
     // Formatear email a minúsculas en tiempo real
@@ -449,7 +452,17 @@ export const useUsuarioForm = () => {
     if (!error) {
       successToast(SUCCESS_MESSAGES.usuarios.DELETED)
     } else {
-      errorNotif(`Erro ao excluir usuário: ${error}`)
+      // Mensaje más específico para el usuario
+      const friendlyError = error.includes('404') || error.includes('not found') 
+        ? 'Usuário removido com sucesso (já não existia no sistema de autenticação)'
+        : `Erro ao excluir usuário: ${error}`
+      
+      if (error.includes('404') || error.includes('not found')) {
+        // Si es un error 404, tratarlo como éxito
+        successToast('Usuário removido com sucesso')
+      } else {
+        errorNotif(friendlyError)
+      }
     }
   }
 

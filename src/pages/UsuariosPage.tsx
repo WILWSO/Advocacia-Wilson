@@ -1,5 +1,7 @@
 import { AnimatePresence } from 'framer-motion'
-import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText, Briefcase } from 'lucide-react'
+import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText, Briefcase, Award } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
 import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
 import { ResponsiveContainer } from '../components/shared/ResponsiveGrid'
@@ -14,6 +16,7 @@ import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
+import { RestrictedInput, RestrictedSelect } from '../components/admin/RestrictedFormField'
 
 // Main Component
 const UsuariosPage: React.FC = () => {
@@ -24,6 +27,18 @@ const UsuariosPage: React.FC = () => {
   
   // Hook de filtros
   const filters = useUsuarioFilters(usuarioForm.usuarios)
+
+  // Detectar si debe abrir modal del usuario actual desde AdminHeader
+  const location = useLocation()
+  
+  useEffect(() => {
+    const state = location.state as { viewCurrentUser?: boolean } | null
+    if (state?.viewCurrentUser && usuarioForm.currentUser && !usuarioForm.viewingUsuario) {
+      usuarioForm.handleViewUsuario(usuarioForm.currentUser)
+      // Limpiar el estado para evitar que se abra de nuevo
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state, usuarioForm.currentUser]) // Removido handleViewUsuario de las dependencias
 
   return (
     <>
@@ -307,42 +322,35 @@ const UsuariosPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome Login *
-                    </label>
-                    <input
+                    <RestrictedInput
+                      label="Nome Login"
                       type="text"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.nome}
                       onChange={(e) => usuarioForm.handleFieldChange('nome', e.target.value)}
+                      isRestricted={false} // Siempre editable en creación
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome Completo
-                  </label>
-                  <input
+                  <RestrictedInput
+                    label="Nome Completo"
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.nome_completo}
                     onChange={(e) => usuarioForm.handleFieldChange('nome_completo', e.target.value)}
+                    isRestricted={false}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
+                  <RestrictedInput
+                    label="Email"
                     type="email"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.email}
                     onChange={(e) => usuarioForm.handleFieldChange('email', e.target.value)}
-                    autoComplete="email"
+                    isRestricted={false} // Siempre editable en creación
                   />
                 </div>
 
@@ -471,20 +479,34 @@ const UsuariosPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {usuarioForm.isAdmin && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Role *
-                      </label>
-                      <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      <RestrictedSelect
+                        label="Role"
+                        required
                         value={usuarioForm.formData.role}
                         onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, role: e.target.value as 'admin' | 'advogado' | 'assistente'})}
+                        isRestricted={false} // Siempre editable para admin
                       >
                         <option value="assistente">Assistente</option>
                         <option value="advogado">Advogado</option>
                         <option value="admin">Administrador</option>
-                      </select>
+                      </RestrictedSelect>
                     </div>
                   )}
+
+                  {/* ✨ NUEVO CAMPO POSICAO */}
+                  <div>
+                    <RestrictedSelect
+                      label="Posição"
+                      required
+                      value={usuarioForm.formData.posicao}
+                      onChange={(e) => usuarioForm.handleFieldChange('posicao', e.target.value as 'Socio' | 'Associado' | 'Parceiro')}
+                      isRestricted={false} // Editable en creación
+                    >
+                      <option value="Associado">Associado</option>
+                      <option value="Socio">Sócio</option>
+                      <option value="Parceiro">Parceiro</option>
+                    </RestrictedSelect>
+                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -774,62 +796,72 @@ const UsuariosPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome Login * (aparecerá menu de login)
-                    </label>
-                    <input
+                    <RestrictedInput
+                      label="Nome Login (aparecerá menu de login)"
                       type="text"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.nome}
                       onChange={(e) => usuarioForm.handleFieldChange('nome', e.target.value)}
+                      isRestricted={!usuarioForm.isAdmin && usuarioForm.currentUser?.id !== usuarioForm.editingUsuario?.id}
+                      restrictionMessage="Apenas admin ou próprio usuário pode editar"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome Completo
-                  </label>
-                  <input
+                  <RestrictedInput
+                    label="Nome Completo"
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.nome_completo}
                     onChange={(e) => usuarioForm.handleFieldChange('nome_completo', e.target.value)}
+                    isRestricted={false}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
+                  <RestrictedInput
+                    label="Email"
                     type="email"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.email}
                     onChange={(e) => usuarioForm.handleFieldChange('email', e.target.value)}
-                    autoComplete="email"
+                    isRestricted={!usuarioForm.isAdmin && usuarioForm.currentUser?.id !== usuarioForm.editingUsuario?.id}
+                    restrictionMessage="Apenas admin ou próprio usuário pode editar"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {usuarioForm.isAdmin && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Role *
-                      </label>
-                      <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
+                      <RestrictedSelect
+                        label="Role"
+                        required
                         value={usuarioForm.formData.role}
                         onChange={(e) => usuarioForm.handleFieldChange('role', e.target.value as 'admin' | 'advogado' | 'assistente')}
+                        isRestricted={false} // Solo admin puede ver este campo ya
                       >
                         <option value="assistente">Assistente</option>
                         <option value="advogado">Advogado</option>
                         <option value="admin">Administrador</option>
-                      </select>
+                      </RestrictedSelect>
                     </div>
                   )}
+
+                  {/* ✨ NUEVO CAMPO POSICAO */}
+                  <div>
+                    <RestrictedSelect
+                      label="Posição"
+                      required
+                      value={usuarioForm.formData.posicao}
+                      onChange={(e) => usuarioForm.handleFieldChange('posicao', e.target.value as 'Socio' | 'Associado' | 'Parceiro')}
+                      isRestricted={!usuarioForm.isAdmin}
+                      restrictionMessage="Apenas admin pode alterar posição"
+                    >
+                      <option value="Associado">Associado</option>
+                      <option value="Socio">Sócio</option>
+                      <option value="Parceiro">Parceiro</option>
+                    </RestrictedSelect>
+                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1271,6 +1303,14 @@ const UsuariosPage: React.FC = () => {
                       <Shield size={14} />
                       {getRoleLabel(usuarioForm.viewingUsuario.role)}
                     </span>
+
+                    {/* ✨ Posição Badge */}
+                    {usuarioForm.viewingUsuario.posicao && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                        <Award size={14} />
+                        {usuarioForm.viewingUsuario.posicao}
+                      </span>
+                    )}
 
                     {/* Status Badge */}
                     <span className={cn(

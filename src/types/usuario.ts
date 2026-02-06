@@ -10,6 +10,11 @@ import { BaseEntity, BaseFilters, BaseStats, ActiveStatus } from './common';
 export type { UsuarioRole } from '../config/roles';
 
 /**
+ * Enum para las posiciones en la empresa
+ */
+export type UsuarioPosicao = 'Socio' | 'Associado' | 'Parceiro';
+
+/**
  * Interface principal para Usuario
  * Extiende BaseEntity para campos de auditoría estándar
  */
@@ -23,6 +28,7 @@ export interface Usuario extends BaseEntity {
   data_nascimento?: string
   // Rol y estado
   role: UsuarioRole
+  posicao: UsuarioPosicao // ✨ NUEVO CAMPO OBLIGATORIO
   ativo: boolean
   // Documentación
   tipo_documento?: string
@@ -66,6 +72,7 @@ export interface UsuarioFormData {
   email: string
   password?: string
   role: UsuarioRole
+  posicao: UsuarioPosicao // ✨ NUEVO CAMPO OBLIGATORIO
   ativo: boolean
   foto_perfil_url?: string
   data_nascimento?: string
