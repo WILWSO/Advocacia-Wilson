@@ -38,7 +38,7 @@ const UsuariosPage: React.FC = () => {
       // Limpiar el estado para evitar que se abra de nuevo
       window.history.replaceState({}, document.title)
     }
-  }, [location.state, usuarioForm.currentUser]) // Removido handleViewUsuario de las dependencias
+  }, [location.state, usuarioForm]); // Dependencia completa del form
 
   return (
     <>
@@ -316,7 +316,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.titulo}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, titulo: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('titulo', e.target.value)}
                       placeholder="Dr., Dra., Advogado(a)"
                     />
                   </div>
@@ -365,7 +365,7 @@ const UsuariosPage: React.FC = () => {
                       minLength={6}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.password}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, password: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('password', e.target.value)}
                       autoComplete="new-password"
                     />
                     <button
@@ -393,12 +393,9 @@ const UsuariosPage: React.FC = () => {
                       type="url"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.redes_sociais?.linkedin || ''}
-                      onChange={(e) => usuarioForm.setFormData({
-                        ...usuarioForm.formData,
-                        redes_sociais: {
-                          ...usuarioForm.formData.redes_sociais,
-                          linkedin: e.target.value
-                        }
+                      onChange={(e) => usuarioForm.handleFieldChange('redes_sociais', {
+                        ...usuarioForm.formData.redes_sociais,
+                        linkedin: e.target.value
                       })}
                       placeholder="https://linkedin.com/in/seu-perfil"
                     />
@@ -412,12 +409,9 @@ const UsuariosPage: React.FC = () => {
                       type="url"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.redes_sociais?.instagram || ''}
-                      onChange={(e) => usuarioForm.setFormData({
-                        ...usuarioForm.formData,
-                        redes_sociais: {
-                          ...usuarioForm.formData.redes_sociais,
-                          instagram: e.target.value
-                        }
+                      onChange={(e) => usuarioForm.handleFieldChange('redes_sociais', {
+                        ...usuarioForm.formData.redes_sociais,
+                        instagram: e.target.value
                       })}
                       placeholder="https://instagram.com/seu-perfil"
                     />
@@ -435,7 +429,7 @@ const UsuariosPage: React.FC = () => {
                       type="checkbox"
                       id="equipe-create"
                       checked={usuarioForm.formData.equipe || false}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, equipe: e.target.checked})}
+                      onChange={(e) => usuarioForm.handleFieldChange('equipe', e.target.checked)}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm font-medium text-gray-700">Exibir na página Equipe</span>
@@ -446,7 +440,7 @@ const UsuariosPage: React.FC = () => {
                   label="Educação / Formação"
                   id="educacao-create"
                   value={usuarioForm.formData.educacao || []}
-                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, educacao: value})}
+                  onChange={(value: string[]) => usuarioForm.handleFieldChange('educacao', value)}
                   placeholder="Ex: Bacharel em Direito - UFT"
                   helperText="Adicione cada formação separadamente"
                   maxItems={10}
@@ -456,7 +450,7 @@ const UsuariosPage: React.FC = () => {
                   label="Especialidades"
                   id="especialidades-create"
                   value={usuarioForm.formData.especialidades || []}
-                  onChange={(value: string[]) => usuarioForm.setFormData({...usuarioForm.formData, especialidades: value})}
+                  onChange={(value: string[]) => usuarioForm.handleFieldChange('especialidades', value)}
                   placeholder="Ex: Direito Trabalhista"
                   helperText="Adicione cada especialidade separadamente"
                   maxItems={10}
@@ -470,7 +464,7 @@ const UsuariosPage: React.FC = () => {
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.bio || ''}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, bio: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('bio', e.target.value)}
                     placeholder="Breve descrição da experiência profissional..."
                   />
                 </div>
@@ -483,7 +477,7 @@ const UsuariosPage: React.FC = () => {
                         label="Role"
                         required
                         value={usuarioForm.formData.role}
-                        onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, role: e.target.value as 'admin' | 'advogado' | 'assistente'})}
+                        onChange={(e) => usuarioForm.handleFieldChange('role', e.target.value as 'admin' | 'advogado' | 'assistente')}
                         isRestricted={false} // Siempre editable para admin
                       >
                         <option value="assistente">Assistente</option>
@@ -516,7 +510,7 @@ const UsuariosPage: React.FC = () => {
                       type="date"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.data_nascimento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, data_nascimento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('data_nascimento', e.target.value)}
                     />
                   </div>
                 </div>
@@ -534,7 +528,7 @@ const UsuariosPage: React.FC = () => {
                     <select
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.tipo_documento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, tipo_documento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('tipo_documento', e.target.value)}
                     >
                       <option value="">Selecione</option>
                       <option value="CPF">CPF</option>
@@ -552,7 +546,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.numero_documento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, numero_documento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('numero_documento', e.target.value)}
                     />
                   </div>
                 </div>
@@ -570,7 +564,7 @@ const UsuariosPage: React.FC = () => {
                     type="tel"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.whatsapp}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, whatsapp: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('whatsapp', e.target.value)}
                     placeholder="+55 (11) 99999-9999"
                   />
                 </div>
@@ -601,7 +595,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.numero}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, numero: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('numero', e.target.value)}
                     />
                   </div>
                 </div>
@@ -640,7 +634,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.cep}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, cep: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('cep', e.target.value)}
                       placeholder="00000-000"
                     />
                   </div>
@@ -666,7 +660,7 @@ const UsuariosPage: React.FC = () => {
                     type="checkbox"
                     id="ativo"
                     checked={usuarioForm.formData.ativo}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, ativo: e.target.checked})}
+                    onChange={(e) => usuarioForm.handleFieldChange('ativo', e.target.checked)}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                   <label htmlFor="ativo" className="ml-2 block text-sm text-gray-900">
@@ -890,12 +884,9 @@ const UsuariosPage: React.FC = () => {
                       type="url"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.redes_sociais?.linkedin || ''}
-                      onChange={(e) => usuarioForm.setFormData({
-                        ...usuarioForm.formData,
-                        redes_sociais: {
-                          ...usuarioForm.formData.redes_sociais,
-                          linkedin: e.target.value
-                        }
+                      onChange={(e) => usuarioForm.handleFieldChange('redes_sociais', {
+                        ...usuarioForm.formData.redes_sociais,
+                        linkedin: e.target.value
                       })}
                       placeholder="https://linkedin.com/in/seu-perfil"
                     />
@@ -909,12 +900,9 @@ const UsuariosPage: React.FC = () => {
                       type="url"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.redes_sociais?.instagram || ''}
-                      onChange={(e) => usuarioForm.setFormData({
-                        ...usuarioForm.formData,
-                        redes_sociais: {
-                          ...usuarioForm.formData.redes_sociais,
-                          instagram: e.target.value
-                        }
+                      onChange={(e) => usuarioForm.handleFieldChange('redes_sociais', {
+                        ...usuarioForm.formData.redes_sociais,
+                        instagram: e.target.value
                       })}
                       placeholder="https://instagram.com/seu-perfil"
                     />
@@ -985,7 +973,7 @@ const UsuariosPage: React.FC = () => {
                     <select
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.tipo_documento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, tipo_documento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('tipo_documento', e.target.value)}
                     >
                       <option value="">Selecione</option>
                       <option value="CPF">CPF</option>
@@ -1003,7 +991,7 @@ const UsuariosPage: React.FC = () => {
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                       value={usuarioForm.formData.numero_documento}
-                      onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, numero_documento: e.target.value})}
+                      onChange={(e) => usuarioForm.handleFieldChange('numero_documento', e.target.value)}
                     />
                   </div>
                 </div>
@@ -1021,7 +1009,7 @@ const UsuariosPage: React.FC = () => {
                     type="tel"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500"
                     value={usuarioForm.formData.whatsapp}
-                    onChange={(e) => usuarioForm.setFormData({...usuarioForm.formData, whatsapp: e.target.value})}
+                    onChange={(e) => usuarioForm.handleFieldChange('whatsapp', e.target.value)}
                     placeholder="+55 (11) 99999-9999"
                   />
                 </div>
