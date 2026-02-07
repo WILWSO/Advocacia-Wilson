@@ -1,20 +1,18 @@
 import { motion } from 'framer-motion';
 import { Phone, Mail } from 'lucide-react';
 import { company } from '../data/DataCompany';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import { fadeInUp } from '../utils/animations';
 import { ContactForm } from '../components/shared/contactSection/ContactForm';
 import { ContactInfoList } from '../components/shared/contactSection/ContactInfoList';
 
 const ContactPage = () => {
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('contact')
+
   return (
     <>
-      <SEOHead
-        title="Contato - Agende sua Consulta Jurídica"
-        description="Entre em contato com Santos & Nascimento Advogados em Palmas-TO. Telefone: (63) 3214-3886. Endereço: Qd. 104 Sul, Rua SE 07, Lote 32, Sala 1. Agende sua consulta."
-        keywords="contato advogado Palmas, consulta jurídica Tocantins, telefone Santos Nascimento, endereço advogado Palmas, agendar consulta advocacia"
-        canonicalUrl={`${window.location.origin}/contato`}
-      />
+      {seo.component}
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">

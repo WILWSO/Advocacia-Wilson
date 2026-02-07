@@ -58,19 +58,31 @@ export const useAudienciaForm = (options?: UseAudienciaFormOptions) => {
   // Detección de cambios no guardados - siempre inicializar con EMPTY_FORM
   const { hasChanges, updateCurrent, resetInitial } = useUnsavedChanges(EMPTY_FORM);
 
+  // Helper para garantizar que todos los valores sean strings seguros
+  const ensureSafeFormData = (data: Partial<AudienciaFormData>): AudienciaFormData => ({
+    proceso_id: data.proceso_id || '',
+    fecha: data.fecha || '',
+    hora: data.hora || '',
+    tipo: data.tipo || TIPOS_AUDIENCIA[0],
+    forma: data.forma || 'presencial',
+    local: data.local || '',
+    observaciones: data.observaciones || '',
+    link_meet: data.link_meet || '',
+  });
+
   // Resetear form cuando cambia la audiencia en edición
   useEffect(() => {
     if (editingAudiencia) {
-      const editData = {
+      const editData = ensureSafeFormData({
         proceso_id: editingAudiencia.proceso_id,
         fecha: editingAudiencia.fecha,
         hora: editingAudiencia.hora,
         tipo: editingAudiencia.tipo,
         forma: editingAudiencia.forma,
-        local: editingAudiencia.local || '',
-        observaciones: editingAudiencia.observaciones || '',
-        link_meet: editingAudiencia.link_meet || '',
-      };
+        local: editingAudiencia.local,
+        observaciones: editingAudiencia.observaciones,
+        link_meet: editingAudiencia.link_meet,
+      });
       setFormData(editData);
       resetInitial(editData);
     } else {
@@ -178,7 +190,14 @@ export const useAudienciaForm = (options?: UseAudienciaFormOptions) => {
   // Handler para cambios de campo
   // Aplica formateo en tiempo real mientras el usuario digita
   const handleFieldChange = (field: keyof AudienciaFormData, value: unknown) => {
-    const newData = { ...formData, [field]: value };
+    // Asegurar que los valores opcionales nunca sean null/undefined
+    let safeValue = value;
+    if ((field === 'local' || field === 'observaciones' || field === 'link_meet') && 
+        (value === null || value === undefined)) {
+      safeValue = '';
+    }
+    
+    const newData = { ...formData, [field]: safeValue };
     const formattedData = formatFormData(newData as unknown as Record<string, unknown>) as unknown as AudienciaFormData;
     setFormData(formattedData);
     updateCurrent(formattedData);
@@ -199,7 +218,7 @@ export const useAudienciaForm = (options?: UseAudienciaFormOptions) => {
     showModal,
     viewingAudiencia,
     editingAudiencia,
-    formData,
+    formData: ensureSafeFormData(formData), // ✅ Garantizar valores seguros
     
     // Notificaciones
     notification,

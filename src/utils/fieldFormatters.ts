@@ -179,6 +179,82 @@ const EMAIL_FIELDS = [
 ];
 
 /**
+ * Formatea CPF brasileiro (000.000.000-00)
+ */
+export const formatCPF = (cpf: string | null | undefined): string => {
+  if (!cpf || typeof cpf !== 'string') return '';
+  
+  // Remove caracteres não numéricos
+  const cleanCPF = cpf.replace(/[^\d]/g, '');
+  
+  // Aplica formatação
+  if (cleanCPF.length <= 3) return cleanCPF;
+  if (cleanCPF.length <= 6) return cleanCPF.replace(/(\d{3})(\d)/, '$1.$2');
+  if (cleanCPF.length <= 9) return cleanCPF.replace(/(\d{3})(\d{3})(\d)/, '$1.$2.$3');
+  return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
+/**
+ * Formatea telefone brasileiro ((11) 99999-9999)
+ */
+export const formatPhone = (phone: string | null | undefined): string => {
+  if (!phone || typeof phone !== 'string') return '';
+  
+  // Remove caracteres não numéricos
+  const cleanPhone = phone.replace(/[^\d]/g, '');
+  
+  // Aplica formatação
+  if (cleanPhone.length <= 2) return cleanPhone;
+  if (cleanPhone.length <= 6) return cleanPhone.replace(/(\d{2})(\d)/, '($1) $2');
+  if (cleanPhone.length <= 10) return cleanPhone.replace(/(\d{2})(\d{4})(\d)/, '($1) $2-$3');
+  return cleanPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+};
+
+/**
+ * Valida CPF brasileiro
+ */
+export const validateCPF = (cpf: string | null | undefined): boolean => {
+  if (!cpf || typeof cpf !== 'string') return false;
+  
+  // Remove caracteres não numéricos
+  const cleanCPF = cpf.replace(/[^\d]/g, '');
+  
+  if (cleanCPF.length !== 11) return false;
+  
+  // Verifica se todos os dígitos são iguais
+  if (/^(\d)\1+$/.test(cleanCPF)) return false;
+  
+  // Validação dos dígitos verificadores
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+  }
+  let digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  
+  if (digit !== parseInt(cleanCPF.charAt(9))) return false;
+  
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+  }
+  digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  
+  return digit === parseInt(cleanCPF.charAt(10));
+};
+
+/**
+ * Valida email
+ */
+export const validateEmail = (email: string | null | undefined): boolean => {
+  if (!email || typeof email !== 'string') return false;
+  
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email.trim()) && email.length <= 254;
+};
+
+/**
  * Formatea un valor a MAYÚSCULAS (para campos VARCHAR)
  * Para tiempo real: no hace trim para no molestar al usuario
  * @returns Siempre retorna string (nunca null)
@@ -370,6 +446,10 @@ export const useFieldFormatter = () => {
     formatFormData,
     toUpperCase,
     toLowerCase,
+    formatCPF,
+    formatPhone,
+    validateCPF,
+    validateEmail,
     isVarcharField,
     isEmailField,
     isEnumField,

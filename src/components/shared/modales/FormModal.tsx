@@ -7,7 +7,7 @@ interface FormModalProps {
   onClose: () => void
   title: string
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl'
-  onSubmit: (e: React.FormEvent) => void
+  onSubmit?: (e: React.FormEvent) => void // Hacer opcional
   isSubmitting?: boolean
   submitLabel?: string
   cancelLabel?: string
@@ -18,6 +18,8 @@ interface FormModalProps {
   hasUnsavedChanges?: boolean
   /** Mensaje personalizado de confirmación */
   confirmMessage?: string
+  /** Deshabilita el botón de submit */
+  submitDisabled?: boolean
 }
 
 export const FormModal: React.FC<FormModalProps> = ({
@@ -33,13 +35,17 @@ export const FormModal: React.FC<FormModalProps> = ({
   className = '',
   showCancelButton = true,
   hasUnsavedChanges = false,
-  confirmMessage
+  confirmMessage,
+  submitDisabled = false
 }) => {
   const formId = `form-${title.replace(/\s+/g, '-').toLowerCase()}`
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(e)
+    // Solo llamar onSubmit si está definido y no está deshabilitado
+    if (onSubmit && !submitDisabled) {
+      onSubmit(e)
+    }
   }
 
   const footer = (
@@ -59,7 +65,7 @@ export const FormModal: React.FC<FormModalProps> = ({
         category="save"
         type="submit"
         form={formId}
-        disabled={isSubmitting}
+        disabled={isSubmitting || submitDisabled || !onSubmit}
         isLoading={isSubmitting}
         loadingText="Salvando..."
         size="lg"

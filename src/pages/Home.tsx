@@ -5,21 +5,18 @@ import Team from '../components/home/Team';
 import Testimonials from '../components/home/Testimonials';
 import Contact from '../components/home/Contact';
 import SocialFeed from '../components/shared/SocialFeed';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import { useFeaturedPosts } from '../hooks/features/useFeaturedPosts';
 
 const Home = () => {
   const { hasFeaturedPosts } = useFeaturedPosts();
+  
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('home')
 
   return (
     <>
-      <SEOHead
-        title="Início"
-        description="Advocacia Integral em Palmas-TO. Mais que fazer justiça, amar pessoas. Direito Civil, Empresarial, Trabalhista, Tributário e Imobiliário. Atendimento humanizado com excelência."
-        keywords="advogado Palmas, advocacia Tocantins, direito civil, direito empresarial, Santos Nascimento advogados, consulta jurídica, advocacia integral"
-        canonicalUrl={window.location.origin}
-        ogType="website"
-      />
+      {seo.component}
       <section id="hero">
         <Hero />
       </section>

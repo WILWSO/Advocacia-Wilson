@@ -1,10 +1,9 @@
-﻿import React, { useState, useEffect, useRef } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Plus, Search, User, AlertCircle, CheckCircle, Clock, Eye, FileText, Download, Mail, Phone, Link as LinkIcon, Scale, ExternalLink, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useProcessos } from '../hooks/data-access/useProcessos'
 import { useUsuarios } from '../hooks/data-access/useUsuarios'
-import { useAuthLogin as useAuth } from '../components/auth/useAuthLogin'
 import { useResponsive } from '../hooks/ui/useResponsive'
 import { cn } from '../utils/cn'
 import { DocumentoArquivo } from '../types/documento'
@@ -19,6 +18,13 @@ import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
 import { CrudListManager, CrudAddButton } from '../components/admin/CrudListManager'
 import { RestrictedInput, RestrictedSelect } from '../components/admin/RestrictedFormField'
+
+// 🆕 SSoT - Imports dos componentes base
+import { 
+  BaseCard, 
+  BaseSection, 
+  BaseGrid
+} from '../components/shared'
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
 import { Collapse } from '../components/shared/Collapse'
@@ -26,20 +32,22 @@ import { Accordion } from '../components/shared/Accordion'
 import { useProcessoForm } from '../hooks/forms/useProcessoForm'
 import { useProcessoFilters } from '../hooks/filters/useProcessoFilters'
 import { useClienteForm } from '../hooks/forms/useClienteForm'
+import { useAdminSEO } from '../hooks/seo/useSEO'
 import { AdminPageLayout } from '../components/layout/AdminPageLayout'
 import { PAGES_UI } from '../config/messages'
 
 // Componente de gestión de procesos jurídicos
 const ProcessosPage: React.FC = () => {
   useResponsive()
-  const { user } = useAuth()
+  
+  // SEO centralizado (SSoT para eliminación de configuración dispersa)
+  const seo = useAdminSEO('Gestão de Processos')
+  
   const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso } = useProcessos({
     enablePolling: true,
     pollingInterval: 30000,
   })
   const { usuarios } = useUsuarios()
-  
-  const [viewingProcesso, setViewingProcesso] = useState<ProcessoWithRelations | null>(null)
   
   // Estados para notificaciones inline del acordeón
   const [documentosNotification, setDocumentosNotification] = useState<{
@@ -71,9 +79,6 @@ const ProcessosPage: React.FC = () => {
   // Hook de filtros (cast a ProcessoWithRelations para compatibilidad)
   const filters = useProcessoFilters(processos as ProcessoWithRelations[])
   
-  // Ref para el input de upload de documentos
-  const documentUploadInputRef = useRef<HTMLInputElement>(null)
-  
   // Estado para controlar apertura del Collapse de documentos
   const [documentosCollapseOpen, setDocumentosCollapseOpen] = useState(false)
 
@@ -104,23 +109,12 @@ const ProcessosPage: React.FC = () => {
   }
 
   const handleViewProcesso = (processo: ProcessoWithRelations) => {
-    setViewingProcesso(processo)
-  }
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acesso Restrito</h2>
-          <p className="text-gray-600">Faça login para acessar o painel administrativo.</p>
-        </div>
-      </div>
-    )
+    processoForm.handleView(processo)
   }
 
   return (
     <AdminPageLayout
-      title="Gestão de Processos"
+      title={seo.title}
       description="Gerencie processos jurídicos e acompanhe o andamento das atividades"
       headerAction={
         processoForm.canEdit ? (
@@ -136,31 +130,35 @@ const ProcessosPage: React.FC = () => {
       }
     >
 
-        {/* Stats --*/}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-center">
-              <AlertCircle className="h-8 w-8 text-blue-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Em Aberto</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {filters.stats.emAberto}
-                </p>
+        {/* Stats - 🆕 Migrado para componentes base SSoT */}
+        <BaseGrid cols={{ xs: 1, sm: 2, lg: 3 }} gap="lg" className="mb-8">
+          <BaseCard variant="elevated">
+            <BaseSection padding="md">
+              <div className="flex items-center">
+                <AlertCircle className="h-8 w-8 text-blue-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Em Aberto</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {filters.stats.emAberto}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            </BaseSection>
+          </BaseCard>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-yellow-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {filters.stats.emAndamento}
-                </p>
+          <BaseCard variant="elevated">
+            <BaseSection padding="md">
+              <div className="flex items-center">
+                <Clock className="h-8 w-8 text-yellow-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Em Andamento</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {filters.stats.emAndamento}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            </BaseSection>
+          </BaseCard>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex items-center">
@@ -173,7 +171,7 @@ const ProcessosPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </BaseGrid>
 
         {/* Filtros e busca */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -1086,18 +1084,13 @@ const ProcessosPage: React.FC = () => {
 
       {/* Modal de Visualização de Processo */}
       <ViewModal
-        isOpen={!!viewingProcesso}
-        onClose={() => setViewingProcesso(null)}
+        isOpen={processoForm.isViewingProcesso}
+        onClose={processoForm.handleCloseViewModal}
         title="Detalhes do Processo"
-        onEdit={() => {
-          if (viewingProcesso) {
-            processoForm.loadProcessoForEdit(viewingProcesso)
-            setViewingProcesso(null)
-          }
-        }}
+        onEdit={processoForm.handleEditFromView}
         maxWidth="5xl"
       >
-        {viewingProcesso && (
+        {processoForm.viewingProcesso && (
           <>
                 {/* Seção 1: Informações Principais - Grid Compacto */}
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm">
@@ -1106,81 +1099,81 @@ const ProcessosPage: React.FC = () => {
                     <h3 className="text-lg font-bold text-gray-800">Informações Principais</h3>
                     <div className={cn(
                       "inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border-2 items-center gap-2",
-                      viewingProcesso.status === 'em_aberto' && 'bg-blue-100 text-blue-800 border-blue-300',
-                      viewingProcesso.status === 'em_andamento' && 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                      viewingProcesso.status === 'fechado' && 'bg-green-100 text-green-800 border-green-300'
+                      processoForm.viewingProcesso.status === 'em_aberto' && 'bg-blue-100 text-blue-800 border-blue-300',
+                      processoForm.viewingProcesso.status === 'em_andamento' && 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                      processoForm.viewingProcesso.status === 'fechado' && 'bg-green-100 text-green-800 border-green-300'
                     )}>
-                      {viewingProcesso.status === 'em_aberto' && <AlertCircle size={16} />}
-                      {viewingProcesso.status === 'em_andamento' && <Clock size={16} />}
-                      {viewingProcesso.status === 'fechado' && <CheckCircle size={16} />}
-                      {viewingProcesso.status === 'em_aberto' ? 'Em Aberto' : 
-                       viewingProcesso.status === 'em_andamento' ? 'Em Andamento' : 'Fechado'}
+                      {processoForm.viewingProcesso.status === 'em_aberto' && <AlertCircle size={16} />}
+                      {processoForm.viewingProcesso.status === 'em_andamento' && <Clock size={16} />}
+                      {processoForm.viewingProcesso.status === 'fechado' && <CheckCircle size={16} />}
+                      {processoForm.viewingProcesso.status === 'em_aberto' ? 'Em Aberto' : 
+                       processoForm.viewingProcesso.status === 'em_andamento' ? 'Em Andamento' : 'Fechado'}
                     </div>
                   </div>
 
                   {/* Grid responsivo de campos */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {viewingProcesso.numero_processo && (
+                    {processoForm.viewingProcesso.numero_processo && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Nº Processo</div>
-                        <div className="text-sm font-bold text-gray-900">{viewingProcesso.numero_processo}</div>
+                        <div className="text-sm font-bold text-gray-900">{processoForm.viewingProcesso.numero_processo}</div>
                       </div>
                     )}
 
-                    {viewingProcesso.area_direito && (
+                    {processoForm.viewingProcesso.area_direito && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Área do Direito</div>
-                        <div className="text-sm font-medium text-gray-900">{viewingProcesso.area_direito}</div>
+                        <div className="text-sm font-medium text-gray-900">{processoForm.viewingProcesso.area_direito}</div>
                       </div>
                     )}
 
-                    {viewingProcesso.prioridade && (
+                    {processoForm.viewingProcesso.prioridade && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Prioridade</div>
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold",
-                          viewingProcesso.prioridade === 'urgente' && 'bg-red-100 text-red-800',
-                          viewingProcesso.prioridade === 'alta' && 'bg-orange-100 text-orange-800',
-                          viewingProcesso.prioridade === 'media' && 'bg-yellow-100 text-yellow-800',
-                          viewingProcesso.prioridade === 'baixa' && 'bg-green-100 text-green-800'
+                          processoForm.viewingProcesso.prioridade === 'urgente' && 'bg-red-100 text-red-800',
+                          processoForm.viewingProcesso.prioridade === 'alta' && 'bg-orange-100 text-orange-800',
+                          processoForm.viewingProcesso.prioridade === 'media' && 'bg-yellow-100 text-yellow-800',
+                          processoForm.viewingProcesso.prioridade === 'baixa' && 'bg-green-100 text-green-800'
                         )}>
-                          {viewingProcesso.prioridade.toUpperCase()}
+                          {processoForm.viewingProcesso.prioridade.toUpperCase()}
                         </span>
                       </div>
                     )}
 
-                    {viewingProcesso.valor_causa && (
+                    {processoForm.viewingProcesso.valor_causa && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Valor da Causa</div>
                         <div className="text-sm font-bold text-green-700">
-                          R$ {parseFloat(viewingProcesso.valor_causa.toString()).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {parseFloat(processoForm.viewingProcesso.valor_causa.toString()).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                       </div>
                     )}
 
-                    {viewingProcesso.polo && (
+                    {processoForm.viewingProcesso.polo && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Pólo</div>
                         <div className="text-sm font-medium text-gray-900">
-                          {viewingProcesso.polo === 'ativo' ? '👤 Ativo (Autor)' : '⚖️ Passivo (Réu)'}
+                          {processoForm.viewingProcesso.polo === 'ativo' ? '👤 Ativo (Autor)' : '⚖️ Passivo (Réu)'}
                         </div>
                       </div>
                     )}
 
-                    {viewingProcesso.competencia && (
+                    {processoForm.viewingProcesso.competencia && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Competência</div>
-                        <div className="text-sm font-medium text-gray-900 capitalize">{viewingProcesso.competencia}</div>
+                        <div className="text-sm font-medium text-gray-900 capitalize">{processoForm.viewingProcesso.competencia}</div>
                       </div>
                     )}
 
-                    {viewingProcesso.usuarios?.nome && (
+                    {processoForm.viewingProcesso.usuarios?.nome && (
                       <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm sm:col-span-2 lg:col-span-1">
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
                           <User size={12} />
                           Advogado
                         </div>
-                        <div className="text-sm font-medium text-gray-900">{viewingProcesso.usuarios.nome}</div>
+                        <div className="text-sm font-medium text-gray-900">{processoForm.viewingProcesso.usuarios.nome}</div>
                       </div>
                     )}
                   </div>
@@ -1189,19 +1182,19 @@ const ProcessosPage: React.FC = () => {
                   <div className="mt-4 bg-white p-4 rounded-lg border border-gray-200">
                     <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Descrição</div>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {viewingProcesso.descricao}
+                      {processoForm.viewingProcesso.descricao}
                     </p>
                   </div>
 
                   {/* Atividade Pendente */}
-                  {viewingProcesso.atividade_pendente && (
+                  {processoForm.viewingProcesso.atividade_pendente && (
                     <div className="mt-4 bg-amber-50 p-4 rounded-lg border-2 border-amber-300 shadow-sm">
                       <div className="text-xs font-bold text-amber-800 uppercase mb-2 flex items-center gap-1">
                         <AlertCircle size={14} />
                         ⚠️ Atividade Pendente
                       </div>
                       <p className="text-sm text-gray-900 whitespace-pre-wrap font-medium">
-                        {viewingProcesso.atividade_pendente}
+                        {processoForm.viewingProcesso.atividade_pendente}
                       </p>
                     </div>
                   )}
@@ -1216,63 +1209,63 @@ const ProcessosPage: React.FC = () => {
                       Cliente
                     </h3>
                     <div className="space-y-2">
-                      {viewingProcesso.cliente_nome && (
+                      {processoForm.viewingProcesso.cliente_nome && (
                         <div className="bg-white p-3 rounded-lg border border-blue-100">
                           <div className="text-xs font-semibold text-blue-700 uppercase mb-1">Nome</div>
-                          <div className="text-sm font-bold text-blue-900">{viewingProcesso.cliente_nome}</div>
+                          <div className="text-sm font-bold text-blue-900">{processoForm.viewingProcesso.cliente_nome}</div>
                         </div>
                       )}
-                      {viewingProcesso.cliente_email && (
+                      {processoForm.viewingProcesso.cliente_email && (
                         <div className="bg-white p-3 rounded-lg border border-blue-100">
                           <div className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
                             <Mail size={12} />
                             Email
                           </div>
-                          <div className="text-sm text-blue-900 break-all">{viewingProcesso.cliente_email}</div>
+                          <div className="text-sm text-blue-900 break-all">{processoForm.viewingProcesso.cliente_email}</div>
                         </div>
                       )}
-                      {viewingProcesso.cliente_telefone && (
+                      {processoForm.viewingProcesso.cliente_telefone && (
                         <div className="bg-white p-3 rounded-lg border border-blue-100">
                           <div className="text-xs font-semibold text-blue-700 uppercase mb-1 flex items-center gap-1">
                             <Phone size={12} />
                             Telefone
                           </div>
-                          <div className="text-sm font-medium text-blue-900">{viewingProcesso.cliente_telefone}</div>
+                          <div className="text-sm font-medium text-blue-900">{processoForm.viewingProcesso.cliente_telefone}</div>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Jurisdição */}
-                  {viewingProcesso.jurisdicao && (viewingProcesso.jurisdicao.uf || viewingProcesso.jurisdicao.municipio || viewingProcesso.jurisdicao.vara || viewingProcesso.jurisdicao.juiz) && (
+                  {processoForm.viewingProcesso.jurisdicao && (processoForm.viewingProcesso.jurisdicao.uf || processoForm.viewingProcesso.jurisdicao.municipio || processoForm.viewingProcesso.jurisdicao.vara || processoForm.viewingProcesso.jurisdicao.juiz) && (
                     <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl border border-purple-200 p-4 sm:p-5 shadow-sm">
                       <h3 className="text-base font-bold text-purple-900 mb-3 flex items-center gap-2">
                         <Scale size={18} />
                         Jurisdição
                       </h3>
                       <div className="space-y-2">
-                        {viewingProcesso.jurisdicao.uf && (
+                        {processoForm.viewingProcesso.jurisdicao.uf && (
                           <div className="bg-white p-3 rounded-lg border border-purple-100">
                             <div className="text-xs font-semibold text-purple-700 uppercase mb-1">UF</div>
-                            <div className="text-sm font-bold text-purple-900">{viewingProcesso.jurisdicao.uf}</div>
+                            <div className="text-sm font-bold text-purple-900">{processoForm.viewingProcesso.jurisdicao.uf}</div>
                           </div>
                         )}
-                        {viewingProcesso.jurisdicao.municipio && (
+                        {processoForm.viewingProcesso.jurisdicao.municipio && (
                           <div className="bg-white p-3 rounded-lg border border-purple-100">
                             <div className="text-xs font-semibold text-purple-700 uppercase mb-1">Município</div>
-                            <div className="text-sm text-purple-900">{viewingProcesso.jurisdicao.municipio}</div>
+                            <div className="text-sm text-purple-900">{processoForm.viewingProcesso.jurisdicao.municipio}</div>
                           </div>
                         )}
-                        {viewingProcesso.jurisdicao.vara && (
+                        {processoForm.viewingProcesso.jurisdicao.vara && (
                           <div className="bg-white p-3 rounded-lg border border-purple-100">
                             <div className="text-xs font-semibold text-purple-700 uppercase mb-1">Vara</div>
-                            <div className="text-sm text-purple-900">{viewingProcesso.jurisdicao.vara}</div>
+                            <div className="text-sm text-purple-900">{processoForm.viewingProcesso.jurisdicao.vara}</div>
                           </div>
                         )}
-                        {viewingProcesso.jurisdicao.juiz && (
+                        {processoForm.viewingProcesso.jurisdicao.juiz && (
                           <div className="bg-white p-3 rounded-lg border border-purple-100">
                             <div className="text-xs font-semibold text-purple-700 uppercase mb-1">Juiz(a)</div>
-                            <div className="text-sm text-purple-900">{viewingProcesso.jurisdicao.juiz}</div>
+                            <div className="text-sm text-purple-900">{processoForm.viewingProcesso.jurisdicao.juiz}</div>
                           </div>
                         )}
                       </div>
@@ -1281,27 +1274,27 @@ const ProcessosPage: React.FC = () => {
                 </div>
 
                 {/* Seção 3: Honorários */}
-                {viewingProcesso.honorarios && (viewingProcesso.honorarios.valor_honorarios || viewingProcesso.honorarios.detalhes) && (
+                {processoForm.viewingProcesso.honorarios && (processoForm.viewingProcesso.honorarios.valor_honorarios || processoForm.viewingProcesso.honorarios.detalhes) && (
                   <div className="bg-gradient-to-br from-green-50 to-white rounded-xl border-2 border-green-300 p-4 sm:p-5 shadow-md">
                     <h3 className="text-base font-bold text-green-900 mb-3 flex items-center gap-2">
                       💰 Honorários
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {viewingProcesso.honorarios.valor_honorarios && (
+                      {processoForm.viewingProcesso.honorarios.valor_honorarios && (
                         <div className="bg-white p-4 rounded-lg border-2 border-green-200">
                           <div className="text-xs font-bold text-green-700 uppercase mb-1">Valor</div>
                           <div className="text-2xl font-bold text-green-700">
-                            R$ {typeof viewingProcesso.honorarios.valor_honorarios === 'number' 
-                              ? viewingProcesso.honorarios.valor_honorarios.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-                              : viewingProcesso.honorarios.valor_honorarios}
+                            R$ {typeof processoForm.viewingProcesso.honorarios.valor_honorarios === 'number' 
+                              ? processoForm.viewingProcesso.honorarios.valor_honorarios.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                              : processoForm.viewingProcesso.honorarios.valor_honorarios}
                           </div>
                         </div>
                       )}
-                      {viewingProcesso.honorarios.detalhes && (
+                      {processoForm.viewingProcesso.honorarios.detalhes && (
                         <div className="bg-white p-4 rounded-lg border border-green-200">
                           <div className="text-xs font-bold text-green-700 uppercase mb-2">Detalhes</div>
                           <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                            {viewingProcesso.honorarios.detalhes}
+                            {processoForm.viewingProcesso.honorarios.detalhes}
                           </p>
                         </div>
                       )}
@@ -1315,15 +1308,15 @@ const ProcessosPage: React.FC = () => {
                   defaultOpen={[]} // Inicia con todas las secciones colapsadas
                   items={[
                     // Documentos
-                    ...(viewingProcesso.documentos_processo && viewingProcesso.documentos_processo.length > 0 ? [{
+                    ...(processoForm.viewingProcesso.documentos_processo && processoForm.viewingProcesso.documentos_processo.length > 0 ? [{
                       id: 'documentos',
                       icon: <FileText size={18} className="text-gray-700" />,
                       title: 'Documentos',
-                      count: viewingProcesso.documentos_processo.length,
+                      count: processoForm.viewingProcesso.documentos_processo.length,
                       color: 'gray' as const,
                       content: (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {viewingProcesso.documentos_processo.map((doc, index) => (
+                          {processoForm.viewingProcesso.documentos_processo.map((doc, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-sm transition-all group">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <FileText size={16} className="text-primary-600 flex-shrink-0" />
@@ -1360,15 +1353,15 @@ const ProcessosPage: React.FC = () => {
                       )
                     }] : []),
                     // Links
-                    ...(viewingProcesso.links_processo && viewingProcesso.links_processo.length > 0 ? [{
+                    ...(processoForm.viewingProcesso.links_processo && processoForm.viewingProcesso.links_processo.length > 0 ? [{
                       id: 'links',
                       icon: <LinkIcon size={18} className="text-blue-600" />,
                       title: 'Links do Processo',
-                      count: viewingProcesso.links_processo.length,
+                      count: processoForm.viewingProcesso.links_processo.length,
                       color: 'blue' as const,
                       content: (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {viewingProcesso.links_processo.map((link: ProcessoLink, index: number) => (
+                          {processoForm.viewingProcesso.links_processo.map((link: ProcessoLink, index: number) => (
                             <a
                               key={index}
                               href={link.link}
@@ -1390,15 +1383,15 @@ const ProcessosPage: React.FC = () => {
                       )
                     }] : []),
                     // Jurisprudências
-                    ...(viewingProcesso.jurisprudencia && viewingProcesso.jurisprudencia.length > 0 ? [{
+                    ...(processoForm.viewingProcesso.jurisprudencia && processoForm.viewingProcesso.jurisprudencia.length > 0 ? [{
                       id: 'jurisprudencias',
                       icon: <Scale size={18} className="text-purple-600" />,
                       title: 'Jurisprudências',
-                      count: viewingProcesso.jurisprudencia.length,
+                      count: processoForm.viewingProcesso.jurisprudencia.length,
                       color: 'purple' as const,
                       content: (
                         <div className="space-y-3">
-                          {viewingProcesso.jurisprudencia.map((juris: Jurisprudencia, index: number) => (
+                          {processoForm.viewingProcesso.jurisprudencia.map((juris: Jurisprudencia, index: number) => (
                             <div key={index} className="bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
                               <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="flex items-center gap-2">
@@ -1439,10 +1432,10 @@ const ProcessosPage: React.FC = () => {
 
               {/* Informações de Auditoria */}
               <AuditInfo
-                creadoPor={viewingProcesso.creado_por}
-                atualizadoPor={viewingProcesso.atualizado_por}
-                dataCriacao={viewingProcesso.data_criacao}
-                dataAtualizacao={viewingProcesso.data_atualizacao}
+                creadoPor={processoForm.viewingProcesso.creado_por}
+                atualizadoPor={processoForm.viewingProcesso.atualizado_por}
+                dataCriacao={processoForm.viewingProcesso.data_criacao}
+                dataAtualizacao={processoForm.viewingProcesso.data_atualizacao}
               />
           </>
         )}

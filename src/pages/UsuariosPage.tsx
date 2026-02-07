@@ -6,12 +6,16 @@ import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
 import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
 import { ResponsiveGrid, ResponsiveContainer } from '../components/shared/ResponsiveGrid'
 import { useResponsive } from '../hooks/ui/useResponsive'
+import { useAdminSEO } from '../hooks/seo/useSEO'
 import { getRoleBadgeColor, getRoleLabel } from '../utils/roleHelpers'
 import { cn } from '../utils/cn'
 import { AuditInfo } from '../components/shared/AuditInfo'
 import { ArrayInput } from '../components/shared/ArrayInput'
 import SkeletonCard from '../components/shared/cards/SkeletonCard'
 import UsuarioCard from '../components/shared/cards/UsuarioCard'
+
+// 🆕 SSoT - Imports dos componentes base
+import { BaseCard, BaseSection, BaseGrid } from '../components/shared'
 import AccessibleButton from '../components/shared/buttons/AccessibleButton'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { ViewModal } from '../components/shared/modales/ViewModal'
@@ -22,7 +26,10 @@ import { RestrictedInput, RestrictedSelect, RestrictedFormField } from '../compo
 const UsuariosPage: React.FC = () => {
   useResponsive()
   
-  // Hook de formulario (lógica de negocio)
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useAdminSEO('Gestão de Usuários')
+  
+  // Hook de formulário (lógica de negócio)
   const usuarioForm = useUsuarioForm()
   
   // Hook de filtros
@@ -48,7 +55,7 @@ const UsuariosPage: React.FC = () => {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-primary-900 mb-2">
-                Gestão de Usuários
+                {seo.title}
               </h1>
               <p className="text-gray-600">
                 Gerencie os usuários do sistema
@@ -67,22 +74,26 @@ const UsuariosPage: React.FC = () => {
             )}
           </div>
 
-          {/* filters.stats */}
+          {/* filters.stats - 🆕 Ejemplo migración parcial SSoT */}
           <ResponsiveGrid
             cols={{ xs: 1, sm: 2, lg: 4 }}
             gap={{ xs: 4, sm: 4, lg: 4 }}
             className="mb-8"
           >
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center">
-                <User className="h-8 w-8 text-blue-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total</p>
-                  <p className="text-2xl font-bold text-gray-900">{filters.stats.total}</p>
+            {/* 🆕 Primer card migrado ao sistema SSoT */}
+            <BaseCard variant="elevated">
+              <BaseSection padding="lg">
+                <div className="flex items-center">
+                  <User className="h-8 w-8 text-blue-500" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total</p>
+                    <p className="text-2xl font-bold text-gray-900">{filters.stats.total}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </BaseSection>
+            </BaseCard>
 
+            {/* 🔄 Cards seguintes ainda no formato antigo (para demonstrar diferença) */}
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center">
                 <User className="h-8 w-8 text-green-500" />

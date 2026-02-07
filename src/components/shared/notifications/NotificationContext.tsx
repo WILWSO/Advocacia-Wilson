@@ -149,11 +149,22 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const getStyles = (type: NotificationType) => {
     const colors = NOTIFICATION_COLORS[type];
+    if (!colors) {
+      console.error('Invalid notification type:', type, 'Available types:', Object.keys(NOTIFICATION_COLORS));
+      // Fallback para evitar el crash
+      const fallbackColors = NOTIFICATION_COLORS.info;
+      return `${fallbackColors.bg} ${fallbackColors.text} ${fallbackColors.border}`;
+    }
     return `${colors.bg} ${colors.text} ${colors.border}`;
   };
 
   const getIconColor = (type: NotificationType) => {
-    return NOTIFICATION_COLORS[type].icon;
+    const colors = NOTIFICATION_COLORS[type];
+    if (!colors) {
+      console.error('Invalid notification type for icon:', type);
+      return NOTIFICATION_COLORS.info.icon;
+    }
+    return colors.icon;
   };
 
   return (

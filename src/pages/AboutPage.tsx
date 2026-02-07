@@ -3,20 +3,17 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Award, Scale, Users, Clock, Building } from 'lucide-react';
 import { company } from '../data/DataCompany';
 import { teamMemberData } from '../data/DataTeamMember';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import OptimizedImage from '../components/shared/OptimizedImage';
 import { fadeInUp } from '../utils/animations';
 
 const AboutPage = () => {
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('about')
 
   return (
     <>
-      <SEOHead
-        title="Sobre Nós - Nossa História e Princípios"
-        description="Conheça a história do Santos & Nascimento Advogados. Fundado em 2020, somos referência em advocacia integral em Palmas-TO. Missão, visão e valores do escritório."
-        keywords="história Santos Nascimento, advocacia Palmas história, escritório de advocacia Tocantins, Wilson Santos advogado, Lucas Nascimento advogado"
-        canonicalUrl={`${window.location.origin}/sobre`}
-      />
+      {seo.component}
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">

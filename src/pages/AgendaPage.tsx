@@ -6,6 +6,7 @@ import { AdminPageLayout } from '../components/layout/AdminPageLayout';
 import { useAudienciaForm } from '../hooks/forms/useAudienciaForm';
 import { useAdvogados } from '../hooks/data-access/useAdvogados';
 import { useProcessos } from '../hooks/data-access/useProcessos';
+import { useAdminSEO } from '../hooks/seo/useSEO';
 import { AudienciaFormModal } from '../components/admin/AudienciaFormModal';
 import { CalendarioMes } from '../components/agenda/CalendarioMes';
 import { CalendarioSemana } from '../components/agenda/CalendarioSemana';
@@ -17,6 +18,9 @@ import { useNotification } from '../components/shared/notifications/useNotificat
 type ViewMode = 'month' | 'week' | 'day' | 'list';
 
 export default function AgendaPage() {
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useAdminSEO('Agenda')
+  
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedAdvogado, setSelectedAdvogado] = useState<string>('todos');
@@ -155,7 +159,7 @@ export default function AgendaPage() {
 
   return (
     <AdminPageLayout
-      title="Agenda"
+      title={seo.title}
       description="Gestão de audiências e eventos vinculados a processos"
       headerAction={
         <AccessibleButton
@@ -200,6 +204,27 @@ export default function AgendaPage() {
           </div>
         </div>
       </div> 
+
+      {/* Sincronização Google Calendar */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 mb-6">
+          {getIcon('info', 20, 'text-blue-600')}
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900">Sincronização com Google Calendar</h3>
+            <p className="text-sm text-blue-700 mt-1">
+              As audiências podem ser sincronizadas automaticamente com seu Google Calendar.
+            </p>
+          </div>
+          <button 
+            className={BUTTON_STYLES.secondary}
+            onClick={() => {
+              info('Funcionalidade em desenvolvimento. Em breve você poderá sincronizar suas audiências com o Google Calendar.');
+            }}
+          >
+            {getIcon('settings', 18)}
+            Configurar
+          </button>
+        </div>
+
 
       {/* Controles de navegación y filtros */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 space-y-4">
@@ -428,26 +453,6 @@ export default function AgendaPage() {
           />
         ) : null}
       </div>
-
-      {/* Sincronização Google Calendar */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 mb-6">
-          {getIcon('info', 20, 'text-blue-600')}
-          <div className="flex-1">
-            <h3 className="font-semibold text-blue-900">Sincronização com Google Calendar</h3>
-            <p className="text-sm text-blue-700 mt-1">
-              As audiências podem ser sincronizadas automaticamente com seu Google Calendar.
-            </p>
-          </div>
-          <button 
-            className={BUTTON_STYLES.secondary}
-            onClick={() => {
-              info('Funcionalidade em desenvolvimento. Em breve você poderá sincronizar suas audiências com o Google Calendar.');
-            }}
-          >
-            {getIcon('settings', 18)}
-            Configurar
-          </button>
-        </div>
 
       {/* Modal de crear/editar audiencia */}
       <AudienciaFormModal

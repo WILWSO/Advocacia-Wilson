@@ -3,13 +3,17 @@ import { motion } from 'framer-motion';
 import { Linkedin, Mail, PhoneCall, FileText, Award, BookOpen, Instagram } from 'lucide-react';
 import { useEquipeMembers } from '../hooks/data-access/useTeamMembers';
 import { company } from '../data/DataCompany';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import OptimizedImage from '../components/shared/OptimizedImage';
 import SkeletonCard from '../components/shared/cards/SkeletonCard';
 
 
 const TeamPage = () => {
   const { equipe, loading, error } = useEquipeMembers();
+  
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('team')
+  
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
@@ -17,12 +21,7 @@ const TeamPage = () => {
 
   return (
     <>
-      <SEOHead
-        title="Nossa Equipe - Advogados Especialistas"
-        description="Conheça os advogados do Santos & Nascimento: Wilson Santos, Lucas Nascimento e Rosimeire Albuquerque. Profissionais qualificados em diversas áreas do Direito em Palmas-TO."
-        keywords="equipe advogados Palmas, Wilson Santos advogado, Lucas Nascimento advogado, Rosimeire Albuquerque advogada, advogados Tocantins, equipe jurídica"
-        canonicalUrl={`${window.location.origin}/equipe`}
-      />
+      {seo.component}
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">

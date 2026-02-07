@@ -37,6 +37,18 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
   const { processos, fetchProcessos } = useProcessos();
   const [showTip, setShowTip] = useState(true);
 
+  // Garantizar que formData tenga valores seguros
+  const safeFormData = {
+    proceso_id: formData?.proceso_id || '',
+    fecha: formData?.fecha || '',
+    hora: formData?.hora || '',
+    tipo: formData?.tipo || '',
+    forma: formData?.forma || 'presencial',
+    local: formData?.local || '',
+    observaciones: formData?.observaciones || '',
+    link_meet: formData?.link_meet || '',
+  };
+
   // Cargar procesos al abrir el modal
   useEffect(() => {
     if (isOpen) {
@@ -79,7 +91,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
           </label>
           <select
             id="proceso_id"
-            value={formData.proceso_id}
+            value={safeFormData.proceso_id}
             onChange={(e) => onFieldChange('proceso_id', e.target.value)}
             className={getInputClasses(false, false)}
             required
@@ -102,7 +114,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
             <input
               type="date"
               id="fecha"
-              value={formData.fecha}
+              value={safeFormData.fecha}
               onChange={(e) => onFieldChange('fecha', e.target.value)}
               className={getInputClasses(false, false)}
               required
@@ -116,7 +128,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
             <input
               type="time"
               id="hora"
-              value={formData.hora}
+              value={safeFormData.hora}
               onChange={(e) => onFieldChange('hora', e.target.value)}
               className={getInputClasses(false, false)}
               required
@@ -131,7 +143,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
           </label>
           <select
             id="tipo"
-            value={formData.tipo}
+            value={safeFormData.tipo}
             onChange={(e) => onFieldChange('tipo', e.target.value)}
             className={getInputClasses(false, false)}
             required
@@ -151,7 +163,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
           </label>
           <select
             id="forma"
-            value={formData.forma}
+            value={safeFormData.forma}
             onChange={(e) => onFieldChange('forma', e.target.value as 'presencial' | 'virtual' | 'hibrida')}
             className={getInputClasses(false, false)}
             required
@@ -172,7 +184,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
           <input
             type="text"
             id="local"
-            value={formData.local}
+            value={safeFormData.local}
             onChange={(e) => onFieldChange('local', e.target.value)}
             className={getInputClasses(false, false)}
             placeholder={ADMIN_UI.AUDIENCIA.LOCAL_PLACEHOLDER}
@@ -180,7 +192,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
         </div>
 
         {/* Link Meet (para audiencias virtuales) */}
-        {(formData.forma === 'virtual' || formData.forma === 'hibrida') && (
+        {(safeFormData.forma === 'virtual' || safeFormData.forma === 'hibrida') && (
           <div>
             <label htmlFor="link_meet" className={getLabelClasses()}>
               {ADMIN_UI.AUDIENCIA.LINK_LABEL}
@@ -188,7 +200,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
             <input
               type="url"
               id="link_meet"
-              value={formData.link_meet}
+              value={safeFormData.link_meet}
               onChange={(e) => onFieldChange('link_meet', e.target.value)}
               className={getInputClasses(false, false)}
               placeholder={ADMIN_UI.AUDIENCIA.LINK_PLACEHOLDER}
@@ -203,7 +215,7 @@ export const AudienciaFormModal: React.FC<AudienciaFormModalProps> = ({
           </label>
           <textarea
             id="observaciones"
-            value={formData.observaciones}
+            value={safeFormData.observaciones}
             onChange={(e) => onFieldChange('observaciones', e.target.value)}
             className={getInputClasses(false, false)}
             rows={3}

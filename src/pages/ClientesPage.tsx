@@ -22,6 +22,7 @@ import { Cliente } from '../types/cliente';
 import { DocumentoArquivo } from '../types/documento';
 import { useClienteForm } from '../hooks/forms/useClienteForm';
 import { useClienteFilters } from '../hooks/filters/useClienteFilters';
+import { useAdminSEO } from '../hooks/seo/useSEO';
 import { cn } from '../utils/cn';
 import { formatShortDate } from '../utils/dateUtils';
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager';
@@ -36,7 +37,10 @@ import { STORAGE_BUCKETS } from '../config/storage';
 import { PAGES_UI } from '../config/messages';
 
 const ClientesPage = () => {
-  // Hook de formulario (lógica de negocio)
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useAdminSEO('Gestão de Clientes')
+  
+  // Hook de formulário (lógica de negócio)
   const clienteForm = useClienteForm();
   
   // Hook de filtros
@@ -44,7 +48,7 @@ const ClientesPage = () => {
 
   return (
     <AdminPageLayout
-      title={PAGES_UI.CLIENTES.TITLE}
+      title={seo.title}
       description={PAGES_UI.CLIENTES.DESCRIPTION}
       headerAction={
         clienteForm.canEdit ? (

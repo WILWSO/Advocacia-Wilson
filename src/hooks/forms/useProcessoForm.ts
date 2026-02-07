@@ -24,6 +24,7 @@ import { useAuthLogin as useAuth } from '../../components/auth/useAuthLogin'
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../../config/messages'
 import { FormValidator } from '../../utils/FormValidator'
 import { formatFormData } from '../../utils/fieldFormatters'
+import { useModalState } from '../ui/useModalState'
 
 
 interface UseProcessoFormOptions {
@@ -179,6 +180,9 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
   const [showLinksViewModal, setShowLinksViewModal] = useState(false)
   const [showJurisprudenciaModal, setShowJurisprudenciaModal] = useState(false)
   const [showJurisprudenciaViewModal, setShowJurisprudenciaViewModal] = useState(false)
+
+  // Estado centralizado para viewing de procesos (SSoT para eliminar duplicación)
+  const viewModal = useModalState<ProcessoWithRelations>()
 
   // CRUD Arrays para listas anidadas
   const linksCrud = useCrudArray<ProcessoLink>(formData.links_processo || [])
@@ -614,6 +618,22 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     resetInitial(initialFormData)
   }, [hide, linksCrud, jurisprudenciasCrud, resetInitial])
 
+  // Handlers para viewing de procesos (SSoT para eliminar duplicación)
+  const handleView = useCallback((processo: ProcessoWithRelations) => {
+    viewModal.openView(processo)
+  }, [viewModal])
+
+  const handleCloseViewModal = useCallback(() => {
+    viewModal.close()
+  }, [viewModal])
+
+  const handleEditFromView = useCallback(() => {
+    if (viewModal.item) {
+      loadProcessoForEdit(viewModal.item)
+      viewModal.close()
+    }
+  }, [viewModal, loadProcessoForEdit])
+
   return {
     // Estado
     formData: safeFormData, // Usar safeFormData para prevenir warnings de React
@@ -638,6 +658,11 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     showJurisprudenciaViewModal,
     setShowJurisprudenciaViewModal,
     
+    // Modal de viewing (SSoT para eliminar duplicación)
+    isViewingProcesso: viewModal.isOpen,
+    viewingProcesso: viewModal.item,
+    showViewModal: viewModal.isOpen,
+    
     // CRUD Arrays
     linksCrud,
     jurisprudenciasCrud,
@@ -655,6 +680,11 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     resetForm,
     hide,
     refetchClientes,
+    
+    // Handlers de viewing (SSoT para eliminar duplicación)
+    handleView,
+    handleCloseViewModal,
+    handleEditFromView,
     
     // Detección de cambios
     hasChanges,

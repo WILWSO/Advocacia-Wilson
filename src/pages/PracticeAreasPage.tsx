@@ -1,20 +1,17 @@
 
 import { motion } from 'framer-motion';
 import { company } from '../data/DataCompany';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import { practiceAreasData } from '../data/DataPracticeAreas';
 import { fadeInUp } from '../utils/animations';
 
 const PracticeAreasPage = () => {
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('services')
 
   return (
     <>
-      <SEOHead
-        title="Áreas de Atuação - Serviços Jurídicos Especializados"
-        description="Conheça todas as áreas de atuação do Santos & Nascimento Advogados: Direito Civil, Empresarial, Trabalhista, Tributário, Imobiliário, Família, Consumidor e mais em Palmas-TO."
-        keywords="áreas de atuação advocacia, direito civil Palmas, direito empresarial Tocantins, direito trabalhista, direito tributário, direito imobiliário, direito de família"
-        canonicalUrl={`${window.location.origin}/areas-de-atuacao`}
-      />
+      {seo.component}
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-primary-900 text-white">
         <div className="container mx-auto px-4">

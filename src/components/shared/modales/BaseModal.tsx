@@ -23,7 +23,13 @@ interface BaseModalProps {
   confirmMessage?: string
 }
 
-const maxWidthClasses = CSS_UTILITY_MAPS.maxWidth;
+const maxWidthClasses = {
+  ...CSS_UTILITY_MAPS.maxWidth,
+  // Mejorando tamaños para mejor experiencia en desktop
+  'lg': 'max-w-2xl',
+  'xl': 'max-w-4xl', 
+  '2xl': 'max-w-6xl'
+};
 
 export const BaseModal: React.FC<BaseModalProps> = ({
   isOpen,
@@ -87,7 +93,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={closeOnBackdropClick ? handleClose : undefined}
           role="dialog"
           aria-modal="true"
@@ -105,17 +111,18 @@ export const BaseModal: React.FC<BaseModalProps> = ({
             }}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'bg-white rounded-xl shadow-2xl w-full max-h-[90vh]',
+              'bg-white rounded-xl shadow-2xl w-full max-h-[95vh] sm:max-h-[90vh]',
               'flex flex-col',
+              'mx-2 sm:mx-0', // Márgenes más pequeños en móvil
               maxWidthClasses[maxWidth],
               className
             )}
           >
             {/* Header */}
-            <div className="p-4 sm:p-6 border-b border-neutral-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-xl">
+            <div className="p-3 sm:p-4 md:p-6 border-b border-neutral-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-xl">
               <h2
                 id="modal-title"
-                className="text-xl sm:text-2xl font-bold text-neutral-800"
+                className="text-lg sm:text-xl md:text-2xl font-bold text-neutral-800 pr-2 truncate"
               >
                 {title}
               </h2>
@@ -134,13 +141,13 @@ export const BaseModal: React.FC<BaseModalProps> = ({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 min-h-0">
               {children}
             </div>
 
             {/* Footer */}
             {footer && (
-              <div className="sticky bottom-0 bg-white p-4 sm:p-6 border-t border-neutral-200 flex justify-end gap-3 z-10 rounded-b-xl">
+              <div className="sticky bottom-0 bg-white p-3 sm:p-4 md:p-6 border-t border-neutral-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 z-10 rounded-b-xl">
                 {footer}
               </div>
             )}

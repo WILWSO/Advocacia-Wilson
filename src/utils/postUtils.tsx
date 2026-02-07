@@ -30,13 +30,16 @@ export const getTypeColor = (type: PostType) => {
 
 /**
  * Formatea una fecha al formato brasileño
- * @deprecated Use formatDate desde utils/dateUtils.ts
- * Re-exportado aquí por compatibilidad con código existente
+ * @deprecated Use formatDate desde utils/dateUtils.ts directamente
  * 
- * @param date - Fecha como Date o string ISO
- * @param includeTime - Si debe incluir hora y minutos (default: false)
+ * MIGRACIÓN: Cambiar todos los usos a:
+ * - formatDate(date, 'pt-BR') para fecha simple
+ * - formatDateTimeLong(date, 'pt-BR') para fecha con hora
+ * 
+ * Este wrapper será removido en una versión futura.
  */
 export const formatDate = (date: Date | string, includeTime = false): string => {
+  console.warn('postUtils.formatDate is deprecated. Use dateUtils.formatDate or dateUtils.formatDateTimeLong directly.')
   return includeTime ? formatDateTimeLong(date, 'pt-BR') : formatDateUtil(date, 'pt-BR');
 };
 

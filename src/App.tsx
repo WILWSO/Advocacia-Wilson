@@ -29,6 +29,9 @@ const ClientesPage = lazy(() => import('./pages/ClientesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
 const SocialPage = lazy(() => import('./pages/SocialPage'));
 
+// 🆕 Página de demonstração SSoT
+const DemoSSoTPage = lazy(() => import('./pages/DemoSSoTPage'));
+
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -77,6 +80,9 @@ function App() {
             <Route path="/contato" element={<ContactPage />} />
             <Route path="/social" element={<SocialPublicPage />} />
             <Route path="/login" element={<LoginPage />} />
+            
+            {/* 🆕 Página de demonstração SSoT */}
+            <Route path="/demo-ssot" element={<DemoSSoTPage />} />
             
             {/* Rutas protegidas - Admin Area con navegación anidada */}
             <Route 

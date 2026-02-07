@@ -323,3 +323,20 @@ src/
   Especialistas (home): Muestra la primera imagen (images[0])
   Equipe (TeamPage): Muestra la segunda imagen (images[1]) o primera si no hay segunda
   Flexibilidad: Puedes agregar tantas imágenes como quieras al <IMAGE_MAP> en <useTeamMembers.ts>
+
+# IMPLEMENTACIÓN FUTURA:
+  1. Sincronización con Google Calendar
+  2. Sistema de Notificaciones del Bell
+  3. Configuraciones en menu Login (Themas)
+  4. Arquitetura Modular
+
+
+  07/02/2026
+  # NUEVAS IMPLEMENTACIONES
+  1. Si yo fuera migrar la pagina <ClientesPage> para nuestro nuevo sistema centralizado (leer Doc SSoT_Final_SUMMARY), ¿qué implicaria en el funcionamiento del sistema y qué (herramientas/hooks/componentes, etc) dejariamos de usar en esta página? No quiero desechar a mis hooks de filtros porque tengo logica especifica.
+    a) LIBRERIAS EXTERNAS: Compara <AnimatePresence> con las animaciones CSS nativas de <BaseModals>. 
+    b) COMPONENTES CUSTOMIZADOS: Compara <AccessibleButton y buttonCategories> con <BaseButton, IconButton y ActionButton>. Resultado: Crear <buttonCategories.ts> para BaseButtons:
+    c) HOOKS ESPECÌFICOS: Compara <useClienteForm y useClienteFilters> con <useCrudOperations, useFormNotifications y useFormValidation> // Nota: useClienteFilters podría mantenerse si tiene lógica específica o integrarse en useCrudOperations con configuración custom.
+  
+  ## MODULARIZACION DEL PROYECTO:
+    1. Vamos a un Nuevo desafio. Lee al archivo `Modularizar.md` como un modelo de la idea y haz un diseño para Modularizar nuetro proyecto. Dime cuan dificil seria cambiar nuestra arquitectura actual y árbol de carpetas y como quedaria nuestro árbol final sin dejar puntas sueltas. El plan seria Modularizar por partes (si posible) y en el futuro. Tu recomiendas pero yo decido.

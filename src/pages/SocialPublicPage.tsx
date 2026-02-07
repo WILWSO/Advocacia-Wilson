@@ -11,7 +11,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuthLogin } from '../components/auth/useAuthLogin';
 import { usePosts as usePostsPublicos } from '../hooks/data-access/usePosts';
-import SEOHead from '../components/shared/SEOHead';
+import { useSEO } from '../hooks/seo/useSEO';
 import { PostsService } from '../services/postsService';
 import { SocialPostCard } from '../components/shared/cards/SocialPostCard';
 import { useNotification } from '../components/shared/notifications/useNotification';
@@ -22,6 +22,10 @@ const SocialPublicPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthLogin();
   const { posts, loading, error, fetchPosts } = usePostsPublicos();
   const { success } = useNotification();
+  
+  // SEO centralizado (SSoT para eliminação de configuração dispersa)
+  const seo = useSEO('adminSocial')
+  
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | Post['tipo']>('all');
@@ -136,11 +140,7 @@ const SocialPublicPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <SEOHead
-        title="Social - Responsabilidade Social e Conteúdos Jurídicos"
-        description="Acompanhe as últimas notícias, artigos e vídeos sobre direito. Mantenha-se informado com conteúdo jurídico de qualidade do escritório Santos & Nascimento."
-        keywords="noticias juridicas, artigos direito, videos juridicos, atualizacoes legislacao, Santos Nascimento advogados"
-      />
+      {seo.component}
 
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-900 via-primary-800 to-primary-900 text-white">
