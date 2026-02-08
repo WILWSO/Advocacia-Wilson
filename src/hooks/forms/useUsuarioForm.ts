@@ -511,15 +511,15 @@ export const useUsuarioForm = () => {
   }
 
   // Abrir modal para visualizar
-  const handleViewUsuario = (usuario: Usuario) => {
+  const handleViewUsuario = useCallback((usuario: Usuario) => {
     setViewingUsuario(usuario)
-  }
+  }, [])
 
   // Abrir modal para cambiar contraseña
-  const handleChangePassword = (usuario: Usuario) => {
+  const handleChangePassword = useCallback((usuario: Usuario) => {
     setChangingPassword(usuario)
     setPasswordForm({ newPassword: '', confirmPassword: '' })
-  }
+  }, [])
 
   // Cerrar modales
   const handleCloseCreateForm = () => {
@@ -534,14 +534,14 @@ export const useUsuarioForm = () => {
     resetFormData()
   }
 
-  const handleCloseViewModal = () => {
+  const handleCloseViewModal = useCallback(() => {
     setViewingUsuario(null)
-  }
+  }, [])
 
-  const handleClosePasswordModal = () => {
+  const handleClosePasswordModal = useCallback(() => {
     setChangingPassword(null)
     setPasswordForm({ newPassword: '', confirmPassword: '' })
-  }
+  }, [])
 
   // Upload de foto
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, usuarioId?: string) => {

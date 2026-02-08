@@ -1,6 +1,6 @@
 import { Clock, User } from 'lucide-react'
 import { useAuditData } from '../../hooks/data-access/useAuditData'
-import { formatDate } from '../../utils/postUtils'
+import { formatDateTimeLong } from '../../utils/dateUtils'
 
 interface AuditInfoProps {
   creadoPor?: string
@@ -52,7 +52,7 @@ export const AuditInfo = ({
               {dataCriacao && (
                 <div className="text-gray-600 flex items-center gap-1 mt-1">
                   <Clock size={14} />
-                  {formatDate(dataCriacao)}
+                  {formatDateTimeLong(dataCriacao)}
                 </div>
               )}
             </div>
@@ -71,7 +71,7 @@ export const AuditInfo = ({
               {dataAtualizacao && (
                 <div className="text-gray-600 flex items-center gap-1 mt-1">
                   <Clock size={14} />
-                  {formatDate(dataAtualizacao)}
+                  {formatDateTimeLong(dataAtualizacao)}
                 </div>
               )}
             </div>
@@ -82,7 +82,7 @@ export const AuditInfo = ({
         {atualizadoPor === creadoPor && dataAtualizacao && dataCriacao !== dataAtualizacao && (
           <div className="flex items-center gap-1.5 text-sm text-gray-700 pt-2 border-t border-purple-200">
             <Clock size={14} className="text-purple-600" />
-            Última modificação: <span className="font-medium">{formatDate(dataAtualizacao)}</span>
+            Última modificação: <span className="font-medium">{formatDateTimeLong(dataAtualizacao)}</span>
           </div>
         )}
       </div>

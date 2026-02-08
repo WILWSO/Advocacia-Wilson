@@ -16,7 +16,8 @@ import {
   User
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { formatDate, getTypeIcon, getTypeColor, truncateText } from '../../../utils/postUtils';
+import { getTypeIcon, getTypeColor, truncateText } from '../../../utils/postUtils';
+import { formatDateTimeLong } from '../../../utils/dateUtils';
 import { extractYouTubeId, getYouTubeEmbedUrl } from '../../../utils/youtubeUtils';
 import { EXTERNAL_COMPONENT_CLASSES } from '../../../config/theme';
 import { useComments } from '../../../hooks/data-access/useComments';
@@ -490,7 +491,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
             
             <div className="flex items-center gap-1">
               <Calendar size={12} />
-              {formatDate(post.data_criacao || new Date().toISOString())}
+              {formatDateTimeLong(post.data_criacao || new Date().toISOString())}
             </div>
           </div>
         )}
@@ -557,7 +558,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
               <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 text-xs text-neutral-500 pt-2 border-t border-neutral-100">
                 <div className="flex items-center gap-1">
                   <Calendar size={14} className="text-neutral-400" />
-                  <span>{formatDate(post.data_criacao || new Date().toISOString())}</span>
+                  <span>{formatDateTimeLong(post.data_criacao || new Date().toISOString())}</span>
                 </div>
                 <div className="flex items-center gap-1 text-neutral-600">
                   <span className="font-medium">Por:</span>
@@ -683,7 +684,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
                     <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500 mb-6 pb-6 border-b border-neutral-200">
                       <div className="flex items-center gap-2">
                         <Calendar size={16} className="text-neutral-400" />
-                        <span>{formatDate(post.data_criacao || new Date().toISOString())}</span>
+                        <span>{formatDateTimeLong(post.data_criacao || new Date().toISOString())}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <User size={16} className="text-neutral-400" />
@@ -800,7 +801,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
                                         {comentario.autor_nome}
                                       </p>
                                       <p className="text-xs text-neutral-500">
-                                        {formatDate(comentario.data_criacao)}
+                                        {formatDateTimeLong(comentario.data_criacao)}
                                       </p>
                                     </div>
                                   </div>

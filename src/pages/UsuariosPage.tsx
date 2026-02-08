@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'framer-motion'
 import { Search, User, Mail, Shield, Eye, EyeOff, Trash2, Edit2, CheckCircle, AlertCircle, Calendar, Upload, Camera, MapPin, Phone, FileText, Briefcase, Award } from 'lucide-react'
-import { useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { useUsuarioForm } from '../hooks/forms/useUsuarioForm'
 import { useUsuarioFilters } from '../hooks/filters/useUsuarioFilters'
 import { ResponsiveGrid, ResponsiveContainer } from '../components/shared/ResponsiveGrid'
@@ -37,15 +37,29 @@ const UsuariosPage: React.FC = () => {
 
   // Detectar si debe abrir modal del usuario actual desde AdminHeader
   const location = useLocation()
+  const navigate = useNavigate()
+  const hasOpenedModalRef = useRef(false) // Evita ejecuciones múltiples
+  
+  // Extraer solo las propiedades necesarias para evitar dependencias innecesarias
+  const { currentUser, viewingUsuario, handleViewUsuario } = usuarioForm
   
   useEffect(() => {
     const state = location.state as { viewCurrentUser?: boolean } | null
-    if (state?.viewCurrentUser && usuarioForm.currentUser && !usuarioForm.viewingUsuario) {
-      usuarioForm.handleViewUsuario(usuarioForm.currentUser)
-      // Limpiar el estado para evitar que se abra de nuevo
-      window.history.replaceState({}, document.title)
+    
+    // Solo ejecutar una vez cuando se detecta la flag y el usuario no se ha mostrado aún
+    if (state?.viewCurrentUser && currentUser && !viewingUsuario && !hasOpenedModalRef.current) {
+      hasOpenedModalRef.current = true
+      handleViewUsuario(currentUser)
+      
+      // Limpiar el estado usando navigate (React Router way)
+      navigate(location.pathname, { replace: true, state: {} })
     }
-  }, [location.state, usuarioForm]); // Dependencia completa del form
+    
+    // Reset del flag cuando el modal se cierra
+    if (!viewingUsuario && hasOpenedModalRef.current) {
+      hasOpenedModalRef.current = false
+    }
+  }, [location.state, location.pathname, currentUser, viewingUsuario, handleViewUsuario, navigate])
 
   return (
     <>
