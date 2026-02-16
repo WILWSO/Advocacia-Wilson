@@ -1,3 +1,37 @@
+# Guía de Migración del Sistema
+
+---
+
+## 🗑️ ACTUALIZACIÓN 16/02/2026: Eliminación de Tablas Obsoletas
+
+### Tablas Removidas
+Las siguientes tablas fueron creadas pero **NUNCA utilizadas** en el frontend:
+
+- ❌ **`documentos`** - Tabla polimórfica (eliminada)
+- ❌ **`jurisprudencias`** - Tabla independiente (eliminada)
+
+### Implementación Actual
+El sistema usa **campos JSONB** en su lugar:
+
+```typescript
+// Documentos
+clientes.documentos_cliente: DocumentoArquivo[]  // JSONB
+processos_juridicos.documentos_processo: DocumentoArquivo[]  // JSONB
+
+// Jurisprudencias
+processos_juridicos.jurisprudencia: Jurisprudencia[]  // JSONB
+```
+
+### Scripts Relacionados
+- 📄 [migration-eliminar-documentos-jurisprudencias.sql](database/migration-eliminar-documentos-jurisprudencias.sql) - Script de eliminación
+- 📚 [ANALISIS_TABLAS_OBSOLETAS.md](docs/ANALISIS_TABLAS_OBSOLETAS.md) - Análisis completo
+
+### Impacto
+- ✅ Frontend: NINGUNO (nunca se usaron)
+- ✅ Backend: Schema simplificado (-2 tablas, -11 índices, -8 policies)
+
+---
+
 # Guía de Migración: Audiencias de JSONB a Tabla Relacional
 
 ## 📋 Resumen

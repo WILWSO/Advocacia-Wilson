@@ -27,6 +27,7 @@ import {
 } from '../components/shared'
 import { DocumentManager, DocumentItem } from '../components/admin/DocumentManager'
 import { InlineNotification } from '../components/shared/notifications/InlineNotification'
+import { useNotification } from '../components/shared/notifications/NotificationContext'
 import { Collapse } from '../components/shared/Collapse'
 import { Accordion } from '../components/shared/Accordion'
 import { useProcessoForm } from '../hooks/forms/useProcessoForm'
@@ -43,11 +44,12 @@ const ProcessosPage: React.FC = () => {
   // SEO centralizado (SSoT para eliminación de configuración dispersa)
   const seo = useAdminSEO('Gestão de Processos')
   
-  const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso } = useProcessos({
+  const { processos, loading, error, fetchProcessos, createProcesso, updateProcesso, deleteProcesso } = useProcessos({
     enablePolling: true,
     pollingInterval: 30000,
   })
   const { usuarios } = useUsuarios()
+  const { confirm } = useNotification()
   
   // Estados para notificaciones inline del acordeón
   const [documentosNotification, setDocumentosNotification] = useState<{
@@ -70,6 +72,7 @@ const ProcessosPage: React.FC = () => {
     onSuccess: fetchProcessos,
     createProcesso,
     updateProcesso,
+    deleteProcesso,
     processos: processos as ProcessoWithRelations[]
   })
   
@@ -110,6 +113,24 @@ const ProcessosPage: React.FC = () => {
 
   const handleViewProcesso = (processo: ProcessoWithRelations) => {
     processoForm.handleView(processo)
+  }
+
+  const handleDeleteFromView = async () => {
+    if (!processoForm.viewingProcesso?.id) return
+    if (!processoForm.canDelete) return
+    
+    const confirmed = await confirm({
+      title: 'Confirmar Eliminação',
+      message: `Deseja realmente eliminar o processo "${processoForm.viewingProcesso.titulo}"? Esta ação não pode ser desfeita.`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    })
+    
+    if (confirmed) {
+      await processoForm.handleDelete(processoForm.viewingProcesso.id)
+      fetchProcessos()
+    }
   }
 
   return (
@@ -310,12 +331,11 @@ const ProcessosPage: React.FC = () => {
                     <RestrictedInput
                       label="Número do Processo"
                       type="text"
-                      placeholder="Ex: 1001234-12.2024.8.07.0001"
-                      required
+                      placeholder="Ex: 1001234-12.2024.8.07.0001 (opcional)"
                       value={processoForm.formData.numero_processo}
                       onChange={(e) => processoForm.handleFormChange({...processoForm.formData, numero_processo: e.target.value})}
-                      isRestricted={!processoForm.isAdmin && processoForm.editingProcesso !== null}
-                      restrictionMessage="Apenas Admin pode alterar"
+                      isRestricted={false}
+                      restrictionMessage=""
                     />
 
                     <RestrictedSelect
@@ -1086,8 +1106,18 @@ const ProcessosPage: React.FC = () => {
       <ViewModal
         isOpen={processoForm.isViewingProcesso}
         onClose={processoForm.handleCloseViewModal}
-        title="Detalhes do Processo"
+        title={
+          processoForm.viewingProcesso ? (
+            <>
+              Detalhes do Processo: <span className="text-blue-600">{processoForm.viewingProcesso.titulo}</span>
+            </>
+          ) : "Detalhes do Processo"
+        }
         onEdit={processoForm.handleEditFromView}
+        canEdit={processoForm.canEdit}
+        onDelete={handleDeleteFromView}
+        canDelete={processoForm.canDelete}
+        deleteLabel="Eliminar"
         maxWidth="5xl"
       >
         {processoForm.viewingProcesso && (

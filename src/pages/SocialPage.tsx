@@ -10,6 +10,7 @@ import {
 import { useAuthLogin } from '../components/auth/useAuthLogin';
 import { usePostForm } from '../hooks/forms/usePostForm';
 import { usePostFilters } from '../hooks/filters/usePostFilters';
+import { usePermissions } from '../hooks/auth/usePermissions';
 import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import CreatePostModal from '../components/admin/CreatePostModal';
 import { SocialPostCard } from '../components/shared/cards/SocialPostCard';
@@ -21,14 +22,36 @@ const SocialPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthLogin();
   const postForm = usePostForm();
   const filters = usePostFilters(postForm.posts);
+  const permissions = usePermissions();
 
-  if (!isAuthenticated || !user || user.role !== 'admin') {
+  // Control de acceso: Admin y Advogado pueden acceder
+  if (!isAuthenticated || !user) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
           <h1 className="text-2xl font-bold text-neutral-800 mb-4">Acesso Restrito</h1>
           <p className="text-neutral-600 mb-4">
-            Você precisa estar logado como administrador para acessar esta área.
+            Você precisa estar logado para acessar esta área.
+          </p>
+          <Link
+            to="/social"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+          >
+            Ver conteúdos públicos
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Solo Admin y Advogado pueden acceder a la página administrativa
+  if (!['admin', 'advogado'].includes(user.role)) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
+          <h1 className="text-2xl font-bold text-neutral-800 mb-4">Acesso Restrito</h1>
+          <p className="text-neutral-600 mb-4">
+            Apenas administradores e advogados podem acessar esta área.
           </p>
           <Link
             to="/social"
@@ -177,6 +200,8 @@ const SocialPage: React.FC = () => {
                     variant="admin"
                     onEdit={postForm.handleEditPost}
                     onDelete={postForm.handleDeletePost}
+                    canEdit={permissions.canEditPost(post)}
+                    canDelete={permissions.canDeletePost(post)}
                   />
                 ))}
               </AnimatePresence>

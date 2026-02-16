@@ -202,7 +202,7 @@ const Footer: React.FC = () => {
           isMobile ? "mt-8" : "mt-12"
         )}>
           <ResponsiveGrid
-            cols={{ xs: 1, md: 2 }}
+            cols={{ xs: 1, md: 3 }}
             gap={{ xs: 4, md: 8 }}
             className={cn(
               "items-center",
@@ -220,6 +220,24 @@ const Footer: React.FC = () => {
                 <br className={isMobile ? "block" : "hidden"} />
                 <span className="ml-1">{UI_LAYOUT.FOOTER.COPYRIGHT}</span>
               </p>
+            </motion.div>
+
+            <motion.div
+              className={cn(
+                "flex items-center gap-2",
+                isMobile ? "justify-center" : "justify-center"
+              )}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              <span className="text-neutral-400 text-xs">Developed by</span>
+              <img 
+                src="/Images/WSOlutions.jpg" 
+                alt="WSOlutions" 
+                className="h-8 object-contain rounded-sm hover:scale-110 transition-transform duration-300"
+              />
             </motion.div>
 
             <motion.div

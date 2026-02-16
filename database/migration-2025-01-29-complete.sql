@@ -53,6 +53,12 @@ END $$;
 -- ============================================================================
 -- 2. CREAR TABLA: documentos (polimórfica para todas las entidades)
 -- ============================================================================
+-- ⚠️  ADVERTENCIA: TABLA OBSOLETA - REMOVIDA EL 16/02/2026
+-- Esta tabla NUNCA fue utilizada en el frontend.
+-- El sistema usa campos JSONB en su lugar (documentos_cliente, documentos_processo).
+-- Si estás ejecutando este script en una base de datos nueva, OMITE esta sección.
+-- Para bases de datos existentes, ejecuta: migration-eliminar-documentos-jurisprudencias.sql
+-- ============================================================================
 
 CREATE TABLE IF NOT EXISTS documentos (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -262,6 +268,12 @@ COMMENT ON COLUMN audit_log.changed_fields IS 'Array con los nombres de los camp
 
 -- ============================================================================
 -- 4. CREAR TABLA: jurisprudencias (simplificada)
+-- ============================================================================
+-- ⚠️  ADVERTENCIA: TABLA OBSOLETA - REMOVIDA EL 16/02/2026
+-- Esta tabla NUNCA fue utilizada en el frontend.
+-- El sistema usa campo JSONB en su lugar (processos_juridicos.jurisprudencia).
+-- Si estás ejecutando este script en una base de datos nueva, OMITE esta sección.
+-- Para bases de datos existentes, ejecuta: migration-eliminar-documentos-jurisprudencias.sql
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS jurisprudencias (

@@ -31,6 +31,7 @@ interface UseProcessoFormOptions {
   onSuccess?: () => void
   createProcesso: (data: Omit<ProcessoJuridico, 'id'>) => Promise<{ error: any }>
   updateProcesso: (id: string, data: Partial<ProcessoJuridico>) => Promise<{ error: any }>
+  deleteProcesso: (id: string) => Promise<{ error: any }>
   processos?: ProcessoWithRelations[] // Para validar numero_processo único
 }
 
@@ -64,7 +65,7 @@ const initialFormData: ProcessoFormData = {
   jurisprudencia: []
 }
 
-export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, processos = [] }: UseProcessoFormOptions) {
+export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, deleteProcesso, processos = [] }: UseProcessoFormOptions) {
   const { user } = useAuth()
   const { notification, success, warning, error: errorNotif, hide } = useInlineNotification()
   const { success: successToast } = useNotification()
@@ -189,7 +190,7 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
   const jurisprudenciasCrud = useCrudArray<Jurisprudencia>(formData.jurisprudencia || [])
 
   // Permisos centralizados
-  const { isAdmin, isAdvogado, isAssistente, canEdit } = usePermissions()
+  const { isAdmin, isAdvogado, isAssistente, canEdit, canDelete } = usePermissions()
 
   // Sincronizar useCrudArray cuando se carga un proceso para editar
   useEffect(() => {
@@ -460,13 +461,12 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
       const dataToUpdate = { ...cleanedData }
       
       // Remover campos protegidos según el rol
+      // CAMBIO 16/02/2026: numero_processo AHORA ES EDITABLE por todos los roles
       if (user?.role === 'assistente') {
-        delete dataToUpdate.numero_processo
         delete dataToUpdate.titulo
         delete dataToUpdate.advogado_responsavel
         delete dataToUpdate.status
       } else if (user?.role === 'advogado') {
-        delete dataToUpdate.numero_processo
         delete dataToUpdate.titulo
         delete dataToUpdate.advogado_responsavel
       }
@@ -634,6 +634,24 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     }
   }, [viewModal, loadProcessoForEdit])
 
+  // Handler para eliminar proceso
+  const handleDelete = useCallback(async (processoId: string) => {
+    if (!canDelete) {
+      warning('Você não tem permissão para eliminar processos')
+      return
+    }
+
+    const resultado = await deleteProcesso(processoId)
+    
+    if (resultado.error) {
+      errorNotif('Erro ao eliminar processo. Tente novamente.')
+    } else {
+      successToast('Processo eliminado com sucesso!')
+      viewModal.close()
+      if (onSuccess) onSuccess()
+    }
+  }, [canDelete, deleteProcesso, warning, errorNotif, successToast, viewModal, onSuccess])
+
   return {
     // Estado
     formData: safeFormData, // Usar safeFormData para prevenir warnings de React
@@ -685,6 +703,7 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     handleView,
     handleCloseViewModal,
     handleEditFromView,
+    handleDelete,
     
     // Detección de cambios
     hasChanges,
@@ -693,6 +712,8 @@ export function useProcessoForm({ onSuccess, createProcesso, updateProcesso, pro
     isAdmin,
     isAdvogado,
     isAssistente,
-    canEdit
+    canEdit,
+    canDelete,
+    deleteProcesso
   }
 }

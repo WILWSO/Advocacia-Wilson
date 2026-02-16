@@ -10,7 +10,7 @@ import { CSS_UTILITY_MAPS } from '../../../config/theme'
 interface BaseModalProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title: React.ReactNode
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl'
   children: React.ReactNode
   footer?: React.ReactNode

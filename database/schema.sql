@@ -51,7 +51,8 @@ CREATE TABLE processos_juridicos (
     cliente_email VARCHAR(255),
     cliente_telefone VARCHAR(20),
     
-    -- Número do processo (opcional)
+    -- Número do processo (opcional, UNIQUE si informado) - ✅ ACTUALIZADO 16/02/2026
+    -- Todos los roles pueden editar este campo
     numero_processo VARCHAR(100) UNIQUE,
     
     -- Informação de jurisdição (JSONB: {uf, municipio, vara, juiz})
@@ -168,7 +169,8 @@ ALTER TABLE processos_juridicos ENABLE ROW LEVEL SECURITY;
 -- execute el archivo: src/database/rls-policies.sql
 -- Este archivo contiene las políticas actualizadas que permiten:
 -- - assistente y advogado: crear, leer y editar clientes y processos
--- - Restricciones: NO pueden editar nome_completo (clientes) ni numero_processo (processos_juridicos)
+-- - ✅ ACTUALIZADO 16/02/2026: TODOS los roles pueden editar numero_processo
+-- - Restricciones: NO pueden editar nome_completo (clientes), titulo y advogado_responsavel (processos)
 -- =====================================================
 
 -- Ejemplo de política básica (ajustar conforme suas regras de negócio)
@@ -332,123 +334,20 @@ CREATE POLICY "Apenas admins podem deletar comentários"
 COMMENT ON TABLE comentarios_sociais IS 'Comentários dos posts sociais do site';
 COMMENT ON COLUMN comentarios_sociais.aprovado IS 'Define se o comentário foi aprovado para exibição (moderação)';
 
--- 7. Tabela de Documentos (polimórfica para todas as entidades)
-CREATE TABLE IF NOT EXISTS documentos (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    
-    -- Referencia polimórfica (sin FK constraint)
-    entity_type VARCHAR(50) NOT NULL, -- 'cliente', 'processo', 'jurisprudencia', 'usuario', 'post', etc.
-    entity_id UUID NOT NULL, -- ID de la entidad relacionada
-    
-    -- Información del documento
-    nome_documento VARCHAR(255) NOT NULL,
-    tipo_documento VARCHAR(100), -- 'RG', 'CPF', 'CNH', 'Contrato', 'Procuração', 'Sentença', etc.
-    descricao TEXT,
-    
-    -- Almacenamiento
-    url_arquivo TEXT NOT NULL, -- URL del archivo en Supabase Storage
-    tamanho_bytes INTEGER,
-    mime_type VARCHAR(100),
-    
-    -- Metadatos
-    data_upload TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    data_expiracao DATE, -- Opcional para documentos que expiran
-    
-    -- Auditoría
-    upload_por UUID REFERENCES usuarios(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- Status
-    ativo BOOLEAN DEFAULT true,
-    
-    -- Constraint para validar entity_type
-    CONSTRAINT documentos_entity_type_check 
-        CHECK (entity_type IN ('cliente', 'processo', 'jurisprudencia', 'usuario', 'post', 'audiencia'))
-);
+-- =====================================================
+-- NOTA: TABLA 'documentos' REMOVIDA - 16/02/2026
+-- =====================================================
+-- La tabla polimórfica 'documentos' fue eliminada porque NUNCA se utilizó en el frontend.
+-- El sistema usa campos JSONB en su lugar:
+-- - clientes.documentos_cliente (JSONB array de DocumentoArquivo)
+-- - processos_juridicos.documentos_processo (JSONB array de DocumentoArquivo)
+-- 
+-- Para más información, consultar:
+-- - docs/ANALISIS_TABLAS_OBSOLETAS.md
+-- - database/migration-eliminar-documentos-jurisprudencias.sql
+-- =====================================================
 
--- Índices para documentos
-CREATE INDEX IF NOT EXISTS idx_documentos_entity 
-    ON documentos(entity_type, entity_id);
-
-CREATE INDEX IF NOT EXISTS idx_documentos_entity_id 
-    ON documentos(entity_id);
-
-CREATE INDEX IF NOT EXISTS idx_documentos_tipo 
-    ON documentos(tipo_documento);
-
-CREATE INDEX IF NOT EXISTS idx_documentos_upload_por 
-    ON documentos(upload_por);
-
-CREATE INDEX IF NOT EXISTS idx_documentos_data_upload 
-    ON documentos(data_upload DESC);
-
-CREATE INDEX IF NOT EXISTS idx_documentos_ativo 
-    ON documentos(ativo);
-
--- Trigger para actualizar updated_at
-CREATE TRIGGER update_documentos_updated_at
-    BEFORE UPDATE ON documentos
-    FOR EACH ROW
-    EXECUTE FUNCTION update_data_atualizacao();
-
--- RLS para documentos
-ALTER TABLE documentos ENABLE ROW LEVEL SECURITY;
-
--- Política: Solo usuarios autenticados pueden ver documentos
-CREATE POLICY "Usuarios autenticados podem ver documentos"
-    ON documentos
-    FOR SELECT
-    USING (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-        )
-    );
-
--- Política: Advogados y admins pueden insertar documentos
-CREATE POLICY "Advogados e admins podem insertar documentos"
-    ON documentos
-    FOR INSERT
-    WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role IN ('admin', 'advogado', 'assistente')
-        )
-    );
-
--- Política: Advogados y admins pueden actualizar documentos
-CREATE POLICY "Advogados e admins podem actualizar documentos"
-    ON documentos
-    FOR UPDATE
-    USING (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role IN ('admin', 'advogado', 'assistente')
-        )
-    );
-
--- Política: Solo admins pueden eliminar documentos
-CREATE POLICY "Apenas admins podem eliminar documentos"
-    ON documentos
-    FOR DELETE
-    USING (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role = 'admin'
-        )
-    );
-
-COMMENT ON TABLE documentos IS 'Tabla polimórfica de documentos para todas las entidades del sistema';
-COMMENT ON COLUMN documentos.entity_type IS 'Tipo de entidad: cliente, processo, jurisprudencia, usuario, post, audiencia';
-COMMENT ON COLUMN documentos.entity_id IS 'ID de la entidad relacionada (polimórfico)';
-COMMENT ON COLUMN documentos.tipo_documento IS 'Tipo de documento: RG, CPF, CNH, Contrato, Procuração, Sentença, etc.';
-COMMENT ON COLUMN documentos.data_expiracao IS 'Data de expiração del documento (opcional)';
-
--- 8. Tabela de Audit Log
+-- 7. Tabela de Audit Log
 CREATE TABLE IF NOT EXISTS audit_log (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     
@@ -514,127 +413,24 @@ CREATE POLICY "Sistema pode insertar en audit log"
 COMMENT ON TABLE audit_log IS 'Registro de auditoría de todas las operaciones críticas del sistema';
 COMMENT ON COLUMN audit_log.operation IS 'Tipo de operación: INSERT, UPDATE, DELETE';
 
--- 9. Tabela de Jurisprudências (simplificada)
-CREATE TABLE IF NOT EXISTS jurisprudencias (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    
-    -- Información básica
-    titulo VARCHAR(500) NOT NULL,
-    ementa TEXT NOT NULL, -- Resumen/síntesis de la decisión
-    link TEXT, -- Link externo (jurisprudência online)
-    documento UUID, -- Referencia a tabla documentos (archivo PDF/DOC)
-    
-    -- Vinculación con processos
-    processos_relacionados JSONB DEFAULT '[]'::jsonb, -- Array de IDs de processos
-    
-    -- Notas del usuario
-    notas TEXT,
-    
-    -- Status
-    ativo BOOLEAN DEFAULT true,
-    
-    -- Auditoría
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    created_by UUID REFERENCES usuarios(id) ON DELETE SET NULL,
-    updated_by UUID REFERENCES usuarios(id) ON DELETE SET NULL
-);
+-- =====================================================
+-- NOTA: TABLA 'jurisprudencias' REMOVIDA - 16/02/2026
+-- =====================================================
+-- La tabla 'jurisprudencias' fue eliminada porque NUNCA se utilizó en el frontend.
+-- El sistema usa un campo JSONB en su lugar:
+-- - processos_juridicos.jurisprudencia (JSONB array de tipo Jurisprudencia)
+-- 
+-- Interface TypeScript (src/types/processo.ts):
+-- interface Jurisprudencia {
+--   ementa: string
+--   link: string
+-- }
+-- 
+-- La gestión se realiza directamente en ProcessosPage.tsx con CRUD completo.
+-- 
+-- Para más información, consultar:
+-- - docs/ANALISIS_TABLAS_OBSOLETAS.md
+-- - database/migration-eliminar-documentos-jurisprudencias.sql
+-- =====================================================
 
--- Índices para jurisprudencias
-CREATE INDEX IF NOT EXISTS idx_jurisprudencias_ativo 
-    ON jurisprudencias(ativo);
-
-CREATE INDEX IF NOT EXISTS idx_jurisprudencias_documento 
-    ON jurisprudencias(documento);
-
-CREATE INDEX IF NOT EXISTS idx_jurisprudencias_created_by 
-    ON jurisprudencias(created_by);
-
--- Índice GIN para JSONB
-CREATE INDEX IF NOT EXISTS idx_jurisprudencias_processos 
-    ON jurisprudencias USING GIN (processos_relacionados);
-
--- Índice de texto completo para búsqueda
-CREATE INDEX IF NOT EXISTS idx_jurisprudencias_busca_texto 
-    ON jurisprudencias USING GIN (
-        to_tsvector('portuguese', 
-            coalesce(titulo, '') || ' ' || 
-            coalesce(ementa, '') || ' ' || 
-            coalesce(notas, '')
-        )
-    );
-
--- Trigger para actualizar updated_at
-CREATE TRIGGER update_jurisprudencias_updated_at
-    BEFORE UPDATE ON jurisprudencias
-    FOR EACH ROW
-    EXECUTE FUNCTION update_data_atualizacao();
-
--- Triggers de auditoría
-CREATE TRIGGER jurisprudencias_audit_insert
-    BEFORE INSERT ON jurisprudencias
-    FOR EACH ROW
-    EXECUTE FUNCTION audit_creado_por();
-
-CREATE TRIGGER jurisprudencias_audit_update
-    BEFORE UPDATE ON jurisprudencias
-    FOR EACH ROW
-    EXECUTE FUNCTION audit_atualizado_por();
-
--- RLS para jurisprudencias
-ALTER TABLE jurisprudencias ENABLE ROW LEVEL SECURITY;
-
--- Política: Todos los usuarios autenticados pueden ver jurisprudencias activas
-CREATE POLICY "Usuarios autenticados podem ver jurisprudencias"
-    ON jurisprudencias
-    FOR SELECT
-    USING (
-        ativo = true AND
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-        )
-    );
-
--- Política: Advogados y admins pueden insertar jurisprudencias
-CREATE POLICY "Advogados e admins podem insertar jurisprudencias"
-    ON jurisprudencias
-    FOR INSERT
-    WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role IN ('admin', 'advogado')
-        )
-    );
-
--- Política: Advogados pueden actualizar sus propias jurisprudencias
-CREATE POLICY "Advogados podem actualizar suas jurisprudencias"
-    ON jurisprudencias
-    FOR UPDATE
-    USING (
-        created_by = auth.uid() OR
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role = 'admin'
-        )
-    );
-
--- Política: Solo admins pueden eliminar jurisprudencias
-CREATE POLICY "Apenas admins podem eliminar jurisprudencias"
-    ON jurisprudencias
-    FOR DELETE
-    USING (
-        EXISTS (
-            SELECT 1 FROM usuarios
-            WHERE usuarios.id = auth.uid()
-            AND usuarios.role = 'admin'
-        )
-    );
-
-COMMENT ON TABLE jurisprudencias IS 'Base de conhecimento de jurisprudências (simplificada)';
-COMMENT ON COLUMN jurisprudencias.ementa IS 'Síntese/resumo da decisão judicial';
-COMMENT ON COLUMN jurisprudencias.link IS 'Link externo para jurisprudência online';
-COMMENT ON COLUMN jurisprudencias.documento IS 'ID del documento relacionado (PDF/DOC de la jurisprudencia)';
-COMMENT ON COLUMN jurisprudencias.processos_relacionados IS 'Array JSONB com IDs de processos relacionados';
+-- FIN DEL SCHEMA

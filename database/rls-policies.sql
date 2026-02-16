@@ -112,11 +112,12 @@ WITH CHECK (
 );
 
 -- UPDATE: Admin, advogado y assistente podem editar processos
--- RESTRICCIONES:
--- 1. assistente y advogado NO pueden editar 'numero_processo'
+-- RESTRICCIONES ACTUALIZADAS (16/02/2026):
+-- 1. ✅ TODOS los roles PUEDEN editar 'numero_processo' (cambio aplicado)
 -- 2. assistente y advogado NO pueden editar 'titulo'
 -- 3. assistente y advogado NO pueden editar 'advogado_responsavel'
 -- 4. assistente NO puede editar 'status' (solo admin y advogado)
+-- NOTA: numero_processo es UNIQUE pero NULLABLE
 CREATE POLICY "processos_update_policy" 
 ON processos_juridicos FOR UPDATE 
 USING (
@@ -134,16 +135,13 @@ WITH CHECK (
     AND usuarios.role = 'admin'
   )
   OR
-  -- Advogado puede editar todo EXCEPTO numero_processo, titulo y advogado_responsavel
+  -- Advogado PUEDE EDITAR numero_processo (cambio 16/02/2026)
+  -- Restricciones: titulo y advogado_responsavel
   (
     EXISTS (
       SELECT 1 FROM usuarios
       WHERE usuarios.id = auth.uid()
       AND usuarios.role = 'advogado'
-    )
-    AND (
-      numero_processo IS NULL 
-      OR numero_processo = (SELECT numero_processo FROM processos_juridicos WHERE id = processos_juridicos.id)
     )
     AND titulo = (SELECT titulo FROM processos_juridicos WHERE id = processos_juridicos.id)
     AND (
@@ -152,16 +150,13 @@ WITH CHECK (
     )
   )
   OR
-  -- Assistente NO puede cambiar numero_processo, titulo, advogado_responsavel ni status
+  -- Assistente PUEDE EDITAR numero_processo (cambio 16/02/2026)
+  -- Restricciones: titulo, advogado_responsavel y status
   (
     EXISTS (
       SELECT 1 FROM usuarios
       WHERE usuarios.id = auth.uid()
       AND usuarios.role = 'assistente'
-    )
-    AND (
-      numero_processo IS NULL 
-      OR numero_processo = (SELECT numero_processo FROM processos_juridicos WHERE id = processos_juridicos.id)
     )
     AND titulo = (SELECT titulo FROM processos_juridicos WHERE id = processos_juridicos.id)
     AND (

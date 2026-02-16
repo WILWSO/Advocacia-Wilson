@@ -114,7 +114,7 @@ export interface ProcessoFormData {
   polo: ProcessoPolo | ''
   cliente_email: string
   cliente_telefone: string
-  numero_processo: string
+  numero_processo: string  // Campo opcional pero UNIQUE si informado
   status: string
   area_direito: string
   prioridade: string

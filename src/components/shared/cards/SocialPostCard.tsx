@@ -26,14 +26,17 @@ import type { Post } from '../../../types/post';
 
 /**
  * Props del componente SocialPostCard
+ * Incluye validación de permisos por ownership
  */
-interface SocialPostCardProps {
+export interface SocialPostCardProps {
   post: Post;
   variant: 'admin' | 'public';
   
   // Admin variant props
   onEdit?: (post: Post) => void;
   onDelete?: (id: string) => void;
+  canEdit?: boolean;   // Control de permisos para editar
+  canDelete?: boolean; // Control de permisos para eliminar
   
   // Public variant props
   onLike?: (id: string) => Promise<void>;
@@ -56,6 +59,8 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
   variant,
   onEdit,
   onDelete,
+  canEdit = true,   // Por defecto true para retrocompatibilidad
+  canDelete = true, // Por defecto true para retrocompatibilidad
   onLike,
   onComment,
   onShare,
@@ -187,20 +192,24 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({
             </div>
             
             <div className="flex items-center gap-1 ml-2">
-              <button
-                onClick={() => onEdit?.(post)}
-                className="p-1.5 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-                title="Editar"
-              >
-                <Edit3 size={14} />
-              </button>
-              <button
-                onClick={() => onDelete?.(post.id || '')}
-                className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                title="Excluir"
-              >
-                <Trash2 size={14} />
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => onEdit?.(post)}
+                  className="p-1.5 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                  title="Editar"
+                >
+                  <Edit3 size={14} />
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  onClick={() => onDelete?.(post.id || '')}
+                  className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                  title="Excluir"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
             </div>
           </div>
         </div>

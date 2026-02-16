@@ -5,11 +5,14 @@ import AccessibleButton from '../buttons/AccessibleButton'
 interface ViewModalProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title: React.ReactNode
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl'
   onEdit?: () => void
   editLabel?: string
   canEdit?: boolean
+  onDelete?: () => void
+  deleteLabel?: string
+  canDelete?: boolean
   children: React.ReactNode
   className?: string
   additionalActions?: React.ReactNode
@@ -23,6 +26,9 @@ export const ViewModal: React.FC<ViewModalProps> = ({
   onEdit,
   editLabel = 'Editar',
   canEdit = true,
+  onDelete,
+  deleteLabel = 'Eliminar',
+  canDelete = false,
   children,
   className = '',
   additionalActions
@@ -38,6 +44,16 @@ export const ViewModal: React.FC<ViewModalProps> = ({
       >
         Fechar
       </AccessibleButton>
+      {canDelete && onDelete && (
+        <AccessibleButton
+          category="delete"
+          type="button"
+          onClick={onDelete}
+          size="lg"
+        >
+          {deleteLabel}
+        </AccessibleButton>
+      )}
       {canEdit && onEdit && (
         <AccessibleButton
           category="edit"
