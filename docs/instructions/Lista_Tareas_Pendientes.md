@@ -340,3 +340,25 @@ src/
   
   ## MODULARIZACION DEL PROYECTO:
     1. Vamos a un Nuevo desafio. Lee al archivo `Modularizar.md` como un modelo de la idea y haz un diseño para Modularizar nuetro proyecto. Dime cuan dificil seria cambiar nuestra arquitectura actual y árbol de carpetas y como quedaria nuestro árbol final sin dejar puntas sueltas. El plan seria Modularizar por partes (si posible) y en el futuro. Tu recomiendas pero yo decido.
+      a) ok, pero veo en la estructura final un par de archivos que no existen en mi proyecto como: hearing, cases, etc y tanbien muchos archivos que están en el proyecto pero no se vee en la estructura del arbol. 
+      b) Quiero ver todos los archivos en el árbol, sin sobrar ni faltar ninguno.
+      c) En lugar de cases, processos (todos los archivos relacionados a processos juridicos); en lugar de hearing, agenda (todos los archivos relacionados a agenda y audiencias); en lugar de users/, usuarios (todos los archivos relacionados a usuarios)
+      d) Eliminar del árbol las carpetas documents y jurisprudencia porque no las uso
+
+# 16/02/2026
+## MEJORAS A PEDIDO DEL CLIENTE
+### POST SOCIAL: 
+ - PERMISOS: abogados puede crear post`s, leer todos, pero Update y Delete unicamente en sus propias publicaciones.
+    PASOS PARA IMPLEMENTAR
+     1. Crear script SQL de migración (35 líneas). 
+     2. Actualizar usePermissions hook (15 líneas)
+     3. Modificar SocialPage (5 líneas)
+     4. Actualizar SocialPostCard (10 líneas)
+     5. Agregar tests (opcional pero recomendado)
+     6. Ejecutar en Supabase Dashboard
+     7. Probar con usuario advogado
+
+### PROCESSOS:
+ ✅- Numero del proceso no puede ser obligatorio. Verificar cual registro depende del dato "numero_processo" para no ser huerfano. Yo quiero que el numero del proceso sea nulable en backend y frontend. Cambiar supabase, rls y typescript. Permitir que todos los roles editen numero_processo, pero que siga siendo Unique. Cualquier dependencia del campo "numero_processo" en la tabla processos_juridicos pase a depender del campo "id". 
+
+ ✅- ADMIN puede eliminar procesos. Porque No aparece el boton de eliminar procesos para ADMIN? 
