@@ -270,8 +270,8 @@ const ClientesPage = () => {
                   
                   {/* Información Personal */}
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                      <User size={20} />
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                      <User size={18} className="sm:w-5 sm:h-5" />
                       Informações Pessoais
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,8 +376,8 @@ const ClientesPage = () => {
 
                   {/* Contato */}
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                      <Phone size={20} />
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                      <Phone size={18} className="sm:w-5 sm:h-5" />
                       Contato
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,8 +436,8 @@ const ClientesPage = () => {
 
                   {/* Endereço */}
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                      <MapPin size={20} />
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                      <MapPin size={18} className="sm:w-5 sm:h-5" />
                       Endereço
                     </h3>                
                   
@@ -488,7 +488,7 @@ const ClientesPage = () => {
                       </div>
 
                       {/* Linha 3: País + Estado + Cidade (ubicación geográfica) */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
                             País *
@@ -507,16 +507,11 @@ const ClientesPage = () => {
                             placeholder="Brasil"
                             required
                           />
-                          <p className="text-xs text-neutral-500 mt-1">
-                            💡 {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' 
-                              ? 'Estado aceita UF (2 dígitos)' 
-                              : 'Estado aceita nome completo'}
-                          </p>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF) *' : '/ Provincia'}
+                            Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF - 2 dígitos) *' : '/ Provincia'}
                           </label>
                           <input
                             type="text"
@@ -547,8 +542,8 @@ const ClientesPage = () => {
 
                   {/* Gestión */}
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                      <AlertCircle size={20} />
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                      <AlertCircle size={18} className="sm:w-5 sm:h-5" />
                       Informações de Gestão
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -622,8 +617,8 @@ const ClientesPage = () => {
 
                   {/* Seção: Documentos */}
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
-                      <FileText size={20} />
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+                      <FileText size={18} className="sm:w-5 sm:h-5" />
                       Documentos do Cliente
                     </h3>
                     
