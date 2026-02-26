@@ -369,8 +369,13 @@ export class FormValidator {
   }
 
   /**
+   * @deprecated - No longer used after migration to endereco_completo field
    * Valida número de endereço
+   * 
+   * NOTA: Esta función se mantiene por compatibilidad pero ya no se usa.
+   * Los campos endereco, numero, complemento y bairro fueron fusionados en endereco_completo.
    */
+  /*
   static validateNumeroEndereco(numero: string): ValidationResult {
     const errors: string[] = [];
     
@@ -392,6 +397,7 @@ export class FormValidator {
       errors
     };
   }
+  */
 
   /**
    * Valida telefone/celular brasileiro

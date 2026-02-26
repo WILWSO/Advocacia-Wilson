@@ -20,12 +20,10 @@ CREATE TABLE clientes (
     celular VARCHAR(20) NOT NULL,
     telefone_alternativo VARCHAR(20),
     
-    -- Dirección
+    -- Dirección (Actualizado: 2026-02-26)
+    -- NOTA: Campos endereco, numero, complemento, bairro fueron fusionados en endereco_completo
     cep VARCHAR(10),
-    endereco VARCHAR(500),
-    numero VARCHAR(10),
-    complemento VARCHAR(100),
-    bairro VARCHAR(100),
+    endereco_completo TEXT, -- Campo único para dirección completa (Rua, Número, Complemento, Bairro)
     cidade VARCHAR(100),
     estado VARCHAR(50), -- UF (2 caracteres para Brasil, nombre completo para otros países)
     pais VARCHAR(100) DEFAULT 'Brasil',

@@ -36,10 +36,7 @@ export interface Cliente extends BaseEntity {
   telefone_alternativo?: string
   // Dirección
   cep?: string
-  endereco?: string
-  numero?: string
-  complemento?: string
-  bairro?: string
+  endereco_completo?: string
   cidade?: string
   estado?: string
   pais?: string

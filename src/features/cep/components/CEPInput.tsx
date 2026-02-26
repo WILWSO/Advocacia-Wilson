@@ -3,7 +3,7 @@
  * Componente completo e standalone
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { CEPInputProps } from '../types/cep.types'
 import { CEPSearchButton } from './CEPSearchButton'
@@ -22,10 +22,8 @@ export const CEPInput: React.FC<CEPInputProps> = ({
   showSearchButton = true,
   enableCache = true
 }) => {
-  const [inputValue, setInputValue] = useState(value)
   const [feedbackMessage, setFeedbackMessage] = useState<string>('')
   const [feedbackType, setFeedbackType] = useState<'success' | 'error' | null>(null)
-  const isFirstRender = useRef(true)
 
   // Hook de busca
   const { 
@@ -58,20 +56,11 @@ export const CEPInput: React.FC<CEPInputProps> = ({
     }
   })
 
-  // Sincronizar valor externo con estado interno
-  useEffect(() => {
-    if (value !== inputValue && !isFirstRender.current) {
-      setInputValue(value)
-    }
-    isFirstRender.current = false
-  }, [value, inputValue])
-
-  // Handler de mudança
+  // Handler de mudança (componente totalmente controlado pelo pai)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value
     const formattedValue = formatCEPOnType(rawValue)
     
-    setInputValue(formattedValue)
     onChange(formattedValue)
 
     // Limpar feedback ao digitar
@@ -86,15 +75,15 @@ export const CEPInput: React.FC<CEPInputProps> = ({
 
   // Handler de busca manual
   const handleSearch = () => {
-    if (inputValue && isCEPComplete(inputValue)) {
-      searchCEP(inputValue)
+    if (value && isCEPComplete(value)) {
+      searchCEP(value)
     }
   }
 
   // Handler de blur (se não for auto-search)
   const handleBlur = () => {
-    if (!autoSearch && isCEPComplete(inputValue)) {
-      searchCEP(inputValue)
+    if (!autoSearch && isCEPComplete(value)) {
+      searchCEP(value)
     }
   }
 
@@ -108,7 +97,7 @@ export const CEPInput: React.FC<CEPInputProps> = ({
         <div className="relative flex-1">
           <input
             type="text"
-            value={inputValue}
+            value={value}
             onChange={handleChange}
             onBlur={handleBlur}
             disabled={disabled || loading}
@@ -178,10 +167,10 @@ export const CEPInput: React.FC<CEPInputProps> = ({
         {/* Botão de busca (opcional) */}
         {showSearchButton && (
           <CEPSearchButton
-            cep={inputValue}
+            cep={value}
             onSearch={handleSearch}
             loading={loading}
-            disabled={disabled || !isCEPComplete(inputValue)}
+            disabled={disabled || !isCEPComplete(value)}
           />
         )}
       </div>
