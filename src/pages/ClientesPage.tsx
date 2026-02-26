@@ -35,6 +35,7 @@ import { InlineNotification } from '../components/shared/notifications/InlineNot
 import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import { STORAGE_BUCKETS } from '../config/storage';
 import { PAGES_UI } from '../config/messages';
+import { CEPInput } from '../features/cep';
 
 const ClientesPage = () => {
   // SEO centralizado (SSoT para eliminação de configuração dispersa)
@@ -294,6 +295,10 @@ const ClientesPage = () => {
                           type="text"
                           value={clienteForm.formData.cpf_cnpj || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cpf_cnpj: e.target.value})}
+                          onBlur={(e) => {
+                            const error = clienteForm.validateField('cpf_cnpj', e.target.value)
+                            if (error) clienteForm.errorNotif(error)
+                          }}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
@@ -383,8 +388,10 @@ const ClientesPage = () => {
                         <input
                           type="email"
                           value={clienteForm.formData.email || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, email: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, email: e.target.value})}                          onBlur={(e) => {
+                            const error = clienteForm.validateField('email', e.target.value)
+                            if (error) clienteForm.errorNotif(error)
+                          }}                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
 
@@ -433,103 +440,131 @@ const ClientesPage = () => {
                       <MapPin size={20} />
                       Endereço
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          CEP
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.cep || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cep: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
+                    
+                    {/* Layout melhorado: grid responsivo com espaçamento adequado */}
+                    <div className="space-y-4">
+                      {/* Linha 1: CEP + Endereço */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            CEP
+                          </label>
+                          <CEPInput
+                            value={clienteForm.formData.cep || ''}
+                            onChange={(value) => clienteForm.handleFormChange({...clienteForm.formData, cep: value})}
+                            onAddressFound={clienteForm.handleCEPFound}
+                            autoSearch={true}
+                            showSearchButton={true}
+                            enableCache={true}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Endereço (Rua/Avenida)
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.endereco || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, endereco: e.target.value})}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="Avenida Paulista"
+                          />
+                        </div>
                       </div>
 
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Endereço
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.endereco || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, endereco: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
+                      {/* Linha 2: Número + Complemento */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Número <span className="text-neutral-500 text-xs">(máx. 10 caracteres)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.numero || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, numero: e.target.value})}
+                            onBlur={(e) => {
+                              const error = clienteForm.validateField('numero', e.target.value)
+                              if (error) clienteForm.errorNotif(error)
+                            }}
+                            maxLength={10}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="123, 456-A, s/n"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Complemento
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.complemento || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, complemento: e.target.value})}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="Apto 101, Bloco B"
+                          />
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Número
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.numero || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, numero: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
+                      {/* Linha 3: Bairro + Cidade */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Bairro
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.bairro || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, bairro: e.target.value})}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="Centro"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Cidade
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.cidade || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cidade: e.target.value})}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="São Paulo"
+                          />
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Complemento
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.complemento || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, complemento: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
+                      {/* Linha 4: Estado + País */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF)' : '/ Provincia'}
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.estado || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, estado: e.target.value})}
+                            maxLength={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 2 : 50}
+                            placeholder={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'SP' : 'Nombre del estado'}
+                            className={`w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'uppercase' : ''}`}
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Bairro
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.bairro || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, bairro: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Cidade
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.cidade || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cidade: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          País
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.pais || 'Brasil'}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, pais: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF)' : '/ Provincia'}
-                        </label>
-                        <input
-                          type="text"
-                          value={clienteForm.formData.estado || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, estado: e.target.value})}
-                          maxLength={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 2 : 50}
-                          placeholder={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'SP' : 'Nombre del estado'}
-                          className={`w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'uppercase' : ''}`}
-                        />
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            País
+                          </label>
+                          <input
+                            type="text"
+                            value={clienteForm.formData.pais || 'Brasil'}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, pais: e.target.value})}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="Brasil"
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

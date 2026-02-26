@@ -13,6 +13,8 @@ import { usePermissions } from '../auth/usePermissions'
 import { Cliente, ClienteFormData } from '../../types/cliente'
 import { CONFIRMATION_MESSAGES, SUCCESS_MESSAGES, PERMISSION_MESSAGES, ERROR_MESSAGES } from '../../config/messages'
 import { formatFormData } from '../../utils/fieldFormatters'
+import { FormValidator } from '../../utils/FormValidator'
+import { CEPData } from '../../features/cep'
 
 // Formulario vacío con todos los campos inicializados como strings vacíos
 // Esto previene warnings de React sobre inputs controlados (null/undefined)
@@ -138,6 +140,90 @@ export const useClienteForm = () => {
     updateCurrent(formattedData)
   }
 
+  // Validar formulario de cliente antes de enviar
+  const validateClienteForm = (data: ClienteFormData): { isValid: boolean; errors: string[] } => {
+    const allErrors: string[] = []
+
+    // Validar nome_completo (obrigatório)
+    const nomeValidation = FormValidator.validateNomeCompleto(data.nome_completo)
+    if (!nomeValidation.isValid) allErrors.push(...nomeValidation.errors)
+
+    // Validar CPF (formato, opcional pero si existe debe ser válido)
+    if (data.cpf_cnpj && data.cpf_cnpj.trim() !== '') {
+      const cpfLength = data.cpf_cnpj.replace(/[^\d]/g, '').length
+      if (cpfLength === 11) {
+        const cpfValidation = FormValidator.validateCPF(data.cpf_cnpj)
+        if (!cpfValidation.isValid) allErrors.push(...cpfValidation.errors)
+      } else if (cpfLength === 14) {
+        const cnpjValidation = FormValidator.validateCNPJ(data.cpf_cnpj)
+        if (!cnpjValidation.isValid) allErrors.push(...cnpjValidation.errors)
+      } else if (cpfLength > 0) {
+        allErrors.push('CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos')
+      }
+    }
+
+    // Validar RG (opcional)
+    const rgValidation = FormValidator.validateRG(data.rg || '')
+    if (!rgValidation.isValid) allErrors.push(...rgValidation.errors)
+
+    // Validar email (opcional mas se for preenchido deve ser válido)
+    if (data.email && data.email.trim() !== '') {
+      const emailValidation = FormValidator.validateEmail(data.email)
+      if (!emailValidation.isValid) allErrors.push(...emailValidation.errors)
+    }
+
+    // Validar celular (obrigatório)
+    const celularValidation = FormValidator.validateTelefoneBR(data.celular, true)
+    if (!celularValidation.isValid) allErrors.push(...celularValidation.errors)
+
+    // Validar telefone (opcional)
+    const telefoneValidation = FormValidator.validateTelefoneBR(data.telefone || '', false)
+    if (!telefoneValidation.isValid) allErrors.push(...telefoneValidation.errors)
+
+    // Validar telefone_alternativo (opcional)
+    const telefoneAltValidation = FormValidator.validateTelefoneBR(data.telefone_alternativo || '', false)
+    if (!telefoneAltValidation.isValid) allErrors.push(...telefoneAltValidation.errors)
+
+    // Validar CEP (opcional)
+    const cepValidation = FormValidator.validateCEP(data.cep || '')
+    if (!cepValidation.isValid) allErrors.push(...cepValidation.errors)
+
+    // Validar número de endereço (opcional mas tem limite de 10 caracteres)
+    const numeroValidation = FormValidator.validateNumeroEndereco(data.numero || '')
+    if (!numeroValidation.isValid) allErrors.push(...numeroValidation.errors)
+
+    // Validar estado (opcional mas se for Brasil deve ser UF válida)
+    if (data.pais?.toUpperCase() === 'BRASIL' && data.estado && data.estado.trim() !== '') {
+      const estadoValidation = FormValidator.validateEstadoBR(data.estado)
+      if (!estadoValidation.isValid) allErrors.push(...estadoValidation.errors)
+    }
+
+    // Validar limites de campos de texto
+    const validacoes = [
+      { field: data.profissao, name: 'Profissão', max: 100 },
+      { field: data.nacionalidade, name: 'Nacionalidade', max: 100 },
+      { field: data.endereco, name: 'Endereço', max: 500 },
+      { field: data.complemento, name: 'Complemento', max: 100 },
+      { field: data.bairro, name: 'Bairro', max: 100 },
+      { field: data.cidade, name: 'Cidade', max: 100 },
+      { field: data.como_conheceu, name: 'Como conheceu', max: 100 },
+      { field: data.indicado_por, name: 'Indicado por', max: 255 },
+      { field: data.categoria, name: 'Categoria', max: 50 },
+    ]
+
+    validacoes.forEach(({ field, name, max }) => {
+      if (field) {
+        const validation = FormValidator.validateTextLength(field, name, max, false)
+        if (!validation.isValid) allErrors.push(...validation.errors)
+      }
+    })
+
+    return {
+      isValid: allErrors.length === 0,
+      errors: allErrors
+    }
+  }
+
   // Criar ou atualizar cliente
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,6 +231,14 @@ export const useClienteForm = () => {
     // Verificar permisos
     if (!canEdit) {
       warning(PERMISSION_MESSAGES.NO_PERMISSION)
+      return null
+    }
+
+    // VALIDAR FORMULARIO antes de procesar
+    const validation = validateClienteForm(formData)
+    if (!validation.isValid) {
+      // Mostrar todos los errores
+      validation.errors.forEach(error => errorNotif(error))
       return null
     }
     
@@ -295,6 +389,81 @@ export const useClienteForm = () => {
     formModal.close()
   }
 
+  // Validar campo individual (para mostrar errores en tiempo real)
+  const validateField = (fieldName: keyof ClienteFormData, value: string | undefined): string | null => {
+    if (!value || value.trim() === '') {
+      // Solo validar campos obligatorios cuando están vacíos
+      if (fieldName === 'nome_completo') return 'Nome completo é obrigatório'
+      if (fieldName === 'celular') return 'Celular é obrigatório'
+      return null
+    }
+
+    switch (fieldName) {
+      case 'nome_completo': {
+        const validation = FormValidator.validateNomeCompleto(value)
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'cpf_cnpj': {
+        const cpfLength = value.replace(/[^\d]/g, '').length
+        if (cpfLength === 11) {
+          const validation = FormValidator.validateCPF(value)
+          return validation.isValid ? null : validation.errors[0]
+        } else if (cpfLength === 14) {
+          const validation = FormValidator.validateCNPJ(value)
+          return validation.isValid ? null : validation.errors[0]
+        } else if (cpfLength > 0) {
+          return 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos'
+        }
+        return null
+      }
+      case 'rg': {
+        const validation = FormValidator.validateRG(value)
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'email': {
+        const validation = FormValidator.validateEmail(value)
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'celular':
+      case 'telefone':
+      case 'telefone_alternativo': {
+        const validation = FormValidator.validateTelefoneBR(value, fieldName === 'celular')
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'cep': {
+        const validation = FormValidator.validateCEP(value)
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'numero': {
+        const validation = FormValidator.validateNumeroEndereco(value)
+        return validation.isValid ? null : validation.errors[0]
+      }
+      case 'estado': {
+        if (formData.pais?.toUpperCase() === 'BRASIL') {
+          const validation = FormValidator.validateEstadoBR(value)
+          return validation.isValid ? null : validation.errors[0]
+        }
+        return null
+      }
+      default:
+        return null
+    }
+  }
+
+  // Handler para preencher endereço quando CEP for encontrado
+  const handleCEPFound = (cepData: CEPData) => {
+    const newData = {
+      ...formData,
+      endereco: cepData.logradouro || formData.endereco,
+      bairro: cepData.bairro || formData.bairro,
+      cidade: cepData.localidade || formData.cidade,
+      estado: cepData.uf || formData.estado,
+      // Manter numero, complemento e outros campos que o usuário já preencheu
+    }
+    handleFormChange(newData)
+    success('Endereço preenchido automaticamente!')
+  }
+
   return {
     // Estados
     clientes,
@@ -314,6 +483,10 @@ export const useClienteForm = () => {
     handleView,
     handleCloseModal,
     handleCloseViewModal,
+    handleCEPFound,
+    
+    // Validación
+    validateField,
     
     // Permisos
     isAdmin,

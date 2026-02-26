@@ -345,4 +345,176 @@ export class FormValidator {
       errors
     };
   }
+
+  /**
+   * Valida CEP brasileiro
+   */
+  static validateCEP(cep: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!cep || cep.trim().length === 0) {
+      return { isValid: true, errors: [] }; // CEP é opcional
+    }
+    
+    const cleanCEP = cep.replace(/[^\d]/g, '');
+    
+    if (cleanCEP.length !== 8) {
+      errors.push('CEP deve ter 8 dígitos');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida número de endereço
+   */
+  static validateNumeroEndereco(numero: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!numero || numero.trim().length === 0) {
+      return { isValid: true, errors: [] }; // Número é opcional
+    }
+    
+    if (numero.trim().length > 10) {
+      errors.push('Número não pode exceder 10 caracteres');
+    }
+    
+    // Solo alfanuméricos, guiones y espacios
+    if (!/^[0-9A-Za-z\s\-/]*$/.test(numero.trim())) {
+      errors.push('Número deve conter apenas letras, números, espaços, hífens ou barras');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida telefone/celular brasileiro
+   */
+  static validateTelefoneBR(telefone: string, obrigatorio: boolean = false): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!telefone || telefone.trim().length === 0) {
+      if (obrigatorio) {
+        errors.push('Telefone é obrigatório');
+      }
+      return { isValid: errors.length === 0, errors };
+    }
+    
+    const cleanPhone = telefone.replace(/[^\d]/g, '');
+    
+    // Telefone fixo: 10 dígitos (XX) XXXX-XXXX
+    // Celular: 11 dígitos (XX) 9XXXX-XXXX
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      errors.push('Telefone deve ter 10 dígitos (fixo) ou 11 dígitos (celular)');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida estado brasileiro (UF)
+   */
+  static validateEstadoBR(estado: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!estado || estado.trim().length === 0) {
+      return { isValid: true, errors: [] }; // Estado é opcional
+    }
+    
+    const estadosValidos = [
+      'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+      'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+      'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    ];
+    
+    if (!estadosValidos.includes(estado.toUpperCase())) {
+      errors.push('Estado deve ser uma UF válida (ex: SP, RJ, MG)');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida nome completo (para cliente)
+   */
+  static validateNomeCompleto(nome: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!nome || nome.trim().length === 0) {
+      errors.push('Nome completo é obrigatório');
+    } else if (nome.trim().length < 3) {
+      errors.push('Nome completo deve ter pelo menos 3 caracteres');
+    } else if (nome.trim().length > 255) {
+      errors.push('Nome completo não pode exceder 255 caracteres');
+    } else if (!/^[a-zA-ZÀ-ÿ\s''-]+$/.test(nome.trim())) {
+      errors.push('Nome deve conter apenas letras, espaços e hífens');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida RG
+   * Aceita números, letras, ponto, hífen e barra
+   */
+  static validateRG(rg: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!rg || rg.trim().length === 0) {
+      return { isValid: true, errors: [] }; // RG é opcional
+    }
+    
+    // Aceitar: números, letras (incluindo X), ponto, hífen, barra e espaços
+    if (!/^[0-9A-Za-zXx\s.\-/]+$/.test(rg.trim())) {
+      errors.push('RG deve conter apenas números, letras, ponto, hífen ou barra');
+    }
+    
+    // Validar tamanho (permitir até 20 caracteres para incluir formatação)
+    if (rg.trim().length > 20) {
+      errors.push('RG não pode exceder 20 caracteres');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Valida campo de texto limitado (genérico)
+   */
+  static validateTextLength(text: string, fieldName: string, maxLength: number, required: boolean = false): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!text || text.trim().length === 0) {
+      if (required) {
+        errors.push(`${fieldName} é obrigatório`);
+      }
+      return { isValid: errors.length === 0, errors };
+    }
+    
+    if (text.length > maxLength) {
+      errors.push(`${fieldName} não pode exceder ${maxLength} caracteres`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
 }
