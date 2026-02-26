@@ -136,7 +136,7 @@ const VARCHAR_FIELDS = [
   'cidade',
   'estado',
   'pais',
-  'cep',
+  // 'cep' - NO formatear, tiene formato especial (12345-678)
   'profissao',
   'nacionalidade',
   
@@ -176,6 +176,14 @@ const VARCHAR_FIELDS = [
 const EMAIL_FIELDS = [
   'email',
   'cliente_email',
+];
+
+/**
+ * Campos con formato especial que NO deben ser modificados
+ * (ya tienen su propio formato específico)
+ */
+const SPECIAL_FORMAT_FIELDS = [
+  'cep', // Formato: 12345-678 (no convertir a mayúsculas)
 ];
 
 /**
@@ -355,6 +363,11 @@ export const formatFieldValue = (fieldName: string, value: string | null | undef
   // Garantizar que siempre retornamos string ('' si es null/undefined)
   // Esto previene warnings de React sobre inputs controlados
   if (!value || typeof value !== 'string') return '';
+  
+  // NO formatear campos con formato especial (mantener tal como están)
+  if (SPECIAL_FORMAT_FIELDS.includes(fieldName)) {
+    return value;
+  }
   
   // No formatear campos de enumeración
   if (isEnumField(fieldName)) {

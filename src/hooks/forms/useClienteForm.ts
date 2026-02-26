@@ -31,10 +31,7 @@ const EMPTY_CLIENTE_FORM: ClienteFormData = {
   celular: '',
   telefone_alternativo: '',
   cep: '',
-  endereco: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
+  endereco_completo: '',
   cidade: '',
   estado: '',
   pais: 'Brasil',
@@ -76,10 +73,7 @@ export const useClienteForm = () => {
     telefone: formModal.item.telefone || '',
     telefone_alternativo: formModal.item.telefone_alternativo || '',
     cep: formModal.item.cep || '',
-    endereco: formModal.item.endereco || '',
-    numero: formModal.item.numero || '',
-    complemento: formModal.item.complemento || '',
-    bairro: formModal.item.bairro || '',
+    endereco_completo: formModal.item.endereco_completo || '',
     cidade: formModal.item.cidade || '',
     estado: formModal.item.estado || '',
     pais: formModal.item.pais || 'Brasil',
@@ -112,10 +106,7 @@ export const useClienteForm = () => {
         telefone: formModal.item.telefone || '',
         telefone_alternativo: formModal.item.telefone_alternativo || '',
         cep: formModal.item.cep || '',
-        endereco: formModal.item.endereco || '',
-        numero: formModal.item.numero || '',
-        complemento: formModal.item.complemento || '',
-        bairro: formModal.item.bairro || '',
+        endereco_completo: formModal.item.endereco_completo || '',
         cidade: formModal.item.cidade || '',
         estado: formModal.item.estado || '',
         categoria: formModal.item.categoria || '',
@@ -188,10 +179,6 @@ export const useClienteForm = () => {
     const cepValidation = FormValidator.validateCEP(data.cep || '')
     if (!cepValidation.isValid) allErrors.push(...cepValidation.errors)
 
-    // Validar número de endereço (opcional mas tem limite de 10 caracteres)
-    const numeroValidation = FormValidator.validateNumeroEndereco(data.numero || '')
-    if (!numeroValidation.isValid) allErrors.push(...numeroValidation.errors)
-
     // Validar estado (opcional mas se for Brasil deve ser UF válida)
     if (data.pais?.toUpperCase() === 'BRASIL' && data.estado && data.estado.trim() !== '') {
       const estadoValidation = FormValidator.validateEstadoBR(data.estado)
@@ -202,9 +189,7 @@ export const useClienteForm = () => {
     const validacoes = [
       { field: data.profissao, name: 'Profissão', max: 100 },
       { field: data.nacionalidade, name: 'Nacionalidade', max: 100 },
-      { field: data.endereco, name: 'Endereço', max: 500 },
-      { field: data.complemento, name: 'Complemento', max: 100 },
-      { field: data.bairro, name: 'Bairro', max: 100 },
+      { field: data.endereco_completo, name: 'Endereço Completo', max: 1000 },
       { field: data.cidade, name: 'Cidade', max: 100 },
       { field: data.como_conheceu, name: 'Como conheceu', max: 100 },
       { field: data.indicado_por, name: 'Indicado por', max: 255 },
@@ -434,10 +419,6 @@ export const useClienteForm = () => {
         const validation = FormValidator.validateCEP(value)
         return validation.isValid ? null : validation.errors[0]
       }
-      case 'numero': {
-        const validation = FormValidator.validateNumeroEndereco(value)
-        return validation.isValid ? null : validation.errors[0]
-      }
       case 'estado': {
         if (formData.pais?.toUpperCase() === 'BRASIL') {
           const validation = FormValidator.validateEstadoBR(value)
@@ -452,16 +433,30 @@ export const useClienteForm = () => {
 
   // Handler para preencher endereço quando CEP for encontrado
   const handleCEPFound = (cepData: CEPData) => {
+    // Construir endereço completo a partir dos dados do CEP
+    const enderecoPartes = [
+      cepData.logradouro,
+      cepData.bairro
+    ].filter(Boolean) // Remover valores vazios
+    
+    const enderecoCompleto = enderecoPartes.length > 0 
+      ? enderecoPartes.join(' - ') 
+      : formData.endereco_completo
+
+    // Formatear CEP de la API (viene sin guion: "77006390" -> "77006-390")
+    const cepFormatted = cepData.cep.length === 8 
+      ? `${cepData.cep.slice(0, 5)}-${cepData.cep.slice(5)}` 
+      : cepData.cep
+
     const newData = {
       ...formData,
-      endereco: cepData.logradouro || formData.endereco,
-      bairro: cepData.bairro || formData.bairro,
+      cep: cepFormatted, // ✅ Preservar formato con guion
+      endereco_completo: enderecoCompleto,
       cidade: cepData.localidade || formData.cidade,
       estado: cepData.uf || formData.estado,
-      // Manter numero, complemento e outros campos que o usuário já preencheu
     }
     handleFormChange(newData)
-    success('Endereço preenchido automaticamente!')
+    // Nota: Mensaje de éxito mostrado inline en el componente (no usar toast global)
   }
 
   return {

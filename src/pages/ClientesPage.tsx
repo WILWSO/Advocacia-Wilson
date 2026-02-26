@@ -439,86 +439,93 @@ const ClientesPage = () => {
                     <h3 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
                       <MapPin size={20} />
                       Endereço
-                    </h3>
+                    </h3>                
+                  
                     
-                    {/* Layout melhorado: grid responsivo com espaçamento adequado */}
+                    {/* Layout reorganizado: CEP primero, luego Endereço Completo, luego ubicación */}
                     <div className="space-y-4">
-                      {/* Linha 1: CEP + Endereço */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Linha 1: CEP (Solo para Brasil - para buscar y auto-rellenar) */}
+                      {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' && (
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
                             CEP
+                            <span className="text-neutral-500 text-xs ml-2">
+                              (Busque para preencher automaticamente)
+                            </span>
                           </label>
-                          <CEPInput
-                            value={clienteForm.formData.cep || ''}
-                            onChange={(value) => clienteForm.handleFormChange({...clienteForm.formData, cep: value})}
-                            onAddressFound={clienteForm.handleCEPFound}
-                            autoSearch={true}
-                            showSearchButton={true}
-                            enableCache={true}
-                          />
+                          <div className="max-w-xs">
+                            <CEPInput
+                              value={clienteForm.formData.cep || ''}
+                              onChange={(value) => clienteForm.handleFormChange({...clienteForm.formData, cep: value})}
+                              onAddressFound={clienteForm.handleCEPFound}
+                              autoSearch={true}
+                              showSearchButton={true}
+                              enableCache={true}
+                            />
+                          </div>
                         </div>
+                      )}
 
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Endereço (Rua/Avenida)
-                          </label>
-                          <input
-                            type="text"
-                            value={clienteForm.formData.endereco || ''}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, endereco: e.target.value})}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="Avenida Paulista"
-                          />
-                        </div>
+                      {/* Linha 2: Endereço Completo (textarea) */}
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                          Endereço Completo
+                          <span className="text-neutral-500 text-xs ml-2">
+                            (Rua/Avenida, Número, Complemento, Bairro)
+                          </span>
+                        </label>
+                        <textarea
+                          value={clienteForm.formData.endereco_completo || ''}
+                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, endereco_completo: e.target.value})}
+                          rows={3}
+                          maxLength={1000}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                          placeholder="Avenida Paulista, 1578 - 3º andar - Bela Vista"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">
+                          {(clienteForm.formData.endereco_completo?.length || 0)}/1000 caracteres
+                        </p>
                       </div>
 
-                      {/* Linha 2: Número + Complemento */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Linha 3: País + Estado + Cidade (ubicación geográfica) */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Número <span className="text-neutral-500 text-xs">(máx. 10 caracteres)</span>
+                            País *
                           </label>
                           <input
                             type="text"
-                            value={clienteForm.formData.numero || ''}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, numero: e.target.value})}
-                            onBlur={(e) => {
-                              const error = clienteForm.validateField('numero', e.target.value)
-                              if (error) clienteForm.errorNotif(error)
+                            value={clienteForm.formData.pais || 'Brasil'}
+                            onChange={(e) => {
+                              clienteForm.handleFormChange({...clienteForm.formData, pais: e.target.value})
+                              // Limpiar estado al cambiar país (validación diferente)
+                              if (e.target.value.toUpperCase() !== 'BRASIL') {
+                                clienteForm.handleFormChange({...clienteForm.formData, pais: e.target.value, estado: ''})
+                              }
                             }}
-                            maxLength={10}
                             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="123, 456-A, s/n"
+                            placeholder="Brasil"
+                            required
                           />
+                          <p className="text-xs text-neutral-500 mt-1">
+                            💡 {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' 
+                              ? 'Estado aceita UF (2 dígitos)' 
+                              : 'Estado aceita nome completo'}
+                          </p>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Complemento
+                            Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF) *' : '/ Provincia'}
                           </label>
                           <input
                             type="text"
-                            value={clienteForm.formData.complemento || ''}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, complemento: e.target.value})}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="Apto 101, Bloco B"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Linha 3: Bairro + Cidade */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Bairro
-                          </label>
-                          <input
-                            type="text"
-                            value={clienteForm.formData.bairro || ''}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, bairro: e.target.value})}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="Centro"
+                            value={clienteForm.formData.estado || ''}
+                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, estado: e.target.value})}
+                            maxLength={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 2 : 50}
+                            placeholder={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'SP' : 'Nombre del estado'}
+                            className={`w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'uppercase' : ''}`}
+                            required={clienteForm.formData.pais?.toUpperCase() === 'BRASIL'}
                           />
                         </div>
 
@@ -532,37 +539,6 @@ const ClientesPage = () => {
                             onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cidade: e.target.value})}
                             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             placeholder="São Paulo"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Linha 4: Estado + País */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Estado {clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? '(UF)' : '/ Provincia'}
-                          </label>
-                          <input
-                            type="text"
-                            value={clienteForm.formData.estado || ''}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, estado: e.target.value})}
-                            maxLength={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 2 : 50}
-                            placeholder={clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'SP' : 'Nombre del estado'}
-                            className={`w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${clienteForm.formData.pais?.toUpperCase() === 'BRASIL' ? 'uppercase' : ''}`}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            País
-                          </label>
-                          <input
-                            type="text"
-                            value={clienteForm.formData.pais || 'Brasil'}
-                            onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, pais: e.target.value})}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="Brasil"
-                            required
                           />
                         </div>
                       </div>
@@ -817,7 +793,7 @@ const ClientesPage = () => {
                   </div>
 
                   {/* Seção 3: Endereço */}
-                  {(clienteForm.viewingCliente.endereco || clienteForm.viewingCliente.cidade || clienteForm.viewingCliente.estado) && (
+                  {(clienteForm.viewingCliente.endereco_completo || clienteForm.viewingCliente.cidade || clienteForm.viewingCliente.estado) && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                         <MapPin size={20} />
@@ -825,14 +801,9 @@ const ClientesPage = () => {
                       </h3>
                       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <div className="space-y-2 text-gray-900">
-                          {clienteForm.viewingCliente.endereco && (
-                            <p>
-                              {clienteForm.viewingCliente.endereco}
-                              {clienteForm.viewingCliente.numero && `, ${clienteForm.viewingCliente.numero}`}
-                              {clienteForm.viewingCliente.complemento && ` - ${clienteForm.viewingCliente.complemento}`}
-                            </p>
+                          {clienteForm.viewingCliente.endereco_completo && (
+                            <p className="whitespace-pre-wrap">{clienteForm.viewingCliente.endereco_completo}</p>
                           )}
-                          {clienteForm.viewingCliente.bairro && <p>{clienteForm.viewingCliente.bairro}</p>}
                           {(clienteForm.viewingCliente.cidade || clienteForm.viewingCliente.estado) && (
                             <p>
                               {clienteForm.viewingCliente.cidade}

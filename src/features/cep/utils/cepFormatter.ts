@@ -50,7 +50,8 @@ export const formatCEPOnType = (value: string): string => {
     return cleaned
   }
   
-  return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 8)}`
+  // Permite todos os dígitos após o hífen (sem limite de 8)
+  return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`
 }
 
 /**
