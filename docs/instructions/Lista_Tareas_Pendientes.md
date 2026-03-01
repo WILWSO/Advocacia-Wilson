@@ -102,7 +102,7 @@ ok, todo funciona muy bien. Ahora vamos hacer un commit antes de empezar con la 
 
 \*\*\*\*\*\*\* Aplicar la solución "mostrar la caja de confirmacion al pulsar fuera del modal sin guardar las modificaciones" a AgendaPage. (useAudienciaForm.ts) // Si hay cambios no guardados, pedir confirmación. La doble confirmacion al pulsar "Descartar" acontece porque invoca el handleClose de BaseModal.tsx 
 
-#### Flujo MODAL:
+#### FLUJO MODAL: verificar informacion no guardada antes de cerrar el form
 Usuario cierra modal → llama onClose={processoForm.resetForm}
 FormModal recibe hasUnsavedChanges={processoForm.hasChanges}
 FormModal → BaseModal verifica hasUnsavedChanges (línea 46-56)
@@ -362,3 +362,13 @@ src/
  ✅- Numero del proceso no puede ser obligatorio. Verificar cual registro depende del dato "numero_processo" para no ser huerfano. Yo quiero que el numero del proceso sea nulable en backend y frontend. Cambiar supabase, rls y typescript. Permitir que todos los roles editen numero_processo, pero que siga siendo Unique. Cualquier dependencia del campo "numero_processo" en la tabla processos_juridicos pase a depender del campo "id". 
 
  ✅- ADMIN puede eliminar procesos. Porque No aparece el boton de eliminar procesos para ADMIN? 
+
+# 01/03/2026
+## MODULARIZACION DE VALIDACIONES Y FORMATACIONES DE FORMS
+1. Basado en los principios de SSoT, escalabilidad Y mantenibilidad, PLANIFICA la posibilidad de modularizar los siguientes procesos del sistema: 
+  a) La formatacion de campos importantes para los formularios de modo que se pueda reutilizar el modulo en otro sistema;
+  b) Validacion de formularios de modo que se pueda reutilizar el modulo en otro sistema;
+  c) Planifica la integracion de estos modulos en formularios;
+  OBS: Considera si los principios KISS (Keep It Simple) y DRY (Don't Repeat Yourself) son compatibles con SSoT y si hay necessidad de fusion o refactorización del codigo. No te olvides: tu recomiendas, yo decido.
+
+2. Verifica las reglas de negocio para crear/editar processos.
