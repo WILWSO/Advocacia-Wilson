@@ -48,11 +48,14 @@ function isValidCNPJ(cnpj: string): boolean {
   let sum = 0;
   let weight = 5;
   for (let i = 0; i < 12; i++) {
-    sum += parseInt(cleaned[i]) * weight;
+    const digit = cleaned[i];
+    if (digit === undefined) return false;
+    sum += parseInt(digit) * weight;
     weight = weight === 2 ? 9 : weight - 1;
   }
   let checkDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (checkDigit !== parseInt(cleaned[12])) {
+  const firstCheck = cleaned[12] ? parseInt(cleaned[12]) : -1;
+  if (checkDigit !== firstCheck) {
     return false;
   }
 
@@ -60,11 +63,14 @@ function isValidCNPJ(cnpj: string): boolean {
   sum = 0;
   weight = 6;
   for (let i = 0; i < 13; i++) {
-    sum += parseInt(cleaned[i]) * weight;
+    const digit = cleaned[i];
+    if (digit === undefined) return false;
+    sum += parseInt(digit) * weight;
     weight = weight === 2 ? 9 : weight - 1;
   }
   checkDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (checkDigit !== parseInt(cleaned[13])) {
+  const secondCheck = cleaned[13] ? parseInt(cleaned[13]) : -1;
+  if (checkDigit !== secondCheck) {
     return false;
   }
 

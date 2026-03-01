@@ -47,22 +47,28 @@ function isValidCPF(cpf: string): boolean {
   // Validate first check digit
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(cleaned[i]) * (10 - i);
+    const digit = cleaned[i];
+    if (digit === undefined) return false;
+    sum += parseInt(digit) * (10 - i);
   }
   let checkDigit = 11 - (sum % 11);
   if (checkDigit >= 10) checkDigit = 0;
-  if (checkDigit !== parseInt(cleaned[9])) {
+  const firstCheck = cleaned[9] ? parseInt(cleaned[9]) : -1;
+  if (checkDigit !== firstCheck) {
     return false;
   }
 
   // Validate second check digit
   sum = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(cleaned[i]) * (11 - i);
+    const digit = cleaned[i];
+    if (digit === undefined) return false;
+    sum += parseInt(digit) * (11 - i);
   }
   checkDigit = 11 - (sum % 11);
   if (checkDigit >= 10) checkDigit = 0;
-  if (checkDigit !== parseInt(cleaned[10])) {
+  const secondCheck = cleaned[10] ? parseInt(cleaned[10]) : -1;
+  if (checkDigit !== secondCheck) {
     return false;
   }
 
