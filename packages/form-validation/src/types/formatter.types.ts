@@ -121,6 +121,8 @@ export interface NumberFormatterOptions extends CreateFormatterOptions {
   currencyPosition?: 'prefix' | 'suffix';
   /** Locale for number formatting */
   locale?: string;
+  /** Preserve original value on error (default: true) */
+  preserveOnError?: boolean;
 }
 
 /**
