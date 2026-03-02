@@ -18,6 +18,8 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.90.1",
+    "@wsolutions/form-components": "file:./packages/form-components",
+    "@wsolutions/form-validation": "file:./packages/form-validation",
     "framer-motion": "^11.0.3",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

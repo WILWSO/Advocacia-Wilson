@@ -36,6 +36,7 @@ import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import { STORAGE_BUCKETS } from '../config/storage';
 import { PAGES_UI } from '../config/messages';
 import { CEPInput } from '../features/cep';
+import { CPFInput, CNPJInput, BrazilianPhoneInput } from '@wsolutions/form-components';
 
 const ClientesPage = () => {
   // SEO centralizado (SSoT para eliminação de configuração dispersa)
@@ -288,18 +289,14 @@ const ClientesPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          CPF/CNPJ
-                        </label>
-                        <input
-                          type="text"
+                        <CPFInput
+                          name="cpf_cnpj"
+                          label="CPF/CNPJ"
                           value={clienteForm.formData.cpf_cnpj || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cpf_cnpj: e.target.value})}
-                          onBlur={(e) => {
-                            const error = clienteForm.validateField('cpf_cnpj', e.target.value)
-                            if (error) clienteForm.errorNotif(error)
-                          }}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                          errorClassName="text-sm text-red-600 mt-1"
                         />
                       </div>
 
@@ -396,39 +393,41 @@ const ClientesPage = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Celular *
-                        </label>
-                        <input
-                          type="tel"
+                        <BrazilianPhoneInput
+                          name="celular"
+                          label="Celular"
                           required
+                          mobileOnly
                           value={clienteForm.formData.celular}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, celular: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                          errorClassName="text-sm text-red-600 mt-1"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Telefone Fixo
-                        </label>
-                        <input
-                          type="tel"
+                        <BrazilianPhoneInput
+                          name="telefone"
+                          label="Telefone Fixo"
+                          landlineOnly
                           value={clienteForm.formData.telefone || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, telefone: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                          errorClassName="text-sm text-red-600 mt-1"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Telefone Alternativo
-                        </label>
-                        <input
-                          type="tel"
+                        <BrazilianPhoneInput
+                          name="telefone_alternativo"
+                          label="Telefone Alternativo"
                           value={clienteForm.formData.telefone_alternativo || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, telefone_alternativo: e.target.value})}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                          errorClassName="text-sm text-red-600 mt-1"
                         />
                       </div>
                     </div>
