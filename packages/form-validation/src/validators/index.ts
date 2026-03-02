@@ -1,6 +1,15 @@
-// Placeholder - Validators will be implemented in Phase 2
-// 🚧 PHASE 2 - IMPLEMENTATION PENDING
+/**
+ * Validators Export
+ * All validators available in the package
+ */
 
-// export * from './core';
-// export * from './composer';
-// export * from './domain/brazilian';
+// Core validators
+export * from './core';
+
+// Composer validators
+export * from './composer';
+
+// Domain-specific validators
+export * from './brazilian';  // Brazilian validators
+export * from './argentina';  // Argentine validators
+export * from './phone.validator';  // Universal phone validator

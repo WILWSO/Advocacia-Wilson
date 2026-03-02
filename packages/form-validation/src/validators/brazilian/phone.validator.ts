@@ -90,24 +90,24 @@ function isValidPhone(phone: string, mobileOnly: boolean, landlineOnly: boolean)
  * 
  * @example
  * ```ts
- * import { createPhoneValidator } from '@wsolutions/form-validation';
+ * import { createBrazilianPhoneValidator } from '@wsolutions/form-validation';
  * 
- * const validator = createPhoneValidator();
+ * const validator = createBrazilianPhoneValidator();
  * await validator.validate('(11) 98765-4321'); // { isValid: true } - mobile
  * await validator.validate('(11) 3456-7890');  // { isValid: true } - landline
  * await validator.validate('11987654321');     // { isValid: true }
  * await validator.validate('+5511987654321');  // { isValid: true }
  * 
  * // Only accept mobile numbers
- * const validator2 = createPhoneValidator({ mobileOnly: true });
+ * const validator2 = createBrazilianPhoneValidator({ mobileOnly: true });
  * await validator2.validate('(11) 3456-7890'); // { isValid: false }
  * 
  * // Only accept landline numbers
- * const validator3 = createPhoneValidator({ landlineOnly: true });
+ * const validator3 = createBrazilianPhoneValidator({ landlineOnly: true });
  * await validator3.validate('(11) 98765-4321'); // { isValid: false }
  * ```
  */
-export function createPhoneValidator(
+export function createBrazilianPhoneValidator(
   options: PhoneValidatorOptions = {}
 ): Validator<string> {
   const {
@@ -186,4 +186,4 @@ export function validatePhone(phone: string, mobileOnly = false, landlineOnly = 
 /**
  * Default export
  */
-export default createPhoneValidator;
+export default createBrazilianPhoneValidator;

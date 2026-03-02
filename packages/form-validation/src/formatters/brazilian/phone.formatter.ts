@@ -10,9 +10,9 @@ import type {
 } from '../../types/formatter.types';
 
 /**
- * Phone formatter options
+ * Brazilian phone formatter options
  */
-export interface PhoneFormatterOptions extends StringFormatterOptions {
+export interface BrazilianPhoneFormatterOptions extends StringFormatterOptions {
   /** Include country code (+55) */
   includeCountryCode?: boolean;
   /** Use international format with spaces */
@@ -117,8 +117,8 @@ function formatPhone(
  * formatter3.format('11987654321');    // "+55 11 98765-4321"
  * ```
  */
-export function createPhoneFormatter(
-  options: PhoneFormatterOptions = {}
+export function createBrazilianPhoneFormatter(
+  options: BrazilianPhoneFormatterOptions = {}
 ): Formatter<string, string> {
   const {
     preserveOnError = true,
@@ -158,9 +158,9 @@ export function createPhoneFormatter(
 }
 
 /**
- * Create an unformat phone formatter (remove formatting)
+ * Create an unformat Brazilian phone formatter (remove formatting)
  */
-export function createUnformatPhoneFormatter(
+export function createUnformatBrazilianPhoneFormatter(
   options: StringFormatterOptions = {}
 ): Formatter<string, string> {
   const { preserveOnError = true } = options;
@@ -192,4 +192,4 @@ export function createUnformatPhoneFormatter(
 /**
  * Default export
  */
-export default createPhoneFormatter;
+export default createBrazilianPhoneFormatter;

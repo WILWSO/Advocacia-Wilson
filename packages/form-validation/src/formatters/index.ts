@@ -1,6 +1,15 @@
-// Placeholder - Formatters will be implemented in Phase 2
-// 🚧 PHASE 2 - IMPLEMENTATION PENDING
+/**
+ * Formatters Export
+ * All formatters available in the package
+ */
 
-// export * from './core';
-// export * from './composer';
-// export * from './domain/brazilian';
+// Core formatters
+export * from './core';
+
+// Composer formatters
+export * from './composer';
+
+// Domain-specific formatters
+export * from './brazilian';  // Brazilian formatters
+export * from './argentina';  // Argentine formatters
+export * from './phone.formatter';  // Universal phone formatter

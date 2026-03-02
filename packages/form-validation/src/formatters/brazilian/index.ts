@@ -19,7 +19,7 @@ export {
 } from './cep.formatter';
 
 export {
-  createPhoneFormatter,
-  createUnformatPhoneFormatter,
+  createBrazilianPhoneFormatter,
+  createUnformatBrazilianPhoneFormatter,
 } from './phone.formatter';
-export type { PhoneFormatterOptions } from './phone.formatter';
+export type { BrazilianPhoneFormatterOptions } from './phone.formatter';

@@ -1,7 +1,18 @@
-// Placeholder - Hooks will be implemented in Phase 3
-// 🚧 PHASE 2 - IMPLEMENTATION PENDING
+/**
+ * React Hooks for Form Validation and Formatting
+ * 
+ * @packageDocumentation
+ */
 
-// export * from './validation';
-// export * from './formatting';
+// Validation hooks
+export * from './validation';
+
+// Formatting hooks
+export * from './formatting';
+
+// State hooks (Phase 3 Day 2)
 // export * from './state';
+
+// UI hooks (Phase 3 Day 2)
 // export * from './ui';
+
