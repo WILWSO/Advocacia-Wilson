@@ -57,6 +57,8 @@ export interface FieldGroupProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   helpText?: string;
   /** Help text className */
   helpTextClassName?: string;
+  /** Input element className */
+  inputClassName?: string;
   /** Required field indicator */
   required?: boolean;
   /** Required indicator text */
@@ -114,6 +116,7 @@ export const FieldGroup = forwardRef<HTMLInputElement, FieldGroupProps>(
       invalidClassName = 'input-invalid',
       helpText,
       helpTextClassName = 'help-text',
+      inputClassName: customInputClassName,
       required = false,
       requiredIndicator = '*',
       className,
@@ -149,7 +152,7 @@ export const FieldGroup = forwardRef<HTMLInputElement, FieldGroupProps>(
 
     // Determine input className based on validation state
     const inputClassName = React.useMemo(() => {
-      const classes = [className];
+      const classes = [customInputClassName || className];
       
       if (showValidationState && isTouched) {
         if (isValid) {
@@ -160,7 +163,7 @@ export const FieldGroup = forwardRef<HTMLInputElement, FieldGroupProps>(
       }
       
       return classes.filter(Boolean).join(' ');
-    }, [className, showValidationState, isTouched, isValid, isInvalid, validClassName, invalidClassName]);
+    }, [customInputClassName, className, showValidationState, isTouched, isValid, isInvalid, validClassName, invalidClassName]);
 
     // Render error message
     const errorNode = React.useMemo(() => {
