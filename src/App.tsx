@@ -9,6 +9,7 @@ import WhatsAppButton from './components/shared/buttons/WhatsAppButton';
 import SkipLinks from './components/layout/SkipLinks';
 import { PageLoader } from './components/shared/LoadingFallback';
 import { cn } from './utils/cn';
+import { MaintenanceGuard, MaintenanceBadge, useMaintenanceMode } from './features/maintenance';
 
 // Lazy load TODAS las páginas para optimizar bundle inicial
 // Páginas públicas
@@ -39,6 +40,10 @@ function App() {
   const isSocialRoute = location.pathname === '/social';
   const shouldHideHeader = isAdminRoute || isLoginRoute;
 
+  // Check maintenance mode status
+  const { isMaintenanceMode, isDevAccess } = useMaintenanceMode();
+  const showDevBadge = isMaintenanceMode && isDevAccess;
+
   useEffect(() => {
     if (!location.hash) {
       // Si no hay hash, scroll al tope
@@ -64,7 +69,8 @@ function App() {
   }, [location.pathname, location.hash]);
 
   return (
-    <NotificationProvider>
+    <MaintenanceGuard>
+      <NotificationProvider>
       <div className="font-sans text-neutral-800 flex flex-col min-h-screen">
         <SkipLinks />
         <OfflineNotification />
@@ -124,8 +130,10 @@ function App() {
       </main>
       {!shouldHideHeader && <Footer />}
       {!shouldHideHeader && <WhatsAppButton />}
+      {showDevBadge && <MaintenanceBadge />}
       </div>
     </NotificationProvider>
+    </MaintenanceGuard>
   );
 }
 

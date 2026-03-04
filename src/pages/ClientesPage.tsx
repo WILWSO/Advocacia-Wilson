@@ -36,7 +36,9 @@ import AccessibleButton from '../components/shared/buttons/AccessibleButton';
 import { STORAGE_BUCKETS } from '../config/storage';
 import { PAGES_UI } from '../config/messages';
 import { CEPInput } from '../features/cep';
-import { CPFInput, CNPJInput, BrazilianPhoneInput } from '@wsolutions/form-components';
+import { CPFInput, CNPJInput, InternationalPhoneInput, EmailInput } from '@wsolutions/form-components';
+import { ClientTypeSelector } from '../components/domain/ClientTypeSelector';
+import { useClientTypeFields } from '../hooks/cliente/useClientTypeFields';
 
 const ClientesPage = () => {
   // SEO centralizado (SSoT para eliminação de configuração dispersa)
@@ -44,6 +46,9 @@ const ClientesPage = () => {
   
   // Hook de formulário (lógica de negócio)
   const clienteForm = useClienteForm();
+  
+  // Hook de configuração de campos dinâmicos (PF/PJ)
+  const fieldsConfig = useClientTypeFields(clienteForm.formData.tipo_cliente || 'PF');
   
   // Hook de filtros
   const filters = useClienteFilters(clienteForm.clientes);
@@ -269,18 +274,38 @@ const ClientesPage = () => {
                     )}
                   </AnimatePresence>
                   
+                  {/* Selector de Tipo de Cliente */}
+                  <div className="mb-6 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                    <ClientTypeSelector
+                      value={clienteForm.formData.tipo_cliente || 'PF'}
+                      onChange={(tipo) => clienteForm.handleFormChange({
+                        ...clienteForm.formData, 
+                        tipo_cliente: tipo,
+                        // Limpiar estado_civil si cambia a PJ
+                        ...(tipo === 'PJ' ? { estado_civil: undefined } : {})
+                      })}
+                      disabled={!clienteForm.isAdmin && clienteForm.editingCliente !== null}
+                    />
+                  </div>
+                  
                   {/* Información Personal */}
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                      <User size={18} className="sm:w-5 sm:h-5" />
-                      Informações Pessoais
+                      {clienteForm.formData.tipo_cliente === 'PJ' ? (
+                        <Building2 size={18} className="sm:w-5 sm:h-5" />
+                      ) : (
+                        <User size={18} className="sm:w-5 sm:h-5" />
+                      )}
+                      {clienteForm.formData.tipo_cliente === 'PJ' ? 'Informações da Empresa' : 'Informações Pessoais'}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Nome Completo / Razão Social - Dinámico */}
                       <div className="md:col-span-2">
                         <RestrictedInput
-                          label="Nome Completo"
+                          label={fieldsConfig.nome_completo.label}
+                          placeholder={fieldsConfig.nome_completo.placeholder}
                           type="text"
-                          required
+                          required={fieldsConfig.nome_completo.required}
                           value={clienteForm.formData.nome_completo}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, nome_completo: e.target.value})}
                           isRestricted={!clienteForm.isAdmin && clienteForm.editingCliente !== null}
@@ -288,33 +313,53 @@ const ClientesPage = () => {
                         />
                       </div>
                       
+                      {/* CPF/CNPJ - Dinámico con componente condicional */}
                       <div>
-                        <CPFInput
-                          name="cpf_cnpj"
-                          label="CPF/CNPJ"
-                          value={clienteForm.formData.cpf_cnpj || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, cpf_cnpj: e.target.value})}
-                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
-                          errorClassName="text-sm text-red-600 mt-1"
-                        />
+                        {fieldsConfig.cpf_cnpj.component === 'CPFInput' ? (
+                          <CPFInput
+                            key={`cpf-${clienteForm.editingCliente?.id || 'new'}-${clienteForm.formData.tipo_cliente}`}
+                            name="cpf_cnpj"
+                            label={fieldsConfig.cpf_cnpj.label}
+                            placeholder={fieldsConfig.cpf_cnpj.placeholder}
+                            initialValue={clienteForm.formData.cpf_cnpj || ''}
+                            onChange={(_, __, clean) => clienteForm.handleFormChange({...clienteForm.formData, cpf_cnpj: clean})}
+                            inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                            errorClassName="text-sm text-red-600 mt-1"
+                          />
+                        ) : (
+                          <CNPJInput
+                            key={`cnpj-${clienteForm.editingCliente?.id || 'new'}-${clienteForm.formData.tipo_cliente}`}
+                            name="cpf_cnpj"
+                            label={fieldsConfig.cpf_cnpj.label}
+                            placeholder={fieldsConfig.cpf_cnpj.placeholder}
+                            initialValue={clienteForm.formData.cpf_cnpj || ''}
+                            onChange={(_, __, clean) => clienteForm.handleFormChange({...clienteForm.formData, cpf_cnpj: clean})}
+                            inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                            errorClassName="text-sm text-red-600 mt-1"
+                          />
+                        )}
                       </div>
 
+                      {/* RG / Inscrição Estadual - Dinámico */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          RG
+                          {fieldsConfig.rg.label}
                         </label>
                         <input
                           type="text"
+                          placeholder={fieldsConfig.rg.placeholder}
                           value={clienteForm.formData.rg || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, rg: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
 
+                      {/* Data de Nascimento / Início das Atividades - Dinámico */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Data de Nascimento
+                          {fieldsConfig.data_nascimento.label}
                         </label>
                         <input
                           type="date"
@@ -324,45 +369,52 @@ const ClientesPage = () => {
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Estado Civil
-                        </label>
-                        <select
-                          value={clienteForm.formData.estado_civil || ''}
-                          onChange={(e) => clienteForm.handleFormChange({
-                            ...clienteForm.formData, 
-                            estado_civil: e.target.value === '' ? undefined : e.target.value as Cliente['estado_civil']
-                          })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        >
-                          <option value="">Selecione</option>
-                          <option value="solteiro">Solteiro(a)</option>
-                          <option value="casado">Casado(a)</option>
-                          <option value="divorciado">Divorciado(a)</option>
-                          <option value="viuvo">Viúvo(a)</option>
-                          <option value="uniao_estavel">União Estável</option>
-                        </select>
-                      </div>
+                      {/* Estado Civil - Solo PF (Condicional) */}
+                      {fieldsConfig.estado_civil.visible && (
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            {fieldsConfig.estado_civil.label}
+                          </label>
+                          <select
+                            value={clienteForm.formData.estado_civil || ''}
+                            onChange={(e) => clienteForm.handleFormChange({
+                              ...clienteForm.formData, 
+                              estado_civil: e.target.value === '' ? undefined : e.target.value as Cliente['estado_civil']
+                            })}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          >
+                            <option value="">Selecione</option>
+                            <option value="solteiro">Solteiro(a)</option>
+                            <option value="casado">Casado(a)</option>
+                            <option value="divorciado">Divorciado(a)</option>
+                            <option value="viuvo">Viúvo(a)</option>
+                            <option value="uniao_estavel">União Estável</option>
+                          </select>
+                        </div>
+                      )}
 
+                      {/* Profissão / Atividade Principal - Dinámico */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Profissão
+                          {fieldsConfig.profissao.label}
                         </label>
                         <input
                           type="text"
+                          placeholder={fieldsConfig.profissao.placeholder}
                           value={clienteForm.formData.profissao || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, profissao: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
 
+                      {/* Nacionalidade / Natureza Jurídica - Dinámico */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Nacionalidade
+                          {fieldsConfig.nacionalidade.label}
                         </label>
                         <input
                           type="text"
+                          placeholder={fieldsConfig.nacionalidade.placeholder}
                           value={clienteForm.formData.nacionalidade || ''}
                           onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, nacionalidade: e.target.value})}
                           className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -379,27 +431,29 @@ const ClientesPage = () => {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          value={clienteForm.formData.email || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, email: e.target.value})}                          onBlur={(e) => {
-                            const error = clienteForm.validateField('email', e.target.value)
-                            if (error) clienteForm.errorNotif(error)
-                          }}                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        <EmailInput
+                          key={`email-${clienteForm.editingCliente?.id || 'new'}`}
+                          name="email"
+                          label="Email"
+                          initialValue={clienteForm.formData.email || ''}
+                          onChange={(raw) => clienteForm.handleFormChange({...clienteForm.formData, email: raw})}
+                          inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          labelClassName="block text-sm font-medium text-neutral-700 mb-2"
+                          errorClassName="text-sm text-red-600 mt-1"
+                          placeholder="seu@email.com"
                         />
                       </div>
 
                       <div>
-                        <BrazilianPhoneInput
+                        <InternationalPhoneInput
+                          key={`celular-${clienteForm.editingCliente?.id || 'new'}`}
                           name="celular"
                           label="Celular"
+                          showCountrySelector
+                          defaultCountry="BR"
                           required
-                          mobileOnly
-                          value={clienteForm.formData.celular}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, celular: e.target.value})}
+                          initialValue={clienteForm.formData.celular}
+                          onChange={(_, __, clean) => clienteForm.handleFormChange({...clienteForm.formData, celular: clean})}
                           inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           labelClassName="block text-sm font-medium text-neutral-700 mb-2"
                           errorClassName="text-sm text-red-600 mt-1"
@@ -407,12 +461,14 @@ const ClientesPage = () => {
                       </div>
 
                       <div>
-                        <BrazilianPhoneInput
+                        <InternationalPhoneInput
+                          key={`telefone-${clienteForm.editingCliente?.id || 'new'}`}
                           name="telefone"
                           label="Telefone Fixo"
-                          landlineOnly
-                          value={clienteForm.formData.telefone || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, telefone: e.target.value})}
+                          showCountrySelector
+                          defaultCountry="BR"
+                          initialValue={clienteForm.formData.telefone || ''}
+                          onChange={(_, __, clean) => clienteForm.handleFormChange({...clienteForm.formData, telefone: clean})}
                           inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           labelClassName="block text-sm font-medium text-neutral-700 mb-2"
                           errorClassName="text-sm text-red-600 mt-1"
@@ -420,11 +476,14 @@ const ClientesPage = () => {
                       </div>
 
                       <div>
-                        <BrazilianPhoneInput
+                        <InternationalPhoneInput
+                          key={`telefone_alt-${clienteForm.editingCliente?.id || 'new'}`}
                           name="telefone_alternativo"
                           label="Telefone Alternativo"
-                          value={clienteForm.formData.telefone_alternativo || ''}
-                          onChange={(e) => clienteForm.handleFormChange({...clienteForm.formData, telefone_alternativo: e.target.value})}
+                          showCountrySelector
+                          defaultCountry="BR"
+                          initialValue={clienteForm.formData.telefone_alternativo || ''}
+                          onChange={(_, __, clean) => clienteForm.handleFormChange({...clienteForm.formData, telefone_alternativo: clean})}
                           inputClassName="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           labelClassName="block text-sm font-medium text-neutral-700 mb-2"
                           errorClassName="text-sm text-red-600 mt-1"
