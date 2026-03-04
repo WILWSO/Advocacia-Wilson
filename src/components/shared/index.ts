@@ -15,6 +15,13 @@ export {
   type BaseListItem
 } from './BaseComponents'
 
+// Componente de selector de vista (Supabase-style)
+export {
+  ViewSwitcher,
+  ViewSwitcherLabeled,
+  type ViewMode
+} from './ViewSwitcher'
+
 // Componentes de modal
 export {
   BaseModal,

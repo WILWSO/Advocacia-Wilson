@@ -1,58 +1,58 @@
-/**
- * 🎯 DEMONSTRAÇÃO PRÁTICA COMPLETA - Sistema SSoT com Formulários Realistas
+﻿/**
+ * ?? DEMONSTRAO PRTICA COMPLETA - Sistema SSoT com Formulrios Realistas
  * 
- * Esta página mostra um exemplo REAL de como usar o sistema SSoT com:
- * ✅ Formulários complexos com múltiplos tipos de campos
- * ✅ Validação em tempo real e formatação automática
- * ✅ Detecção de mudanças não salvas (useUnsavedChanges)
- * ✅ Estados de carregamento e submissão
- * ✅ Tratamento de erros e duplicatas
- * ✅ Notificações integradas
- * ✅ Responsividade completa
+ * Esta pgina mostra um exemplo REAL de como usar o sistema SSoT com:
+ * ? Formulrios complexos com mltiplos tipos de campos
+ * ? Validao em tempo real e formatao automtica
+ * ? Deteco de mudanas no salvas (useUnsavedChanges)
+ * ? Estados de carregamento e submisso
+ * ? Tratamento de erros e duplicatas
+ * ? Notificaes integradas
+ * ? Responsividade completa
  * 
- * 🚀 Para ver esta página:
+ * ?? Para ver esta pgina:
  * 1. Adicionar rota no router: /demo-ssot
  * 2. Acessar: http://localhost:5173/demo-ssot
  * 
- * 🧪 TESTES RECOMENDADOS:
+ * ?? TESTES RECOMENDADOS:
  * 
- * 1. **Formatação Automática**:
- *    • Digite um nome → convertido para MAIÚSCULAS
- *    • Digite um email → convertido para minúsculas  
- *    • Digite CPF → formatação automática 123.456.789-00
- *    • Digite telefone → formatação automática (11) 99999-9999
- *    • Digite CEP → formatação automática 12345-678
+ * 1. **Formatao Automtica**:
+ *     Digite um nome ? convertido para MAISCULAS
+ *     Digite um email ? convertido para minsculas  
+ *     Digite CPF ? formatao automtica 123.456.789-00
+ *     Digite telefone ? formatao automtica (11) 99999-9999
+ *     Digite CEP ? formatao automtica 12345-678
  * 
- * 2. **Validação em Tempo Real**:
- *    • Deixe campos obrigatórios vazios → erro aparece
- *    • Digite CPF inválido → erro específico
- *    • Digite email inválido → erro específico
- *    • Corrija o campo → erro desaparece automaticamente
+ * 2. **Validao em Tempo Real**:
+ *     Deixe campos obrigatrios vazios ? erro aparece
+ *     Digite CPF invlido ? erro especfico
+ *     Digite email invlido ? erro especfico
+ *     Corrija o campo ? erro desaparece automaticamente
  * 
- * 3. **Detecção de Mudanças Não Salvas**:
- *    • Abra modal de criação/edição
- *    • Digite algo em qualquer campo
- *    • Tente fechar o modal → confirmação aparece
- *    • Escolha "Descartar" ou "Continuar editando"
+ * 3. **Deteco de Mudanas No Salvas**:
+ *     Abra modal de criao/edio
+ *     Digite algo em qualquer campo
+ *     Tente fechar o modal ? confirmao aparece
+ *     Escolha "Descartar" ou "Continuar editando"
  * 
- * 4. **Validação de Duplicatas**:
- *    • Tente criar cliente com CPF já existente
- *    • Tente criar cliente com email já existente
- *    • Veja mensagens específicas de erro
+ * 4. **Validao de Duplicatas**:
+ *     Tente criar cliente com CPF j existente
+ *     Tente criar cliente com email j existente
+ *     Veja mensagens especficas de erro
  * 
  * 5. **Estados de Carregamento**:
- *    • Clique em "Criar" ou "Atualizar"
- *    • Veja botão ficar desabilitado durante submissão
- *    • Veja spinner de loading
+ *     Clique em "Criar" ou "Atualizar"
+ *     Veja boto ficar desabilitado durante submisso
+ *     Veja spinner de loading
  * 
  * 6. **Campos Diversos**:
- *    • Text inputs com formatação
- *    • Email e telefone com validação
- *    • Date picker
- *    • Select options
- *    • Checkbox
- *    • Textarea
- *    • Campos obrigatórios vs opcionais
+ *     Text inputs com formatao
+ *     Email e telefone com validao
+ *     Date picker
+ *     Select options
+ *     Checkbox
+ *     Textarea
+ *     Campos obrigatrios vs opcionais
  */
 
 import React, { useState, useCallback } from 'react'
@@ -67,7 +67,9 @@ import {
   ActionButton,
   BaseButton,
   IconButton,
-  ButtonGroup
+  ButtonGroup,
+  ViewSwitcher,
+  type ViewMode
 } from '../components/shared'
 import { FormModal } from '../components/shared/modales/FormModal'
 import { 
@@ -81,13 +83,13 @@ import { APP_ROUTES, BRAZILIAN_APIS } from '../config'
 import { getStatusBadge } from '../utils/styleHelpers'
 import { formatFieldValue } from '../utils/fieldFormatters'
 
-// Opções para selects
+// Opes para selects
 const ESTADO_CIVIL_OPTIONS = [
   { value: 'solteiro', label: 'Solteiro(a)' },
   { value: 'casado', label: 'Casado(a)' },
   { value: 'divorciado', label: 'Divorciado(a)' },
-  { value: 'viuvo', label: 'Viúvo(a)' },
-  { value: 'uniao_estavel', label: 'União Estável' }
+  { value: 'viuvo', label: 'Vivo(a)' },
+  { value: 'uniao_estavel', label: 'Unio Estvel' }
 ]
 
 const STATUS_OPTIONS = [
@@ -96,18 +98,18 @@ const STATUS_OPTIONS = [
   { value: 'suspenso', label: 'Suspenso' }
 ]
 
-// Datos de ejemplo más completos con más campos
+// Datos de ejemplo ms completos con ms campos
 const exemploClientes = [
   {
     id: '1',
-    nome_completo: 'João Silva Santos',
+    nome_completo: 'Joo Silva Santos',
     email: 'joao.silva@email.com',
     telefone: '(11) 99999-9999',
     cpf: '123.456.789-00',
     data_nascimento: '1985-03-15',
     estado_civil: 'solteiro',
-    endereco: 'Rua das Flores, 123 - São Paulo/SP',
-    cidade: 'São Paulo',
+    endereco: 'Rua das Flores, 123 - So Paulo/SP',
+    cidade: 'So Paulo',
     estado: 'SP',
     cep: '01234-567',
     profissao: 'Engenheiro',
@@ -115,7 +117,7 @@ const exemploClientes = [
     status: 'ativo' as const,
     vip: true,
     casos: 5,
-    observacoes: 'Cliente preferencial com histórico de pontualidade nos pagamentos.'
+    observacoes: 'Cliente preferencial com histrico de pontualidade nos pagamentos.'
   },
   {
     id: '2', 
@@ -125,12 +127,12 @@ const exemploClientes = [
     cpf: '987.654.321-00',
     data_nascimento: '1978-07-22',
     estado_civil: 'casado',
-    endereco: 'Av. Paulista, 456 - São Paulo/SP',
-    cidade: 'São Paulo',
+    endereco: 'Av. Paulista, 456 - So Paulo/SP',
+    cidade: 'So Paulo',
     estado: 'SP',
     cep: '01310-100',
-    profissao: 'Médica',
-    empresa: 'Hospital São Lucas',
+    profissao: 'Mdica',
+    empresa: 'Hospital So Lucas',
     status: 'inativo' as const,
     vip: false,
     casos: 2,
@@ -144,12 +146,12 @@ const exemploClientes = [
     cpf: '456.789.123-00',
     data_nascimento: '1990-12-08',
     estado_civil: 'divorciado',
-    endereco: 'Rua Augusta, 789 - São Paulo/SP',
-    cidade: 'São Paulo',
+    endereco: 'Rua Augusta, 789 - So Paulo/SP',
+    cidade: 'So Paulo',
     estado: 'SP',
     cep: '01305-000',
     profissao: 'Advogado',
-    empresa: 'Escritório Costa & Associados',
+    empresa: 'Escritrio Costa & Associados',
     status: 'ativo' as const,
     vip: true,
     casos: 8,
@@ -157,7 +159,7 @@ const exemploClientes = [
   }
 ]
 
-// 🎯 CONFIGURAÇÃO SSoT - Single Source of Truth
+// ?? CONFIGURAO SSoT - Single Source of Truth
 const CLIENTE_FORM_CONFIG = {
   fields: [
     {
@@ -166,7 +168,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'text',
       required: true,
       placeholder: 'Digite o nome completo do cliente',
-      helpText: 'Será convertido automaticamente para MAIÚSCULAS',
+      helpText: 'Ser convertido automaticamente para MAISCULAS',
       gridClass: 'md:col-span-2'
     },
     {
@@ -175,7 +177,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'email', 
       required: true,
       placeholder: 'cliente@exemplo.com',
-      helpText: 'Será convertido automaticamente para minúsculas',
+      helpText: 'Ser convertido automaticamente para minsculas',
       gridClass: ''
     },
     {
@@ -184,7 +186,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'text',
       required: true,
       placeholder: '000.000.000-00',
-      helpText: 'Formatação automática com validação',
+      helpText: 'Formatao automtica com validao',
       gridClass: ''
     },
     {
@@ -193,7 +195,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'tel',
       required: true,
       placeholder: '(11) 99999-9999',
-      helpText: 'Formatação automática de telefone',
+      helpText: 'Formatao automtica de telefone',
       gridClass: ''
     },
     {
@@ -214,11 +216,11 @@ const CLIENTE_FORM_CONFIG = {
     },
     {
       name: 'profissao',
-      label: 'Profissão',
+      label: 'Profisso',
       type: 'text',
       required: false,
-      placeholder: 'Ex: Engenheiro, Médico, etc.',
-      helpText: 'Será convertido para MAIÚSCULAS',
+      placeholder: 'Ex: Engenheiro, Mdico, etc.',
+      helpText: 'Ser convertido para MAISCULAS',
       gridClass: ''
     },
     {
@@ -227,15 +229,15 @@ const CLIENTE_FORM_CONFIG = {
       type: 'text',
       required: false,
       placeholder: 'Nome da empresa onde trabalha',
-      helpText: 'Será convertido para MAIÚSCULAS',
+      helpText: 'Ser convertido para MAISCULAS',
       gridClass: ''
     },
     {
       name: 'endereco',
-      label: 'Endereço Completo',
+      label: 'Endereo Completo',
       type: 'textarea',
       required: true,
-      placeholder: 'Rua, número, bairro, complemento...',
+      placeholder: 'Rua, nmero, bairro, complemento...',
       rows: 3,
       gridClass: 'md:col-span-2'
     },
@@ -245,7 +247,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'text',
       required: true,
       placeholder: 'Nome da cidade',
-      helpText: 'Será convertido para MAIÚSCULAS',
+      helpText: 'Ser convertido para MAISCULAS',
       gridClass: ''
     },
     {
@@ -263,7 +265,7 @@ const CLIENTE_FORM_CONFIG = {
       type: 'text',
       required: false,
       placeholder: '00000-000',
-      helpText: 'Formatação automática',
+      helpText: 'Formatao automtica',
       gridClass: ''
     },
     {
@@ -284,18 +286,18 @@ const CLIENTE_FORM_CONFIG = {
     },
     {
       name: 'observacoes',
-      label: 'Observações Gerais',
+      label: 'Observaes Gerais',
       type: 'textarea',
       required: false,
-      placeholder: 'Informações adicionais sobre o cliente...',
-      helpText: 'Campo opcional para anotações importantes',
+      placeholder: 'Informaes adicionais sobre o cliente...',
+      helpText: 'Campo opcional para anotaes importantes',
       rows: 3,
       gridClass: 'md:col-span-2'
     }
   ]
 }
 
-// 🎯 COMPONENTE SSoT - Renderizador de Campo Universal
+// ?? COMPONENTE SSoT - Renderizador de Campo Universal
 const DynamicField: React.FC<{
   field: typeof CLIENTE_FORM_CONFIG.fields[0]
   value: any
@@ -308,7 +310,7 @@ const DynamicField: React.FC<{
     value: value || '',
     onChange: (e: any) => {
       const newValue = field.type === 'checkbox' ? e.target.checked : e.target.value
-      // 🎯 SSoT - Usar sistema centralizado de formatação
+      // ?? SSoT - Usar sistema centralizado de formatao
       const formattedValue = field.type === 'checkbox' ? newValue : formatFieldValue(field.name, newValue)
       onChange(formattedValue)
     },
@@ -381,7 +383,7 @@ const DynamicField: React.FC<{
   )
 }
 
-// 🎯 VALIDAÇÃO SSoT - Sistema Centralizado
+// ?? VALIDAO SSoT - Sistema Centralizado
 const useClienteValidation = () => {
   const { formatAndValidateEmail, formatAndValidateCpfCnpj } = useFormValidation()
 
@@ -392,17 +394,17 @@ const useClienteValidation = () => {
       const value = data[field.name]
 
       if (field.required && (!value || (typeof value === 'string' && !value.trim()))) {
-        errors[field.name] = `${field.label} é obrigatório`
+        errors[field.name] = `${field.label}  obrigatrio`
         return
       }
 
-      // Validações específicas por tipo
+      // Validaes especficas por tipo
       switch (field.name) {
         case 'email':
           if (value) {
             const emailResult = formatAndValidateEmail(value)
             if (!emailResult.isValid) {
-              errors[field.name] = emailResult.error || 'Email inválido'
+              errors[field.name] = emailResult.error || 'Email invlido'
             }
           }
           break
@@ -411,7 +413,7 @@ const useClienteValidation = () => {
           if (value) {
             const cpfResult = formatAndValidateCpfCnpj(value)
             if (!cpfResult.isValid) {
-              errors[field.name] = cpfResult.error || 'CPF inválido'
+              errors[field.name] = cpfResult.error || 'CPF invlido'
             }
           }
           break
@@ -425,7 +427,7 @@ const useClienteValidation = () => {
 }
 
 const DemoSSoTPage = () => {
-  // 🎯 Usando hooks centralizados SSoT
+  // ?? Usando hooks centralizados SSoT
   const { execute: executeGeneral, loading } = useAsyncOperation()
   const { showToast } = useFormNotifications()
   const { viewModal, handleView, closeViewModal } = useCrudOperations()
@@ -438,13 +440,16 @@ const DemoSSoTPage = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingClient, setEditingClient] = useState<any>(null)
 
-  // Estados de filtros/búsqueda
+  // Estados de filtros/busqueda
   const [searchTerm, setSearchTerm] = useState('')
   const [documentSearch, setDocumentSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('todos')
   const [vipFilter, setVipFilter] = useState(false)
 
-  // Estados do formulário com dados mais completos
+  // Estado para controlar el modo de vista (Supabase-style)
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+
+  // Estados do formulrio com dados mais completos
   const [createFormData, setCreateFormData] = useState({
     nome_completo: '',
     email: '',
@@ -481,7 +486,7 @@ const DemoSSoTPage = () => {
     observacoes: ''
   })
 
-  // 🎯 Usando useUnsavedChanges para detecção de mudanças
+  // ?? Usando useUnsavedChanges para deteco de mudanas
   const initialCreateData = {
     nome_completo: '',
     email: '',
@@ -503,19 +508,19 @@ const DemoSSoTPage = () => {
   const createUnsavedChanges = useUnsavedChanges(initialCreateData)
   const editUnsavedChanges = useUnsavedChanges(editingClient || initialCreateData)
 
-  // Estados de cambios não salvos
+  // Estados de cambios no salvos
   const hasCreateChanges = createUnsavedChanges.hasChanges
   const hasEditChanges = editUnsavedChanges.hasChanges
 
-  // Estados para validação
+  // Estados para validao
   const [validationErrors, setValidationErrors] = useState<any>({})
   const [isFormSubmitting, setIsFormSubmitting] = useState(false)
 
-  // 🎯 Função para formatar campos durante a digitação
+  // ?? Funo para formatar campos durante a digitao
   const handleFieldChange = (field: string, value: any, formType: 'create' | 'edit') => {
     let formattedValue = value
 
-    // Formatação automática conforme o campo
+    // Formatao automtica conforme o campo
     switch (field) {
       case 'nome_completo':
       case 'cidade':
@@ -539,7 +544,7 @@ const DemoSSoTPage = () => {
         formattedValue = value
     }
 
-    // Atualizar o formulário correspondente
+    // Atualizar o formulrio correspondente
     if (formType === 'create') {
       const newData = { ...createFormData, [field]: formattedValue }
       setCreateFormData(newData)
@@ -560,7 +565,7 @@ const DemoSSoTPage = () => {
     }
   }
 
-  // 🎯 Reset formulários
+  // ?? Reset formulrios
   const resetCreateForm = () => {
     setCreateFormData(initialCreateData)
     setValidationErrors({})
@@ -591,14 +596,14 @@ const DemoSSoTPage = () => {
     editUnsavedChanges.resetInitial(editingClient || initialCreateData)
   }
 
-  // Funções usando sistema base
+  // Funes usando sistema base
   const handleAddClient = () => {
-    console.log('Abrindo modal de criação de cliente')
+    console.log('Abrindo modal de criao de cliente')
     resetCreateForm()
     setShowCreateModal(true)
   }
   const handleEdit = async (client: any) => {
-    console.log('Abrindo modal de edição para:', client.nome_completo)
+    console.log('Abrindo modal de edio para:', client.nome_completo)
     setEditingClient(client)
     setEditFormData({
       nome_completo: client.nome_completo || '',
@@ -624,7 +629,7 @@ const DemoSSoTPage = () => {
   const handleDelete = async (client: any) => {
     try {
       console.log('Cliente deletado:', client.nome_completo)
-      showToast('success', `Cliente ${client.nome_completo} excluído com sucesso!`)
+      showToast('success', `Cliente ${client.nome_completo} excludo com sucesso!`)
       setShowConfirmDelete(false)
     } catch {
       showToast('error', 'Erro ao excluir cliente')
@@ -641,12 +646,12 @@ const DemoSSoTPage = () => {
     setShowConfirmDelete(true)
   }
 
-  // 🎯 Funções dos formulários dos modais com validação completa
+  // ?? Funes dos formulrios dos modais com validao completa
   const handleCreateClient = async (formData: any) => {
     try {
       setIsFormSubmitting(true)
       
-      // 🎯 SSoT - Usar validação centralizada
+      // ?? SSoT - Usar validao centralizada
       const errors = validateClienteForm(createFormData)
       if (Object.keys(errors).length > 0) {
         setValidationErrors(errors)
@@ -654,7 +659,7 @@ const DemoSSoTPage = () => {
         return
       }
 
-      // Simular verificação de CPF/Email duplicado
+      // Simular verificao de CPF/Email duplicado
       const cpfExists = exemploClientes.some(client => 
         client.cpf === createFormData.cpf
       )
@@ -663,21 +668,21 @@ const DemoSSoTPage = () => {
       )
 
       if (cpfExists) {
-        setValidationErrors({ cpf: 'CPF já cadastrado no sistema' })
-        showToast('error', 'CPF já existe no sistema')
+        setValidationErrors({ cpf: 'CPF j cadastrado no sistema' })
+        showToast('error', 'CPF j existe no sistema')
         return
       }
 
       if (emailExists) {
-        setValidationErrors({ email: 'Email já cadastrado no sistema' })
-        showToast('error', 'Email já existe no sistema')
+        setValidationErrors({ email: 'Email j cadastrado no sistema' })
+        showToast('error', 'Email j existe no sistema')
         return
       }
 
       await executeGeneral(() => {
         console.log('Criando novo cliente:', {
           ...createFormData,
-          // Formatação final dos dados
+          // Formatao final dos dados
           nome_completo: createFormData.nome_completo.toUpperCase(),
           email: createFormData.email.toLowerCase(),
           cidade: createFormData.cidade.toUpperCase(),
@@ -699,16 +704,16 @@ const DemoSSoTPage = () => {
   }
 
   const handleUpdateClient = async (formData: any) => {
-    // Verificar se há mudanças antes de atualizar
+    // Verificar se h mudanas antes de atualizar
     if (!hasEditChanges) {
-      showToast('info', 'Nenhuma alteração foi feita')
+      showToast('info', 'Nenhuma alterao foi feita')
       return
     }
 
     try {
       setIsFormSubmitting(true)
       
-      // 🎯 SSoT - Usar validação centralizada
+      // ?? SSoT - Usar validao centralizada
       const errors = validateClienteForm(editFormData)
       if (Object.keys(errors).length > 0) {
         setValidationErrors(errors)
@@ -716,7 +721,7 @@ const DemoSSoTPage = () => {
         return
       }
 
-      // Verificação de duplicatas (excluindo o cliente atual)
+      // Verificao de duplicatas (excluindo o cliente atual)
       const cpfExists = exemploClientes.some(client => 
         client.cpf === editFormData.cpf && client.id !== editingClient.id
       )
@@ -725,14 +730,14 @@ const DemoSSoTPage = () => {
       )
 
       if (cpfExists) {
-        setValidationErrors({ cpf: 'CPF já cadastrado no sistema' })
-        showToast('error', 'CPF já existe no sistema')
+        setValidationErrors({ cpf: 'CPF j cadastrado no sistema' })
+        showToast('error', 'CPF j existe no sistema')
         return
       }
 
       if (emailExists) {
-        setValidationErrors({ email: 'Email já cadastrado no sistema' })
-        showToast('error', 'Email já existe no sistema')
+        setValidationErrors({ email: 'Email j cadastrado no sistema' })
+        showToast('error', 'Email j existe no sistema')
         return
       }
 
@@ -761,15 +766,15 @@ const DemoSSoTPage = () => {
     }
   }
 
-  // Lógica de filtrado
+  // Lgica de filtrado
   const filteredClientes = exemploClientes.filter(client => {
-    // Filtro de búsqueda por texto
+    // Filtro de busqueda por texto
     const matchesSearch = searchTerm === '' || 
       client.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.profissao.toLowerCase().includes(searchTerm.toLowerCase())
     
-    // Filtro de búsqueda por documento (CPF)
+    // Filtro de busqueda por documento (CPF)
     const matchesDocument = documentSearch === '' ||
       client.cpf.replace(/\D/g, '').includes(documentSearch.replace(/\D/g, ''))
     
@@ -791,7 +796,7 @@ const DemoSSoTPage = () => {
       value: (
         <>
           <span className="md:hidden">{client.email.split('@')[0]}</span>
-          <span className="hidden md:inline">{client.email} • {client.casos} casos</span>
+          <span className="hidden md:inline">{client.email}  {client.casos} casos</span>
           <span className="block text-xs text-gray-500 md:hidden">{client.profissao}</span>
         </>
       ),
@@ -804,22 +809,22 @@ const DemoSSoTPage = () => {
           {client.vip && (
             <span className="text-yellow-500 text-xs">
               <span className="hidden md:inline">VIP</span>
-              <span className="md:hidden">⭐</span>
+              <span className="md:hidden">?</span>
             </span>
           )}
         </div>
       ),
       actions: (
-      <ButtonGroup variant="separated" className="text-xs md:text-sm">
-        <ActionButton action="view" onConfirm={() => handleViewClient(client)} />
-        <ActionButton action="edit" onConfirm={() => handleEdit(client)} />
-        <ActionButton 
-          action="delete" 
-          onConfirm={() => handleDeleteConfirm(client)}
-          skipConfirmation={true} // ConfirmModal do sistema maneja a confirmação
-        />
-      </ButtonGroup>
-    )
+        <ButtonGroup variant="separated" className="text-xs md:text-sm">
+          <ActionButton action="view" onConfirm={() => handleViewClient(client)} />
+          <ActionButton action="edit" onConfirm={() => handleEdit(client)} />
+          <ActionButton 
+            action="delete" 
+            onConfirm={() => handleDeleteConfirm(client)}
+            skipConfirmation={true} // ConfirmModal do sistema maneja a confirmao
+          />
+        </ButtonGroup>
+      )
     }
   })
 
@@ -829,17 +834,20 @@ const DemoSSoTPage = () => {
         {/* Header */}
         <BaseCard variant="elevated">
           <BaseSection 
-                      title="🎯 Demonstração SSoT - Sistema de Componentes Base"
-                      subtitle="Exemplo prático dos componentes implementados rodando no projeto"
-                      headerActions={<BaseButton
-                          variant="primary"
-                          icon="add"
-                          className="w-full md:w-auto text-sm md:text-base"
-                          onClick={handleAddClient}
-                      >
-                          <span className="hidden md:inline">Novo Cliente</span>
-                          <span className="md:hidden">Novo</span>
-                      </BaseButton>} children={undefined}          />
+            title="Demostracao SSoT - Sistema de Componentes Base"
+            subtitle="Exemplo prtico dos componentes implementados rodando no projeto"
+            headerActions={
+              <BaseButton
+                variant="primary"
+                icon="add"
+                className="w-full md:w-auto text-sm md:text-base"
+                onClick={handleAddClient}
+              >
+                <span className="hidden md:inline">Novo Cliente</span>
+                <span className="md:hidden">Novo</span>
+              </BaseButton>
+            }
+          />
         </BaseCard>
 
         {/* Stats usando BaseGrid */}
@@ -891,26 +899,25 @@ const DemoSSoTPage = () => {
                 </div>
                 <div className="text-xs md:text-sm text-gray-600 mt-1">
                   <span className="hidden md:inline">Casos por Cliente</span>
-                  <span className="md:hidden">Média</span>
+                  <span className="md:hidden">Media</span>
                 </div>
               </div>
             </BaseSection>
           </BaseCard>
         </BaseGrid>
 
-        {/* Sistema de Búsqueda y Filtros */}
         <BaseCard variant="elevated">
           <BaseSection 
-            title="🔍 Sistema de Búsqueda y Filtros"
-            subtitle="Filtrado en tiempo real de los datos mock - Demonstración SSoT"
+            title="Sistema de Busqueda y Filtros"
+            subtitle="Filtrado en tiempo real de los datos mock - Demostracion SSoT"
             collapsible
             defaultExpanded={true}
           >
             <BaseGrid cols={{ xs: 1, md: 3 }} gap="lg">
-              {/* Campo de búsqueda por texto */}
+              {/* Campo de busqueda por texto */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Buscar por nombre, email o profesión
+                  Buscar por nombre, email o profesion
                 </label>
                 <input
                   type="text"
@@ -921,7 +928,7 @@ const DemoSSoTPage = () => {
                 />
               </div>
 
-              {/* Campo de búsqueda por documento */}
+              {/* Campo de busqueda por documento */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Buscar por CPF
@@ -967,12 +974,12 @@ const DemoSSoTPage = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    Mostrar solo clientes VIP ⭐
+                    Mostrar solo clientes VIP
                   </span>
                 </label>
               </div>
 
-              {/* Botón para limpiar filtros */}
+              {/* Boton para limpiar filtros */}
               {(searchTerm || documentSearch || statusFilter !== 'todos' || vipFilter) && (
                 <div className="md:col-span-3">
                   <BaseDivider spacing="sm" children={undefined} />
@@ -999,52 +1006,93 @@ const DemoSSoTPage = () => {
             </BaseGrid>
           </BaseSection>
         </BaseCard>
-
-        {/* Lista usando BaseList */}
         <BaseCard variant="elevated">
           <BaseSection 
-            title="Lista de Clientes - Usando BaseList"
-            subtitle={`${filteredClientes.length} cliente(s) - Componente padronizado com filtros aplicados`}
+            title="Modo de Visualizacion"
+            subtitle="Cambia entre diferentes formas de ver los datos - Inspirado en Supabase Dashboard"
           >
-            {filteredClientes.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  Nenhum cliente encontrado
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Tente ajustar os filtros de búsqueda
-                </p>
-                <BaseButton
-                  variant="outline"
-                  onClick={() => {
-                    setSearchTerm('')
-                    setDocumentSearch('')
-                    setStatusFilter('todos')
-                    setVipFilter(false)
-                  }}
-                >
-                  Limpiar todos los filtros
-                </BaseButton>
-              </div>
-            ) : (
-              <BaseList
-                items={clientItems}
-                variant="bordered"
-                interactive
-                loading={loading}
-                emptyMessage="Nenhum cliente encontrado"
-                onItemClick={(item) => showToast('info', `Cliente ${item.label} clicado!`)}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Selecciona como deseas visualizar la informacion de los clientes:
+              </p>
+              <ViewSwitcher
+                currentView={viewMode}
+                onChange={setViewMode}
+                size="md"
+                showLabels={true}
               />
-            )}
+            </div>
+            
+            <BaseDivider spacing="md" children={undefined} />
+            
+            <div className="text-xs text-gray-500 space-y-1">
+              <div className="flex items-start gap-2">
+                <span className="font-medium min-w-[80px]">Lista:</span>
+                <span>Vista compacta con detalles esenciales</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-medium min-w-[80px]">Cards:</span>
+                <span>Tarjetas individuales con informacion organizada</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-medium min-w-[80px]">Grid:</span>
+                <span>Cuadricula responsiva que se adapta al tamano de pantalla</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-medium min-w-[80px]">Secciones:</span>
+                <span>Secciones expandibles con detalles completos</span>
+              </div>
+            </div>
           </BaseSection>
         </BaseCard>
 
-        {/* Mesmos dados usando BaseCard */}
+        {viewMode === 'list' && (
+          <BaseCard variant="elevated">
+            <BaseSection 
+              title="Lista de Clientes - Vista Compacta"
+              subtitle={`${filteredClientes.length} cliente(s) - Componente BaseList padronizado`}
+            >
+              {filteredClientes.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">??</div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    Nenhum cliente encontrado
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Tente ajustar os filtros de busqueda
+                  </p>
+                  <BaseButton
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('')
+                      setDocumentSearch('')
+                      setStatusFilter('todos')
+                      setVipFilter(false)
+                    }}
+                  >
+                    Limpiar todos los filtros
+                  </BaseButton>
+                </div>
+              ) : (
+                <BaseList
+                  items={clientItems}
+                  variant="bordered"
+                  interactive
+                  loading={loading}
+                  emptyMessage="Nenhum cliente encontrado"
+                  onItemClick={(item) => showToast('info', `Cliente ${item.label} clicado!`)}
+                />
+              )}
+            </BaseSection>
+          </BaseCard>
+        )}
+
+        {/* Vista: Cards (BaseCard) */}
+        {viewMode === 'card' && (
         <BaseCard variant="elevated">
           <BaseSection 
             title="Clientes com BaseCard - Layout em Cards"
-            subtitle="Cada cliente em um card individual com informações organizadas"
+            subtitle="Cada cliente em um card individual com informaes organizadas"
           >
             <BaseGrid cols={{ xs: 1, sm: 2, lg: 3 }} gap="lg">
               {exemploClientes.map(client => {
@@ -1069,7 +1117,7 @@ const DemoSSoTPage = () => {
                           <span className={`${statusBadge.baseClasses} ${statusBadge.classes}`}>
                             {statusBadge.label}
                           </span>
-                          {client.vip && <span className="text-yellow-500 text-sm">⭐</span>}
+                          {client.vip && <span className="text-yellow-500 text-sm">?</span>}
                         </div>
                       </div>
 
@@ -1086,7 +1134,7 @@ const DemoSSoTPage = () => {
                           <span className="font-medium">{client.cpf}</span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">Profissão</span>
+                          <span className="text-gray-500 block">Profisso</span>
                           <span className="font-medium">{client.profissao}</span>
                         </div>
                         <div>
@@ -1095,7 +1143,7 @@ const DemoSSoTPage = () => {
                         </div>
                       </div>
 
-                      {/* Ações */}
+                      {/* Aes */}
                       <div className="pt-2 border-t border-gray-200">
                         <ButtonGroup variant="separated" className="w-full">
                           <ActionButton action="view" onConfirm={() => handleViewClient(client)} />
@@ -1114,12 +1162,14 @@ const DemoSSoTPage = () => {
             </BaseGrid>
           </BaseSection>
         </BaseCard>
+        )}
 
-        {/* Mesmos dados usando BaseGrid responsivo */}
+        {/* Vista: Grid Responsivo (BaseGrid autoFit) */}
+        {viewMode === 'grid' && (
         <BaseCard variant="elevated">
           <BaseSection 
             title="Clientes com BaseGrid - Layout Responsivo"
-            subtitle="Grid automático que se adapta ao tamanho da tela"
+            subtitle="Grid automtico que se adapta ao tamanho da tela"
           >
             <BaseGrid autoFit minItemWidth="280px" gap="md">
               {exemploClientes.map(client => (
@@ -1132,7 +1182,7 @@ const DemoSSoTPage = () => {
                       <h4 className="font-medium text-gray-900 truncate">{client.nome_completo}</h4>
                       <p className="text-sm text-gray-500 truncate">{client.profissao}</p>
                     </div>
-                    {client.vip && <span className="text-yellow-500">⭐</span>}
+                    {client.vip && <span className="text-yellow-500">?</span>}
                   </div>
                   
                   <div className="space-y-2 text-sm">
@@ -1175,12 +1225,14 @@ const DemoSSoTPage = () => {
             </BaseGrid>
           </BaseSection>
         </BaseCard>
+        )}
 
-        {/* Mesmos dados usando BaseSection para cada cliente */}
+        {/* Vista: Secciones Expandibles (BaseSection collapsible) */}
+        {viewMode === 'section' && (
         <BaseCard variant="elevated">
           <BaseSection 
             title="Clientes com BaseSection - Layout Detalhado"
-            subtitle="Cada cliente em uma seção expansível com informações completas"
+            subtitle="Cada cliente em uma seo expansvel com informaes completas"
           >
             <div className="space-y-4">
               {exemploClientes.map(client => {
@@ -1189,7 +1241,7 @@ const DemoSSoTPage = () => {
                   <BaseSection
                     key={client.id}
                     title={client.nome_completo}
-                    subtitle={`${client.profissao} • ${client.casos} casos ${client.vip ? '• VIP ⭐' : ''}`}
+                    subtitle={`${client.profissao}  ${client.casos} casos ${client.vip ? ' VIP ?' : ''}`}
                     collapsible
                     defaultExpanded={false}
                     titleLevel="h4"
@@ -1249,10 +1301,10 @@ const DemoSSoTPage = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <h5 className="font-medium text-gray-900 border-b border-gray-200 pb-2">Endereço</h5>
+                        <h5 className="font-medium text-gray-900 border-b border-gray-200 pb-2">Endereo</h5>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="text-gray-500 block">Endereço Completo</span>
+                            <span className="text-gray-500 block">Endereo Completo</span>
                             <span className="text-gray-900">{client.endereco}</span>
                           </div>
                           <div>
@@ -1267,7 +1319,7 @@ const DemoSSoTPage = () => {
                       <>
                         <BaseDivider spacing="lg" children={undefined} />
                         <div>
-                          <h5 className="font-medium text-gray-900 mb-2">Observações</h5>
+                          <h5 className="font-medium text-gray-900 mb-2">Observaes</h5>
                           <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
                             {client.observacoes}
                           </p>
@@ -1280,6 +1332,7 @@ const DemoSSoTPage = () => {
             </div>
           </BaseSection>
         </BaseCard>
+        )}
 
         {/* Mesmos dados usando BaseDivider como separador */}
         <BaseCard variant="elevated">
@@ -1303,13 +1356,13 @@ const DemoSSoTPage = () => {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-semibold text-gray-900">{client.nome_completo}</h3>
-                            <p className="text-gray-600">{client.profissao} • {client.empresa}</p>
+                            <p className="text-gray-600">{client.profissao}  {client.empresa}</p>
                           </div>
                           <div className="flex items-center gap-2 ml-4">
                             <span className={`${statusBadge.baseClasses} ${statusBadge.classes}`}>
                               {statusBadge.label}
                             </span>
-                            {client.vip && <span className="text-yellow-500 text-lg">⭐</span>}
+                            {client.vip && <span className="text-yellow-500 text-lg">?</span>}
                           </div>
                         </div>
 
@@ -1334,7 +1387,7 @@ const DemoSSoTPage = () => {
 
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <p className="text-sm text-gray-600 flex-1">
-                            <span className="font-medium">Endereço:</span> {client.endereco}
+                            <span className="font-medium">Endereo:</span> {client.endereco}
                           </p>
                           <ButtonGroup variant="separated">
                             <ActionButton action="view" onConfirm={() => handleViewClient(client)} />
@@ -1363,18 +1416,18 @@ const DemoSSoTPage = () => {
           </BaseSection>
         </BaseCard>
 
-        {/* Demonstração de botões */}
+        {/* Demonstrao de botes */}
         <BaseCard variant="elevated">
-          <BaseSection title="Demonstração de Botões - Sistema Padronizado">
+          <BaseSection title="Demonstrao de Botes - Sistema Padronizado">
             <div className="space-y-6">
-              {/* NUEVO: Sistema con categorías integradas en BaseButton */}
+              {/* NUEVO: Sistema con categoras integradas en BaseButton */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                   <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">NUEVO</span>
-                  BaseButton con Categorías (3 componentes, no 4)
+                  BaseButton con Categoras (3 componentes, no 4)
                 </h4>
                 <p className="text-xs text-blue-700 mb-3">
-                  Brevedad de categorías integrada directamente en BaseButton sin componente extra
+                  Brevedad de categoras integrada directamente en BaseButton sin componente extra
                 </p>
                 <div className="overflow-x-auto pb-2">
                   <ButtonGroup variant="separated" className="min-w-max">
@@ -1424,13 +1477,13 @@ const DemoSSoTPage = () => {
                 <ButtonGroup variant="separated">
                   <BaseButton loading>Loading</BaseButton>
                   <BaseButton disabled>Disabled</BaseButton>
-                  <BaseButton icon="download">Com Ícone</BaseButton>
+                  <BaseButton icon="download">Com cone</BaseButton>
                 </ButtonGroup>
               </div>
 
-              {/* Ícones */}
+              {/* cones */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Botões de Ícone</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Botes de cone</h4>
                 <ButtonGroup variant="separated">
                   <IconButton icon="edit" label="Editar" />
                   <IconButton icon="delete" label="Excluir" variant="danger" />
@@ -1445,30 +1498,30 @@ const DemoSSoTPage = () => {
         {/* URLs centralizadas */}
         <BaseCard variant="bordered">
           <BaseSection 
-            title="URLs Centralizadas - Configuração SSoT"
-            subtitle="Todas as URLs estão centralizadas no sistema de configuração"
+            title="URLs Centralizadas - Configurao SSoT"
+            subtitle="Todas as URLs esto centralizadas no sistema de configurao"
           >
             <div className="space-y-4 font-mono text-sm">
               <div>
-                <strong>Rotas da aplicação:</strong>
+                <strong>Rotas da aplicao:</strong>
                 <ul className="ml-4 mt-2 space-y-1 text-gray-600">
-                  <li>• Clientes: {APP_ROUTES.CLIENTES.LIST}</li>
-                  <li>• Novo cliente: {APP_ROUTES.CLIENTES.CREATE}</li>
-                  <li>• Ver cliente: {APP_ROUTES.CLIENTES.VIEW(':id')}</li>
+                  <li> Clientes: {APP_ROUTES.CLIENTES.LIST}</li>
+                  <li> Novo cliente: {APP_ROUTES.CLIENTES.CREATE}</li>
+                  <li> Ver cliente: {APP_ROUTES.CLIENTES.VIEW(':id')}</li>
                 </ul>
               </div>
               <div>
                 <strong>APIs brasileiras:</strong>
                 <ul className="ml-4 mt-2 space-y-1 text-gray-600">
-                  <li>• ViaCEP: {BRAZILIAN_APIS.VIA_CEP.BASE_URL}</li>
-                  <li>• Brasil API: {BRAZILIAN_APIS.BRASIL_API.BASE_URL}</li>
+                  <li> ViaCEP: {BRAZILIAN_APIS.VIA_CEP.BASE_URL}</li>
+                  <li> Brasil API: {BRAZILIAN_APIS.BRASIL_API.BASE_URL}</li>
                 </ul>
               </div>
             </div>
           </BaseSection>
         </BaseCard>
 
-        {/* Demonstração BaseDivider */}
+        {/* Demonstrao BaseDivider */}
         <div className="space-y-6">
         <BaseCard variant="elevated">
           <BaseSection title="BaseDivider - Sistema de Separadores">
@@ -1478,7 +1531,7 @@ const DemoSSoTPage = () => {
                 <h4 className="text-sm font-medium text-gray-700 mb-4">Dividers Horizontais</h4>
                 <div className="space-y-6">
                   <div>
-                    <span className="text-xs text-gray-500 mb-2 block">Solid (padrão)</span>
+                    <span className="text-xs text-gray-500 mb-2 block">Solid (padro)</span>
                     <BaseDivider children={undefined} />
                   </div>
                   
@@ -1494,7 +1547,7 @@ const DemoSSoTPage = () => {
                   
                   <div>
                     <span className="text-xs text-gray-500 mb-2 block">Com Label</span>
-                    <BaseDivider label="Seção Importante" children={undefined} />
+                    <BaseDivider label="Seo Importante" children={undefined} />
                   </div>
                   
                   <div>
@@ -1522,14 +1575,14 @@ const DemoSSoTPage = () => {
           </BaseSection>
         </BaseCard>
 
-        {/* Demonstração BaseCard Variants */}
+        {/* Demonstrao BaseCard Variants */}
         <BaseCard variant="elevated">
           <BaseSection title="BaseCard - Todas as Variantes">
             <BaseGrid cols={{ xs: 1, sm: 2, lg: 4 }} className="gap-4">
               <BaseCard variant="default" padding="lg">
                 <div className="text-center">
                   <h4 className="font-medium text-gray-900 mb-2">Default</h4>
-                  <p className="text-sm text-gray-600">Variante padrão com fundo branco e borda simples</p>
+                  <p className="text-sm text-gray-600">Variante padro com fundo branco e borda simples</p>
                 </div>
               </BaseCard>
 
@@ -1543,7 +1596,7 @@ const DemoSSoTPage = () => {
               <BaseCard variant="bordered" padding="lg">
                 <div className="text-center">
                   <h4 className="font-medium text-gray-900 mb-2">Bordered</h4>
-                  <p className="text-sm text-gray-600">Borda mais espessa para ênfase</p>
+                  <p className="text-sm text-gray-600">Borda mais espessa para nfase</p>
                 </div>
               </BaseCard>
 
@@ -1558,10 +1611,10 @@ const DemoSSoTPage = () => {
             <BaseDivider label="Cards Interativos" spacing="lg" children={undefined} />
 
             <BaseGrid cols={{ xs: 1, sm: 2 }} className="gap-4">
-              <BaseCard variant="elevated" interactive onClick={() => showToast('info', 'Card clicável!')}>
+              <BaseCard variant="elevated" interactive onClick={() => showToast('info', 'Card clicvel!')}>
                 <BaseSection padding="lg">
                   <div className="text-center">
-                    <h4 className="font-medium text-gray-900 mb-2">🖱️ Clique em mim!</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">??? Clique em mim!</h4>
                     <p className="text-sm text-gray-600">Card interativo com hover effects</p>
                   </div>
                 </BaseSection>
@@ -1577,9 +1630,9 @@ const DemoSSoTPage = () => {
           </BaseSection>
         </BaseCard>
 
-        {/* Demonstração BaseGrid Avançado */}
+        {/* Demonstrao BaseGrid Avanado */}
         <BaseCard variant="elevated">
-          <BaseSection title="BaseGrid - Layouts Avançados">
+          <BaseSection title="BaseGrid - Layouts Avanados">
             <div className="space-y-8">
               {/* Auto-fit grid */}
               <div>
@@ -1611,7 +1664,7 @@ const DemoSSoTPage = () => {
 
               {/* Grid com gaps diferentes */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-4">Diferentes Espaçamentos</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-4">Diferentes Espaamentos</h4>
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs text-gray-500">Gap: sm</span>
@@ -1639,25 +1692,25 @@ const DemoSSoTPage = () => {
           </BaseSection>
         </BaseCard>
 
-        {/* Demonstração BaseSection Avançada */}
+        {/* Demonstrao BaseSection Avanada */}
         <BaseCard variant="elevated">
-          <BaseSection title="BaseSection - Recursos Avançados">
+          <BaseSection title="BaseSection - Recursos Avanados">
             <div className="space-y-6">
               {/* Section collapsible */}
               <BaseSection 
-                title="🔽 Seção Colapsável" 
-                subtitle="Clique no ícone + para expandir/recolher"
+                title="?? Seo Colapsvel" 
+                subtitle="Clique no cone + para expandir/recolher"
                 collapsible 
                 defaultExpanded={false}
                 titleLevel="h4"
                 className="bg-blue-50 rounded-lg p-4"
               >
                 <p className="text-gray-700">
-                  Este conteúdo está dentro de uma seção colapsável. É útil para organizar 
-                  informações em seções que podem ser expandidas conforme necessário.
+                  Este contedo est dentro de uma seo colapsvel.  til para organizar 
+                  informaes em sees que podem ser expandidas conforme necessrio.
                 </p>
                 <BaseCard variant="default" padding="md" className="mt-4">
-                  <p className="text-sm text-gray-600">Conteúdo aninhado dentro da seção colapsável</p>
+                  <p className="text-sm text-gray-600">Contedo aninhado dentro da seo colapsvel</p>
                 </BaseCard>
               </BaseSection>
 
@@ -1665,14 +1718,14 @@ const DemoSSoTPage = () => {
 
               {/* Sections com diferentes title levels */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-4">Diferentes Níveis de Título</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-4">Diferentes Nveis de Ttulo</h4>
                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-                  <BaseSection title="Título H1" titleLevel="h1" padding="sm" children={undefined} />
-                  <BaseSection title="Título H2" titleLevel="h2" padding="sm" children={undefined} />
-                  <BaseSection title="Título H3" titleLevel="h3" padding="sm" children={undefined} />
-                  <BaseSection title="Título H4" titleLevel="h4" padding="sm" children={undefined} />
-                  <BaseSection title="Título H5" titleLevel="h5" padding="sm" children={undefined} />
-                  <BaseSection title="Título H6" titleLevel="h6" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H1" titleLevel="h1" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H2" titleLevel="h2" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H3" titleLevel="h3" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H4" titleLevel="h4" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H5" titleLevel="h5" padding="sm" children={undefined} />
+                  <BaseSection title="Ttulo H6" titleLevel="h6" padding="sm" children={undefined} />
                 </div>
               </div>
 
@@ -1680,22 +1733,22 @@ const DemoSSoTPage = () => {
 
               {/* Section com header actions complexas */}
               <BaseSection 
-                title="Seção com Actions Múltiplas" 
-                subtitle="Exemplo de header com várias ações"
+                title="Seo com Actions Mltiplas" 
+                subtitle="Exemplo de header com vrias aes"
                 titleLevel="h4"
                 headerActions={
                   <ButtonGroup variant="separated">
-                    <IconButton icon="edit" label="Editar seção" size="sm" />
+                    <IconButton icon="edit" label="Editar seo" size="sm" />
                     <IconButton icon="view" label="Ver detalhes" size="sm" />
                     <BaseButton variant="primary" size="sm">
-                      Ação Principal
+                      Ao Principal
                     </BaseButton>
                   </ButtonGroup>
                 }
                 className="border border-gray-200 rounded-lg p-4"
               >
                 <p className="text-gray-700">
-                  Esta seção demonstra como usar múltiplas ações no header, 
+                  Esta seo demonstra como usar mltiplas aes no header, 
                   combinando IconButtons e BaseButton em um ButtonGroup.
                 </p>
               </BaseSection>
@@ -1706,7 +1759,7 @@ const DemoSSoTPage = () => {
       </div>
     </div>
 
-      {/* 🎯 Modais de demonstração com formulários REALISTAS */}
+      {/* ?? Modais de demonstrao com formulrios REALISTAS */}
       <ViewModal
         isOpen={viewModal.isOpen}
         onClose={closeViewModal}
@@ -1734,7 +1787,7 @@ const DemoSSoTPage = () => {
                     </span>
                     {selectedClient?.vip && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-full shadow-md text-xs">
-                        <span>⭐</span>
+                        <span>?</span>
                         <span>VIP</span>
                       </span>
                     )}
@@ -1744,7 +1797,7 @@ const DemoSSoTPage = () => {
             )
           },
           
-          // Documentos e Identificação
+          // Documentos e Identificao
           { 
             key: 'cpf', 
             label: 'CPF',
@@ -1765,7 +1818,7 @@ const DemoSSoTPage = () => {
             key: 'data_nascimento', 
             label: 'Nascimento',
             render: (value) => {
-              if (!value) return <span className="text-gray-400">Não informado</span>
+              if (!value) return <span className="text-gray-400">No informado</span>
               const date = new Date(value + 'T00:00:00')
               const age = Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
               return (
@@ -1794,20 +1847,20 @@ const DemoSSoTPage = () => {
             label: 'Estado Civil',
             render: (value) => {
               const icons: Record<string, { icon: string; color: string }> = {
-                'solteiro': { icon: '👤', color: 'text-gray-700' },
-                'casado': { icon: '💑', color: 'text-pink-600' },
-                'divorciado': { icon: '💔', color: 'text-red-600' },
-                'viuvo': { icon: '🖤', color: 'text-gray-900' },
-                'uniao_estavel': { icon: '👫', color: 'text-purple-600' }
+                'solteiro': { icon: '??', color: 'text-gray-700' },
+                'casado': { icon: '??', color: 'text-pink-600' },
+                'divorciado': { icon: '??', color: 'text-red-600' },
+                'viuvo': { icon: '??', color: 'text-gray-900' },
+                'uniao_estavel': { icon: '??', color: 'text-purple-600' }
               }
-              const config = icons[value] || { icon: '👤', color: 'text-gray-700' }
+              const config = icons[value] || { icon: '??', color: 'text-gray-700' }
               return (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Situação Conjugal
+                    Situao Conjugal
                   </div>
                   <div className={`text-lg font-semibold ${config.color} flex items-center gap-2`}>
                     <span className="text-2xl">{config.icon}</span>
@@ -1818,7 +1871,7 @@ const DemoSSoTPage = () => {
             }
           },
           
-          // Informações de Contato
+          // Informaes de Contato
           { 
             key: 'email', 
             label: 'E-mail',
@@ -1828,7 +1881,7 @@ const DemoSSoTPage = () => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Endereço de E-mail
+                  Endereo de E-mail
                 </div>
                 <a 
                   href={`mailto:${value}`}
@@ -1849,7 +1902,7 @@ const DemoSSoTPage = () => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  Número de Contato
+                  Nmero de Contato
                 </div>
                 <a 
                   href={`tel:${value?.replace(/\D/g, '')}`}
@@ -1861,17 +1914,17 @@ const DemoSSoTPage = () => {
             )
           },
           
-          // Informações Profissionais
+          // Informaes Profissionais
           { 
             key: 'profissao', 
-            label: 'Profissão',
+            label: 'Profisso',
             render: (value) => (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Área de Atuação
+                  rea de Atuao
                 </div>
                 <div className="text-lg font-semibold text-gray-900">{value}</div>
               </div>
@@ -1894,10 +1947,10 @@ const DemoSSoTPage = () => {
             )
           },
           
-          // Endereço Completo
+          // Endereo Completo
           { 
             key: 'endereco', 
-            label: 'Endereço',
+            label: 'Endereo',
             render: (value) => (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
@@ -1905,7 +1958,7 @@ const DemoSSoTPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Endereço Completo
+                  Endereo Completo
                 </div>
                 <div className="text-base font-medium text-gray-900 leading-relaxed">{value}</div>
               </div>
@@ -1914,7 +1967,7 @@ const DemoSSoTPage = () => {
           
           { 
             key: 'cidade', 
-            label: 'Localização',
+            label: 'Localizao',
             render: (value, data) => (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
@@ -1937,14 +1990,14 @@ const DemoSSoTPage = () => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Código Postal
+                  Cdigo Postal
                 </div>
                 <div className="text-lg font-mono font-semibold text-gray-900">{value}</div>
               </div>
             )
           },
           
-          // Status e Métricas
+          // Status e Mtricas
           { 
             key: 'status', 
             label: 'Status Atual',
@@ -1987,15 +2040,15 @@ const DemoSSoTPage = () => {
             )
           },
           
-          // Observações
+          // Observaes
           { 
             key: 'observacoes', 
-            label: 'Observações',
+            label: 'Observaes',
             render: (value) => {
               if (!value) {
                 return (
                   <div className="text-center py-8 text-gray-400 italic bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                    Nenhuma observação registrada para este cliente
+                    Nenhuma observao registrada para este cliente
                   </div>
                 )
               }
@@ -2005,7 +2058,7 @@ const DemoSSoTPage = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Notas e Comentários
+                    Notas e Comentrios
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-5 rounded-r-xl">
                     <p className="text-base text-gray-800 leading-relaxed">{value}</p>
@@ -2035,7 +2088,7 @@ const DemoSSoTPage = () => {
       <ConfirmModal
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
-        title="Confirmar Exclusão"
+        title="Confirmar Excluso"
         type="danger"
         message={`Tem certeza que deseja excluir o cliente ${selectedClient?.nome_completo}?`}
         onConfirm={() => {
@@ -2046,15 +2099,15 @@ const DemoSSoTPage = () => {
         <div className="hidden"></div>
       </ConfirmModal>
 
-      {/* 🎯 Modal SSoT - Usando Configuração Centralizada */}
+      {/* ?? Modal SSoT - Usando Configurao Centralizada */}
       <FormModal
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false)
           resetCreateForm()
         }}
-        title="🎯 Demo SSoT - Sistema Centralizado Completo"
-        subtitle="Configuração, validação, formatação e componentes centralizados"
+        title="?? Demo SSoT - Sistema Centralizado Completo"
+        subtitle="Configurao, validao, formatao e componentes centralizados"
         size="xl"
         onSubmit={handleCreateClient}
         loading={loading}
@@ -2065,7 +2118,7 @@ const DemoSSoTPage = () => {
         cancelText="Cancelar"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 🎯 SSoT - Renderização dinâmica de campos */}
+          {/* ?? SSoT - Renderizao dinmica de campos */}
           {CLIENTE_FORM_CONFIG.fields.map(field => (
             <DynamicField
               key={field.name}
@@ -2078,7 +2131,7 @@ const DemoSSoTPage = () => {
         </div>
       </FormModal>
 
-      {/* 🎯 Modal de Edição SSoT - Sistema Centralizado */}
+      {/* ?? Modal de Edio SSoT - Sistema Centralizado */}
       <FormModal
         isOpen={showEditModal}
         onClose={() => {
@@ -2086,8 +2139,8 @@ const DemoSSoTPage = () => {
           setEditingClient(null)
           resetEditForm()
         }}
-        title={`🎯 Demo SSoT - Editar Cliente: ${editingClient?.nome_completo}`}
-        subtitle="Sistema centralizado de configuração, validação e formatação"
+        title={`?? Demo SSoT - Editar Cliente: ${editingClient?.nome_completo}`}
+        subtitle="Sistema centralizado de configurao, validao e formatao"
         size="xl"
         onSubmit={hasEditChanges ? handleUpdateClient : undefined}
         loading={loading}
@@ -2099,7 +2152,7 @@ const DemoSSoTPage = () => {
         submitDisabled={!hasEditChanges}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 🎯 SSoT - Renderização dinâmica de campos */}
+          {/* ?? SSoT - Renderizao dinmica de campos */}
           {CLIENTE_FORM_CONFIG.fields.map(field => (
             <DynamicField
               key={field.name}
@@ -2118,7 +2171,7 @@ const DemoSSoTPage = () => {
 export default DemoSSoTPage
 
 /**
- * 🎯 PARA TESTAR ESTA PÁGINA COMPLETA:
+ * ?? PARA TESTAR ESTA PGINA COMPLETA:
  * 
  * 1. Adicionar no router (App.tsx ou routes.tsx):
  * 
@@ -2127,34 +2180,34 @@ export default DemoSSoTPage
  * 2. Acessar: http://localhost:5173/demo-ssot
  * 
  * 3. Testar todas as funcionalidades:
- *    • Clique nos cards de stats
- *    • Clique nos itens da lista
- *    • Teste os botões de ação (view, edit, delete)
- *    • Abra modais de criação e edição
- *    • Digite em diferentes tipos de campos
- *    • Teste validação e formatação
- *    • Teste detecção de mudanças não salvas
- *    • Veja as notificações aparecendo
- *    • Teste em diferentes tamanhos de tela
+ *     Clique nos cards de stats
+ *     Clique nos itens da lista
+ *     Teste os botes de ao (view, edit, delete)
+ *     Abra modais de criao e edio
+ *     Digite em diferentes tipos de campos
+ *     Teste validao e formatao
+ *     Teste deteco de mudanas no salvas
+ *     Veja as notificaes aparecendo
+ *     Teste em diferentes tamanhos de tela
  * 
- * 🚀 RESULTADOS OBTIDOS:
- * Esta página demonstra que o sistema SSoT está 100% funcional com:
+ * ?? RESULTADOS OBTIDOS:
+ * Esta pgina demonstra que o sistema SSoT est 100% funcional com:
  * 
- * ✅ Componentes base funcionando perfeitamente
- * ✅ Hooks centralizados totalmente operacionais  
- * ✅ Configurações centralizadas implementadas
- * ✅ Sistema completo de notificações
- * ✅ Modais padronizados com formulários complexos
- * ✅ Botões com comportamentos automáticos
- * ✅ Validação e formatação em tempo real
- * ✅ Detecção de mudanças não salvas
- * ✅ Tratamento de erros e duplicatas
- * ✅ Estados de loading e submissão
- * ✅ Performance otimizada
- * ✅ Acessibilidade implementada
- * ✅ Responsividade completa
+ * ? Componentes base funcionando perfeitamente
+ * ? Hooks centralizados totalmente operacionais  
+ * ? Configuraes centralizadas implementadas
+ * ? Sistema completo de notificaes
+ * ? Modais padronizados com formulrios complexos
+ * ? Botes com comportamentos automticos
+ * ? Validao e formatao em tempo real
+ * ? Deteco de mudanas no salvas
+ * ? Tratamento de erros e duplicatas
+ * ? Estados de loading e submisso
+ * ? Performance otimizada
+ * ? Acessibilidade implementada
+ * ? Responsividade completa
  * 
- * 💡 CONCLUSÃO:
- * O sistema SSoT não é apenas teórico - está completamente funcional
- * e pronto para uso em aplicações reais com formulários complexos!
+ * ?? CONCLUSO:
+ * O sistema SSoT no  apenas terico - est completamente funcional
+ * e pronto para uso em aplicaes reais com formulrios complexos!
  */
