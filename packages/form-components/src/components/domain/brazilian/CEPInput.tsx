@@ -5,9 +5,9 @@
  * Integrates validation and formatting automatically
  */
 
-import React, { forwardRef } from 'react';
 import { createCEPValidator, createCEPFormatter } from '@wsolutions/form-validation';
-import { FieldGroup, type FieldGroupProps } from '../../field/FieldGroup';
+import { createDomainInput } from '../createDomainInput';
+import type { FieldGroupProps } from '../../field/FieldGroup';
 
 /**
  * CEPInput props
@@ -36,30 +36,14 @@ export interface CEPInputProps extends Omit<FieldGroupProps, 'validator' | 'form
  * }
  * ```
  */
-export const CEPInput = forwardRef<HTMLInputElement, CEPInputProps>(
-  ({ allowFormatted = true, ...props }, ref) => {
-    // Create validator and formatter
-    const validator = React.useMemo(
-      () => createCEPValidator({ allowFormatted }),
-      [allowFormatted]
-    );
-    
-    const formatter = React.useMemo(
-      () => createCEPFormatter(),
-      []
-    );
-
-    return (
-      <FieldGroup
-        ref={ref}
-        validator={validator as any}
-        formatter={formatter as any}
-        {...props}
-      />
-    );
-  }
-);
-
-CEPInput.displayName = 'CEPInput';
+export const CEPInput = createDomainInput<CEPInputProps>({
+  displayName: 'CEPInput',
+  createValidator: (options) => createCEPValidator({ allowFormatted: options?.allowFormatted }),
+  createFormatter: () => createCEPFormatter(),
+  defaultProps: {
+    placeholder: '00000-000',
+    maxLength: 9,
+  },
+});
 
 export default CEPInput;

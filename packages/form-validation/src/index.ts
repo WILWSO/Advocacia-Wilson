@@ -16,5 +16,8 @@ export * from './validators';
 // Formatters (includes core, composers, and domain-specific)
 export * from './formatters';
 
+// Utilities (sanitizers, string utils)
+export * from './utils';
+
 // Version
 export const VERSION = '0.1.0';

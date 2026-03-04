@@ -5,9 +5,9 @@
  * Integrates validation and formatting automatically
  */
 
-import React, { forwardRef } from 'react';
 import { createEmailValidator } from '@wsolutions/form-validation';
-import { FieldGroup, type FieldGroupProps } from '../../field/FieldGroup';
+import { createValidatedDomainInput } from '../createDomainInput';
+import type { FieldGroupProps } from '../../field/FieldGroup';
 
 /**
  * EmailInput props
@@ -40,29 +40,17 @@ export interface EmailInputProps extends Omit<FieldGroupProps, 'validator' | 'fo
  * }
  * ```
  */
-export const EmailInput = forwardRef<HTMLInputElement, EmailInputProps>(
-  ({ allowDisposable = false, requireTld = true, maxLength = 254, ...props }, ref) => {
-    // Create validator
-    const validator = React.useMemo(
-      () => createEmailValidator({ 
-        allowDisposable, 
-        requireTld
-      }),
-      [allowDisposable, requireTld]
-    );
-
-    return (
-      <FieldGroup
-        ref={ref}
-        type="email"
-        validator={validator as any}
-        maxLength={maxLength}
-        {...props}
-      />
-    );
-  }
-);
-
-EmailInput.displayName = 'EmailInput';
+export const EmailInput = createValidatedDomainInput<EmailInputProps>({
+  displayName: 'EmailInput',
+  createValidator: (options) => createEmailValidator({ 
+    allowDisposable: options?.allowDisposable,
+    requireTld: options?.requireTld ?? true
+  }),
+  defaultProps: {
+    type: 'email',
+    placeholder: 'seu@email.com',
+    maxLength: 254,
+  },
+});
 
 export default EmailInput;

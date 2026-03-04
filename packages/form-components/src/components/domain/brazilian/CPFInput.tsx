@@ -5,9 +5,9 @@
  * Integrates validation and formatting automatically
  */
 
-import React, { forwardRef } from 'react';
 import { createCPFValidator, createCPFFormatter } from '@wsolutions/form-validation';
-import { FieldGroup, type FieldGroupProps } from '../../field/FieldGroup';
+import { createDomainInput } from '../createDomainInput';
+import type { FieldGroupProps } from '../../field/FieldGroup';
 
 /**
  * CPFInput props
@@ -36,30 +36,14 @@ export interface CPFInputProps extends Omit<FieldGroupProps, 'validator' | 'form
  * }
  * ```
  */
-export const CPFInput = forwardRef<HTMLInputElement, CPFInputProps>(
-  ({ allowFormatted = true, ...props }, ref) => {
-    // Create validator and formatter
-    const validator = React.useMemo(
-      () => createCPFValidator({ allowFormatted }),
-      [allowFormatted]
-    );
-    
-    const formatter = React.useMemo(
-      () => createCPFFormatter(),
-      []
-    );
-
-    return (
-      <FieldGroup
-        ref={ref}
-        validator={validator as any}
-        formatter={formatter as any}
-        {...props}
-      />
-    );
-  }
-);
-
-CPFInput.displayName = 'CPFInput';
+export const CPFInput = createDomainInput<CPFInputProps>({
+  displayName: 'CPFInput',
+  createValidator: (options) => createCPFValidator({ allowFormatted: options?.allowFormatted }),
+  createFormatter: () => createCPFFormatter(),
+  defaultProps: {
+    placeholder: '000.000.000-00',
+    maxLength: 14,
+  },
+});
 
 export default CPFInput;

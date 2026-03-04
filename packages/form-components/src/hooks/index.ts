@@ -10,6 +10,9 @@ export * from './validation';
 // Formatting hooks
 export * from './formatting';
 
+// Styling hooks
+export * from './styling';
+
 // State hooks (Phase 3 Day 2)
 // export * from './state';
 

@@ -12,7 +12,7 @@
  * - España: +34 91 123-4567
  * - Argentina: +54 11 4567-8901
  * 
- * @module formatters/international/phone
+ * @module formatters/universal/phone
  */
 
 export interface InternationalPhoneFormatterConfig {

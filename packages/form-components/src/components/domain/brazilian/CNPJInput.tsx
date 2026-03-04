@@ -5,9 +5,9 @@
  * Integrates validation and formatting automatically
  */
 
-import React, { forwardRef } from 'react';
 import { createCNPJValidator, createCNPJFormatter } from '@wsolutions/form-validation';
-import { FieldGroup, type FieldGroupProps } from '../../field/FieldGroup';
+import { createDomainInput } from '../createDomainInput';
+import type { FieldGroupProps } from '../../field/FieldGroup';
 
 /**
  * CNPJInput props
@@ -36,30 +36,14 @@ export interface CNPJInputProps extends Omit<FieldGroupProps, 'validator' | 'for
  * }
  * ```
  */
-export const CNPJInput = forwardRef<HTMLInputElement, CNPJInputProps>(
-  ({ allowFormatted = true, ...props }, ref) => {
-    // Create validator and formatter
-    const validator = React.useMemo(
-      () => createCNPJValidator({ allowFormatted }),
-      [allowFormatted]
-    );
-    
-    const formatter = React.useMemo(
-      () => createCNPJFormatter(),
-      []
-    );
-
-    return (
-      <FieldGroup
-        ref={ref}
-        validator={validator as any}
-        formatter={formatter as any}
-        {...props}
-      />
-    );
-  }
-);
-
-CNPJInput.displayName = 'CNPJInput';
+export const CNPJInput = createDomainInput<CNPJInputProps>({
+  displayName: 'CNPJInput',
+  createValidator: (options) => createCNPJValidator({ allowFormatted: options?.allowFormatted }),
+  createFormatter: () => createCNPJFormatter(),
+  defaultProps: {
+    placeholder: '00.000.000/0000-00',
+    maxLength: 18,
+  },
+});
 
 export default CNPJInput;

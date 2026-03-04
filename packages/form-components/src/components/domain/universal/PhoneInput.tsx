@@ -1,86 +1,128 @@
 /**
  * PhoneInput Component
  * 
- * Universal phone input with country code selector
- * Supports multiple countries with automatic validation and formatting
+ * Universal phone input for international numbers
+ * NO VALIDATIONS - accepts any phone format from any country
+ * Only applies visual formatting for better readability
+ * 
+ * @module components/domain/universal
  */
 
-import React, { forwardRef, useState, useCallback, useMemo } from 'react';
-import { 
-  createBrazilianPhoneValidator,
-  createBrazilianPhoneFormatter
-} from '@wsolutions/form-validation';
+import React, { forwardRef, useState, useEffect } from 'react';
+import { createInternationalPhoneFormatter } from '@wsolutions/form-validation';
 import { FieldGroup, type FieldGroupProps } from '../../field/FieldGroup';
-
-/**
- * Supported countries for phone input
- */
-export type PhoneCountry = 'BR' | 'AR' | 'US' | 'ES' | 'PT';
 
 /**
  * Country configuration
  */
-interface CountryConfig {
+export interface CountryConfig {
   code: string;
   name: string;
   dialCode: string;
+  flag: string;
   placeholder: string;
 }
 
 /**
- * Country configurations
+ * Common countries with phone codes
  */
-const COUNTRY_CONFIGS: Record<PhoneCountry, CountryConfig> = {
-  BR: {
-    code: 'BR',
-    name: 'Brasil',
-    dialCode: '+55',
-    placeholder: '(00) 00000-0000'
-  },
-  AR: {
-    code: 'AR',
-    name: 'Argentina',
-    dialCode: '+54',
-    placeholder: '(011) 0000-0000'
-  },
-  US: {
-    code: 'US',
-    name: 'United States',
-    dialCode: '+1',
-    placeholder: '(000) 000-0000'
-  },
-  ES: {
-    code: 'ES',
-    name: 'España',
-    dialCode: '+34',
-    placeholder: '000 00 00 00'
-  },
-  PT: {
-    code: 'PT',
-    name: 'Portugal',
-    dialCode: '+351',
-    placeholder: '000 000 000'
-  }
-};
+export const COUNTRIES: CountryConfig[] = [
+  { code: 'BR', name: 'Brasil', dialCode: '55', flag: '🇧🇷', placeholder: '(11) 98765-4321' },
+  { code: 'US', name: 'United States', dialCode: '1', flag: '🇺🇸', placeholder: '(212) 555-1234' },
+  { code: 'AR', name: 'Argentina', dialCode: '54', flag: '🇦🇷', placeholder: '(11) 4567-8901' },
+  { code: 'ES', name: 'España', dialCode: '34', flag: '🇪🇸', placeholder: '91 123 4567' },
+  { code: 'PT', name: 'Portugal', dialCode: '351', flag: '🇵🇹', placeholder: '21 234 5678' },
+  { code: 'MX', name: 'México', dialCode: '52', flag: '🇲🇽', placeholder: '55 1234 5678' },
+  { code: 'CL', name: 'Chile', dialCode: '56', flag: '🇨🇱', placeholder: '2 2123 4567' },
+  { code: 'CO', name: 'Colombia', dialCode: '57', flag: '🇨🇴', placeholder: '1 234 5678' },
+  { code: 'PE', name: 'Perú', dialCode: '51', flag: '🇵🇪', placeholder: '1 234 5678' },
+  { code: 'UY', name: 'Uruguay', dialCode: '598', flag: '🇺🇾', placeholder: '2 123 4567' },
+  { code: 'PY', name: 'Paraguay', dialCode: '595', flag: '🇵🇾', placeholder: '21 123 456' },
+  { code: 'BO', name: 'Bolivia', dialCode: '591', flag: '🇧🇴', placeholder: '2 234 5678' },
+  { code: 'VE', name: 'Venezuela', dialCode: '58', flag: '🇻🇪', placeholder: '212 123 4567' },
+  { code: 'EC', name: 'Ecuador', dialCode: '593', flag: '🇪🇨', placeholder: '2 234 5678' },
+  { code: 'GB', name: 'United Kingdom', dialCode: '44', flag: '🇬🇧', placeholder: '20 7123 4567' },
+  { code: 'FR', name: 'France', dialCode: '33', flag: '🇫🇷', placeholder: '1 42 34 56 78' },
+  { code: 'DE', name: 'Germany', dialCode: '49', flag: '🇩🇪', placeholder: '30 12345678' },
+  { code: 'IT', name: 'Italy', dialCode: '39', flag: '🇮🇹', placeholder: '06 1234 5678' },
+  { code: 'CA', name: 'Canada', dialCode: '1', flag: '🇨🇦', placeholder: '(613) 555-1234' },
+  { code: 'AU', name: 'Australia', dialCode: '61', flag: '🇦🇺', placeholder: '2 1234 5678' },
+];
 
 /**
  * PhoneInput props
  */
-export interface PhoneInputProps extends Omit<FieldGroupProps, 'formatter' | 'validator'> {
-  /** Country change handler */
-  onCountryChange?: (country: PhoneCountry) => void;
-  /** Default country */
-  defaultCountry?: PhoneCountry;
-  /** Available countries */
-  countries?: PhoneCountry[];
-  /** Select class name */
-  selectClassName?: string;
-  /** Input wrapper class name for flex layout */
-  inputWrapperClassName?: string;
+export interface PhoneInputProps extends Omit<FieldGroupProps, 'validator' | 'formatter' | 'onChange'> {
+  /**
+   * Show country selector dropdown
+   * @default true
+   */
+  showCountrySelector?: boolean;
+
+  /**
+   * Default country code
+   * @default 'BR'
+   */
+  defaultCountry?: string;
+
+  /**
+   * Include country code prefix (+XX) in formatted output
+   * @default true
+   */
+  includeCountryCode?: boolean;
+
+  /**
+   * Separator between number groups
+   * @default ' ' (space)
+   * 
+   * @example
+   * - ' ' → +55 11 98765-4321
+   * - '-' → +55-11-98765-4321
+   */
+  separator?: string;
+
+  /**
+   * Custom format function
+   * If provided, overrides automatic formatting
+   */
+  customFormat?: (digits: string) => string;
+
+  /**
+   * Change handler - receives raw value, formatted value, and clean value (only digits)
+   */
+  onChange?: (rawValue: string, formattedValue: string, cleanValue: string) => void;
+
+  /**
+   * Country change handler
+   */
+  onCountryChange?: (country: CountryConfig) => void;
+}
+
+/**
+ * Find country by code with guaranteed return value
+ */
+function findCountry(code: string): CountryConfig {
+  const found = COUNTRIES.find(c => c.code === code);
+  if (found) return found;
+  
+  // Fallback to first country (Brasil)
+  const fallback = COUNTRIES[0];
+  if (!fallback) {
+    throw new Error('COUNTRIES array must contain at least one country');
+  }
+  return fallback;
 }
 
 /**
  * PhoneInput component
+ * 
+ * Universal phone input sin validaciones estrictas.
+ * Acepta números de cualquier país y longitud.
+ * Solo aplica formateo visual para mejorar la legibilidad.
+ * 
+ * Incluye selector de código de país (opcional).
+ * El cleanValue (solo dígitos) está disponible automáticamente
+ * via FieldGroup y es ideal para guardar en la base de datos.
  * 
  * @example
  * ```tsx
@@ -88,98 +130,219 @@ export interface PhoneInputProps extends Omit<FieldGroupProps, 'formatter' | 'va
  * 
  * function MyForm() {
  *   const [phone, setPhone] = useState('');
- *   const [country, setCountry] = useState<PhoneCountry>('BR');
- *   
+ * 
  *   return (
  *     <PhoneInput
- *       label="Telefone"
  *       name="phone"
- *       defaultCountry={country}
- *       onCountryChange={setCountry}
- *       required
+ *       label="Teléfono"
+ *       showCountrySelector
+ *       defaultCountry="BR"
+ *       initialValue={phone}
+ *       onChange={(raw, formatted, clean) => {
+ *         console.log('Raw:', raw);           // "+55 (11) 9-8765/4321"
+ *         console.log('Formatted:', formatted); // "+55 11 98765-4321"
+ *         console.log('Clean:', clean);        // "5511987654321"
+ *         setPhone(clean); // Guardar solo dígitos en DB
+ *       }}
  *     />
  *   );
  * }
  * ```
+ * 
+ * @example
+ * // Con selector de país
+ * <PhoneInput
+ *   name="phone"
+ *   label="Celular"
+ *   showCountrySelector
+ *   defaultCountry="BR"
+ *   placeholder="(11) 98765-4321"
+ * />
+ * 
+ * @example
+ * // Sin selector de país (modo simple)
+ * <PhoneInput
+ *   name="phone"
+ *   label="Teléfono"
+ *   showCountrySelector={false}
+ *   placeholder="+55 11 98765-4321"
+ * />
  */
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  (
-    {
-      onCountryChange,
-      defaultCountry = 'BR',
-      countries = ['BR', 'AR', 'US', 'ES', 'PT'],
-      selectClassName = '',
-      inputWrapperClassName = '',
-      placeholder,
-      ...fieldGroupProps
-    },
-    ref
-  ) => {
-    const [selectedCountry, setSelectedCountry] = useState<PhoneCountry>(defaultCountry);
+  ({ 
+    showCountrySelector = true,
+    defaultCountry = 'BR',
+    includeCountryCode = true, 
+    separator = ' ', 
+    customFormat,
+    onChange,
+    onCountryChange,
+    label,
+    name,
+    required,
+    initialValue = '',
+    containerClassName = '',
+    labelClassName = '',
+    inputClassName = '',
+    errorClassName = '',
+    helpText,
+    helpTextClassName = '',
+    ...fieldGroupProps
+  }, ref) => {
+    // Find default country - guaranteed to have at least one country
+    const defaultCountryConfig = findCountry(defaultCountry);
+    
+    // State
+    const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(defaultCountryConfig);
+    const [phoneNumber, setPhoneNumber] = useState<string>('');
 
-    // Get validator and formatter for current country
-    const { validator, formatter } = useMemo(() => {
-      // For now, only BR has full validator/formatter implementation
-      if (selectedCountry === 'BR') {
-        return {
-          validator: createBrazilianPhoneValidator({ allowFormatted: true }),
-          formatter: createBrazilianPhoneFormatter({ includeCountryCode: false })
-        };
+    // Initialize phone number from initialValue
+    useEffect(() => {
+      if (initialValue) {
+        // Extract country code and number from initialValue
+        const digits = initialValue.replace(/\D/g, '');
+        
+        // Try to match country code
+        let matchedCountry: CountryConfig = defaultCountryConfig;
+        for (const country of COUNTRIES) {
+          if (digits.startsWith(country.dialCode)) {
+            matchedCountry = country;
+            break;
+          }
+        }
+        
+        setSelectedCountry(matchedCountry);
+        
+        // Remove country code from number
+        const numberWithoutCode = digits.startsWith(matchedCountry.dialCode) 
+          ? digits.slice(matchedCountry.dialCode.length)
+          : digits;
+        
+        setPhoneNumber(numberWithoutCode);
       }
-      
-      // For other countries, return undefined (no validation/formatting)
-      // This can be extended in the future
-      return {
-        validator: undefined,
-        formatter: undefined
-      };
-    }, [selectedCountry]);
+    }, [initialValue, defaultCountryConfig]);
 
     // Handle country change
-    const handleCountryChange = useCallback(
-      (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newCountry = e.target.value as PhoneCountry;
-        setSelectedCountry(newCountry);
-        onCountryChange?.(newCountry);
-      },
-      [onCountryChange]
+    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const countryCode = e.target.value;
+      const country = findCountry(countryCode);
+      setSelectedCountry(country);
+      
+      if (onCountryChange) {
+        onCountryChange(country);
+      }
+
+      // Trigger onChange with updated country code
+      const fullNumber = country.dialCode + phoneNumber.replace(/\D/g, '');
+      if (onChange) {
+        onChange(fullNumber, fullNumber, fullNumber);
+      }
+    };
+
+    // Create formatter with config
+    const formatter = React.useMemo(
+      () => createInternationalPhoneFormatter({
+        includeCountryCode,
+        separator,
+        customFormat,
+      }),
+      [includeCountryCode, separator, customFormat]
     );
 
-    // Get country config
-    const countryConfig = COUNTRY_CONFIGS[selectedCountry];
-    
-    // Use country placeholder if no custom placeholder provided
-    const actualPlaceholder = placeholder || countryConfig.placeholder;
+    // No-op validator - siempre válido (no validations)
+    const noValidator = React.useMemo(
+      () => ({
+        validate: () => ({ isValid: true }),
+      }),
+      []
+    );
 
-    return (
-      <div>
-        {/* Country selector */}
-        <div style={{ marginBottom: '0.5rem' }}>
-          <select
-            value={selectedCountry}
-            onChange={handleCountryChange}
-            className={selectClassName}
-            aria-label="Selecione o país"
-          >
-            {countries.map((country) => {
-              const config = COUNTRY_CONFIGS[country];
-              return (
-                <option key={country} value={country}>
-                  {config.dialCode} {config.name}
-                </option>
-              );
-            })}
-          </select>
-        </div>
+    // Handle phone number change
+    const handlePhoneChange = (_raw: string, _formatted: string, clean: string) => {
+      setPhoneNumber(clean);
+      
+      // Combine country code with phone number
+      const fullNumber = selectedCountry.dialCode + clean;
+      
+      if (onChange) {
+        onChange(fullNumber, `+${fullNumber}`, fullNumber);
+      }
+    };
 
-        {/* Phone input field */}
+    // Render without country selector (simple mode)
+    if (!showCountrySelector) {
+      return (
         <FieldGroup
           ref={ref}
-          {...fieldGroupProps}
-          validator={validator as any}
+          name={name}
+          label={label}
+          required={required}
+          validator={noValidator as any}
           formatter={formatter as any}
-          placeholder={actualPlaceholder}
+          initialValue={initialValue}
+          onChange={onChange}
+          containerClassName={containerClassName}
+          labelClassName={labelClassName}
+          inputClassName={inputClassName}
+          errorClassName={errorClassName}
+          helpText={helpText}
+          helpTextClassName={helpTextClassName}
+          {...fieldGroupProps}
         />
+      );
+    }
+
+    // Render with country selector
+    return (
+      <div className={containerClassName || 'mb-4'}>
+        {label && (
+          <label className={labelClassName || 'block text-sm font-medium text-neutral-700 mb-2'}>
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+        )}
+        
+        <div className="flex gap-2">
+          {/* Country Selector */}
+          <div className="flex-shrink-0" style={{ width: '140px' }}>
+            <select
+              value={selectedCountry.code}
+              onChange={handleCountryChange}
+              className={inputClassName || 'w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white'}
+              style={{ height: '42px' }}
+            >
+              {COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.flag} +{country.dialCode}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Phone Number Input */}
+          <div className="flex-1">
+            <FieldGroup
+              ref={ref}
+              name={name}
+              required={required}
+              validator={noValidator as any}
+              formatter={formatter as any}
+              initialValue={phoneNumber}
+              onChange={handlePhoneChange}
+              placeholder={selectedCountry.placeholder}
+              inputClassName={inputClassName || 'w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'}
+              errorClassName={errorClassName || 'text-sm text-red-600 mt-1'}
+              showErrorOnBlur
+              {...fieldGroupProps}
+            />
+          </div>
+        </div>
+
+        {helpText && (
+          <p className={helpTextClassName || 'text-sm text-neutral-500 mt-1'}>
+            {helpText}
+          </p>
+        )}
       </div>
     );
   }

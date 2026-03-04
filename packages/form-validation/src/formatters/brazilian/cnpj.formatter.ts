@@ -8,13 +8,7 @@ import type {
   FormatterConfig,
   StringFormatterOptions,
 } from '../../types/formatter.types';
-
-/**
- * Remove non-numeric characters
- */
-function removeNonNumeric(value: string): string {
-  return value.replace(/\D/g, '');
-}
+import { removeNonNumeric } from '../../utils/string.utils';
 
 /**
  * Format CNPJ with dots, slash and dash

@@ -8,13 +8,7 @@ import type {
   FormatterConfig,
   MaskFormatterOptions,
 } from '../../types/formatter.types';
-
-/**
- * Remove all non-numeric characters
- */
-function removeNonNumeric(value: string): string {
-  return value.replace(/\D/g, '');
-}
+import { removeNonNumeric } from '../../utils/string.utils';
 
 /**
  * Apply mask to value

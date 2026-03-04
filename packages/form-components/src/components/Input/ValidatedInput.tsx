@@ -7,6 +7,7 @@
 
 import React, { forwardRef } from 'react';
 import type { Validator } from '@wsolutions/form-validation';
+import { sanitizeInput as defaultSanitizeInput } from '@wsolutions/form-validation';
 import { useValidator } from '../../hooks/validation/useValidator';
 
 /**
@@ -39,6 +40,8 @@ export interface ValidatedInputProps extends Omit<React.InputHTMLAttributes<HTML
   validClassName?: string;
   /** Invalid state className */
   invalidClassName?: string;
+  /** Sanitize function to clean user input (prevents XSS). Defaults to built-in sanitizeInput */
+  sanitizeInput?: ((value: string) => string) | false;
 }
 
 /**
@@ -81,6 +84,7 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       showValidationState = true,
       validClassName = 'input-valid',
       invalidClassName = 'input-invalid',
+      sanitizeInput = defaultSanitizeInput,
       className,
       ...inputProps
     },
@@ -100,14 +104,17 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       showErrorOnBlur,
     });
 
-    // Handle change
+    // Handle change with sanitization
     const handleChange = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
+        // Import sanitizeInput from @wsolutions/form-validation at top
+        // For security: prevent XSS attacks by sanitizing user input
+        const rawValue = e.target.value;
+        const newValue = sanitizeInput ? sanitizeInput(rawValue) : rawValue;
         onChange(newValue);
         validate(newValue);
       },
-      [onChange, validate]
+      [onChange, validate, sanitizeInput]
     );
 
     // Handle blur

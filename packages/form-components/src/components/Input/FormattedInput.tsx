@@ -7,6 +7,7 @@
 
 import React, { forwardRef } from 'react';
 import type { Formatter } from '@wsolutions/form-validation';
+import { sanitizeInput as defaultSanitizeInput } from '@wsolutions/form-validation';
 import { useFormatter } from '../../hooks/formatting/useFormatter';
 
 /**
@@ -29,6 +30,8 @@ export interface FormattedInputProps extends Omit<React.InputHTMLAttributes<HTML
   preserveCursor?: boolean;
   /** Container className */
   containerClassName?: string;
+  /** Sanitize function to clean user input (prevents XSS). Defaults to built-in sanitizeInput */
+  sanitizeInput?: ((value: string) => string) | false;
 }
 
 /**
@@ -65,6 +68,7 @@ export const FormattedInput = forwardRef<HTMLInputElement, FormattedInputProps>(
       formatOnBlur = false,
       preserveCursor = true,
       containerClassName,
+      sanitizeInput = defaultSanitizeInput,
       className,
       ...inputProps
     },
@@ -90,10 +94,12 @@ export const FormattedInput = forwardRef<HTMLInputElement, FormattedInputProps>(
       }
     }, [initialValue, formattedValue, rawValue, setValue, formatOnMount]);
 
-    // Handle change
+    // Handle change with sanitization
     const handleChange = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
+        // Sanitize input to prevent XSS attacks
+        const rawInput = e.target.value;
+        const newValue = sanitizeInput ? sanitizeInput(rawInput) : rawInput;
         handleFormatterChange(newValue);
         
         // Call onChange with both formatted and raw values
@@ -102,7 +108,7 @@ export const FormattedInput = forwardRef<HTMLInputElement, FormattedInputProps>(
         // Raw value is just the input value without formatting
         onChange(formatted, newValue);
       },
-      [handleFormatterChange, onChange, formatter, formatOnBlur]
+      [handleFormatterChange, onChange, formatter, formatOnBlur, sanitizeInput]
     );
 
     // Handle blur

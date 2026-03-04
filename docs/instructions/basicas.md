@@ -66,7 +66,7 @@ Verifica si hay errores en el componente/modulo <nombre> y si el nombre del comp
 ### 9. SSoT (Single Source of Truth - Fuente Única de la Verdad). 
 Analisa si la carpeta <nombre> atiende al princípio Single Source of Truth (SSoT).
 
-Analisa si la carpeta <nombre> cumple o viola a los principios SRP (Single Responsibility Principle - Principio de Responsabilidad Única) + SSoT (Single Source of Truth - Fuente Única de la Verdad) + DRY (Don't Repeat Yourself), manteniento la filosofia KISS (Keep It Simple, Stupid) con separacion de camadas, escalabilidad, mantenibilidad y responsividad.
+Analisa si la carpeta <nombre> cumple o viola a los principios SOLID [S — Single Responsibility Principle (Responsabilidad Única), O — Open/Closed Principle (Abierto/Cerrado), L — Liskov Substitution Principle (Sustitución de Liskov), I — Interface Segregation Principle (Segregación de Interfaces), D — Dependency Inversion Principle (Inversión de Dependencias)] + SSoT (Single Source of Truth - Fuente Única de la Verdad) + DRY (Don't Repeat Yourself), manteniento la filosofia KISS (Keep It Simple, Stupid) con separacion de camadas, escalabilidad, mantenibilidad y responsividad.
 
 ### 10. Componente individual
 Analisa la funcionalidad de este componente, donde esta siendo usado y si viola SSoT.

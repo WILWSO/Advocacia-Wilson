@@ -11,6 +11,3 @@ export type { CNPJValidatorOptions } from './cnpj.validator';
 
 export { createCEPValidator, validateCEP } from './cep.validator';
 export type { CEPValidatorOptions } from './cep.validator';
-
-export { createBrazilianPhoneValidator, validatePhone } from './phone.validator';
-export type { PhoneValidatorOptions } from './phone.validator';
