@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run type-check && vite build",
+    "build:packages": "npm run build --prefix packages/form-validation && npm run build --prefix packages/form-components",
     "lint": "eslint .",
     "preview": "vite preview",
     "sonar": "sonar-scanner",
     "type-check": "tsc --noEmit",
-    "prebuild": "npm run type-check",
+    "prebuild": "npm run build:packages",
     "build:analyze": "vite build --mode analyze",
     "check-security": "npm audit --production",
     "clean": "rm -rf dist node_modules/.vite"

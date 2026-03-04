@@ -363,6 +363,7 @@ src/
 
  ✅- ADMIN puede eliminar procesos. Porque No aparece el boton de eliminar procesos para ADMIN? 
 
+
 # 01/03/2026
 ## MODULARIZACION DE VALIDACIONES Y FORMATACIONES DE FORMS
 1. Basado en los principios de SSoT, escalabilidad Y mantenibilidad, PLANIFICA la posibilidad de modularizar los siguientes procesos del sistema: 
@@ -371,4 +372,21 @@ src/
   c) Planifica la integracion de estos modulos en formularios;
   OBS: Considera si los principios KISS (Keep It Simple) y DRY (Don't Repeat Yourself) son compatibles con SSoT y si hay necessidad de fusion o refactorización del codigo. No te olvides: tu recomiendas, yo decido.
 
-2. Verifica las reglas de negocio para crear/editar processos.
+DEPRECATED -- 2. CREAR opcion de instalacion o configuracion del paquete para Paises diferentes, por ejemplo: Brasil, Argentina, etc. Por ahora, vamos implementar solo Brasil y Argentina.
+  a) UI/UX: Si el uso del paquete es para Argentina, todos los mensajes, notificaciones, titulos, label, placeholder, etc  deben estar en español (ES-AR), si Brasil, deben estar en portugues (PT-BR);
+  b) UI/UX: form debe modificar automaticamente los campos de la siguiente manera: 
+    BRASIL: Nome Completo: --> ARGENTINA: seria dos campos Apellido: Nombre Completo: placeholder (nombre y segundo nombre)
+    BRASIL: CPF: (caso pessoa física), CNPJ: (Caso pessoa juridica) --> ARGENTINA: DNI
+
+ok, perfecto. pero el INPUT CPF/CNPJ no reconoce automaticamente cuando es cnpj o cpf para la validacion. Creo que seria mejor crear un campo a nivel de BACKEND: tipo_cliente en la tabla cliente que guardará "PF" para pessoa física y "PJ" para pessoa Juridica. FRONTEND campo para seleccionar si el cliente es "Pessoa Fisica" o "Pessoa Juridica". Si es juridica UI/UX modifica label del campo CPF pasa a CNPJ y la validacion y formateo pasa a CNPJ. Label del campo Nome Completo pasa a Razão Social, label del RG pasa a Inscição Estadual, Data de Nascimento pasa a Inicio das Atividades, Estado Civil no mostrar y guardar DB null, Nacionalidad pasa a Natureza Juridica, Profissão pasa a Atividade Principal. Al editar o visualizar cliente, verificar si es pessoa juridica y proceder la misma dinamica del UI/UX
+
+
+Próximos Pasos (Opcionales):
+
+Country code selector - Dropdown para seleccionar código de país
+
+# 03/03/2026 
+  1. MANTENIMIENTO DEL SISTEMA: El sistema ya esta en produccion, el cliente esta utilizando todo a full, necesito saber como bloquear temporalmente el sistema cuando el mantenimiento involucrar cambios en la base de datos. El cliente deberá ver un mensaje de bloqueo "SISTEMA EN MANTENIMIENTO, estamos trabajando para mejorar tu experiencia". QUIERO QUE PERMITA ACCESO SOLO A DEV´s. La arquitectura y estructura de archivos debe ser modular y reutilizable para utilizar en otro proyecto. Puedes elaborar un plan para ello?
+
+  2. MEJORA EN CONTACTOS: El campo DB clientes.telefone deve ser un objeto con array que posibilita guardar varios grupos de telefonos. ejemplo: telefono 1. tipo: celular, cod_pais: +55, numero: 63 99821-3344; telefono 2. tipo: fijo, cod_pais: +55, numero: 63 3221-3344; Los datos de estos campos deben ser migrados para el campo unico clientes.telefone. Los campos DB clientes.celular y clientes.telefone_alternativo deben ser eliminados por ultimo para no interferir el funcionamiento del sistema que esta en produccion.
+

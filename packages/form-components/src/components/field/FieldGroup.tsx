@@ -23,8 +23,8 @@ export interface FieldGroupProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   formatter?: Formatter<string, string>;
   /** Initial value */
   initialValue?: string;
-  /** Change handler - receives current value */
-  onChange?: (value: string) => void;
+  /** Change handler - receives raw value, formatted value, and clean value (numbers only) */
+  onChange?: (rawValue: string, formattedValue: string, cleanValue: string) => void;
   /** Blur handler */
   onBlur?: () => void;
   /** Validation callback */
@@ -139,6 +139,7 @@ export const FieldGroup = forwardRef<HTMLInputElement, FieldGroupProps>(
         validateOnMount,
         debounce,
         showErrorOnBlur,
+        formatOnBlur: !!formatter, // Format on blur when formatter is provided
         onChange,
         onBlur,
         // Wrapper to match expected signature - useFieldValidation only passes result

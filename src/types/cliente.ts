@@ -12,6 +12,11 @@ import { BaseEntity, BaseFilters, BaseStats, ActiveStatus } from './common'
 export type EstadoCivil = 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel'
 
 /**
+ * Tipo de cliente: Pessoa Física o Pessoa Jurídica
+ */
+export type TipoCliente = 'PF' | 'PJ'
+
+/**
  * Status del cliente - extiende ActiveStatus con 'potencial'
  */
 export type ClienteStatus = ActiveStatus | 'potencial'
@@ -21,6 +26,8 @@ export type ClienteStatus = ActiveStatus | 'potencial'
  * Extiende BaseEntity para campos de auditoría estándar
  */
 export interface Cliente extends BaseEntity {
+  // Tipo de Cliente (SSoT - Single Source of Truth)
+  tipo_cliente: TipoCliente
   // Información Personal
   nome_completo: string
   cpf_cnpj?: string

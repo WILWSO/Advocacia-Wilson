@@ -2,24 +2,25 @@
 
 > Pure logic validation and formatting library - Framework agnostic
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-green.svg)](package.json)
+
 ## 🎯 Features
 
-- ✅ **Zero Dependencies**: Pure TypeScript, no external dependencies
-- ✅ **Framework Agnostic**: Works in Node.js, Browser, React, Vue, Angular, etc.
-- ✅ **Type Safe**: Full TypeScript support with strict typing
-- ✅ **Composable**: Combine validators and formatters easily
-- ✅ **Extensible**: Create custom validators and formatters
-- ✅ **Tested**: Comprehensive test coverage
-- ✅ **Tree-shakeable**: Only import what you need
+- ✅ **Zero Dependencies** - Pure TypeScript, no external dependencies
+- ✅ **Framework Agnostic** - Works in Node.js, Browser, React, Vue, Angular, etc.
+- ✅ **Type Safe** - Full TypeScript support with strict typing
+- ✅ **Composable** - Combine validators and formatters easily
+- ✅ **Multi-domain** - Brazilian, Argentine, and universal validators
+- ✅ **Extensible** - Create custom validators and formatters
+- ✅ **Tested** - Comprehensive test coverage (77% pass rate)
+- ✅ **Tree-shakeable** - Only import what you need
 
 ## 📦 Installation
 
 ```bash
 npm install @wsolutions/form-validation
-# or
-yarn add @wsolutions/form-validation
-# or
-pnpm add @wsolutions/form-validation
 ```
 
 ## 🚀 Quick Start
@@ -42,13 +43,14 @@ if (result.isValid) {
 ### Basic Formatting
 
 ```typescript
-import { cpfFormatter, uppercaseFormatter } from '@wsolutions/form-validation';
+import { createCPFFormatter } from '@wsolutions/form-validation';
 
+const cpfFormatter = createCPFFormatter();
 const formatted = cpfFormatter.format('12345678900');
 // Result: "123.456.789-00"
 
-const upper = uppercaseFormatter.format('hello world');
-// Result: "HELLO WORLD"
+const cleaned = cpfFormatter.clean('123.456.789-00');
+// Result: "12345678900"
 ```
 
 ### Composing Validators
@@ -57,21 +59,21 @@ const upper = uppercaseFormatter.format('hello world');
 import { composeValidators, createRequiredValidator, createEmailValidator } from '@wsolutions/form-validation';
 
 const validator = composeValidators([
-  createRequiredValidator('Email'),
+  createRequiredValidator({ fieldName: 'Email' }),
   createEmailValidator({ maxLength: 254 })
 ]);
 
-const result = await validator.validate('test@example.com');
+const result = validator.validate('test@example.com');
 ```
 
 ### Composing Formatters
 
 ```typescript
-import { composeFormatters, trimFormatter, lowercaseFormatter } from '@wsolutions/form-validation';
+import { composeFormatters } from '@wsolutions/form-validation';
 
 const formatter = composeFormatters([
-  trimFormatter,
-  lowercaseFormatter
+  { format: (v) => v.trim(), clean: (v) => v },
+  { format: (v) => v.toLowerCase(), clean: (v) => v }
 ]);
 
 const result = formatter.format('  HELLO  ');
@@ -82,40 +84,168 @@ const result = formatter.format('  HELLO  ');
 
 ### Generic Validators
 
-- `createRequiredValidator(fieldName, options)` - Required field validation
-- `createEmailValidator(options)` - Email format validation
-- `createLengthValidator(options)` - Min/max length validation
-- `createRegexValidator(pattern, message)` - Custom regex validation
-- `createUrlValidator(options)` - URL format validation
-- `createNumberValidator(options)` - Number range validation
-- `createDateValidator(options)` - Date validation
+| Validator | Description | Example |
+|-----------|-------------|---------|
+| `createRequiredValidator` | Required field validation | `createRequiredValidator({ fieldName: 'Email' })` |
+| `createEmailValidator` | Email format (RFC 5322) | `createEmailValidator({ requireTld: true })` |
+| `createLengthValidator` | Min/max length validation | `createLengthValidator({ min: 3, max: 50 })` |
+| `createRegexValidator` | Custom regex validation | `createRegexValidator({ pattern: /^\d+$/, message: 'Only numbers' })` |
+| `createUrlValidator` | URL format validation | `createUrlValidator({ requireProtocol: true })` |
 
 ### Brazilian Validators
 
-- `createCPFValidator(options)` - CPF validation with official algorithm
-- `createCNPJValidator(options)` - CNPJ validation with official algorithm
-- `createCEPValidator(options)` - CEP validation
-- `createPhoneBRValidator(options)` - Brazilian phone validation
-- `createRGValidator(options)` - RG validation
+| Validator | Description | Format | Algorithm |
+|-----------|-------------|--------|-----------|
+| `createCPFValidator` | CPF validation | 000.000.000-00 | Official check digit |
+| `createCNPJValidator` | CNPJ validation | 00.000.000/0000-00 | Official check digit |
+| `createCEPValidator` | Postal code | 00000-000 | Format only |
+| `createPhoneBRValidator` | Phone numbers | (00) 00000-0000 | DDD + 8/9 digits |
+
+### Argentine Validators
+
+| Validator | Description | Format | Algorithm |
+|-----------|-------------|--------|-----------|
+| `createDNIValidator` | DNI validation | 00.000.000 | Format only |
+| `createCUILValidator` | CUIL validation | 00-00000000-0 | Check digit |
+| `createCUITValidator` | CUIT validation | 00-00000000-0 | Check digit |
+
+### Universal Validators
+
+| Validator | Description | Features |
+|-----------|-------------|----------|
+| `createPhoneValidator` | Universal phone | Multi-country support |
 
 ## 🎨 Core Formatters
 
 ### Generic Formatters
 
-- `uppercaseFormatter` - Convert to uppercase
-- `lowercaseFormatter` - Convert to lowercase
-- `capitalizeFormatter` - Capitalize words
-- `trimFormatter` - Remove surrounding whitespace
-- `maskFormatter` - Apply custom masks
+```typescript
+// Text transformers
+import { 
+  uppercaseFormatter,
+  lowercaseFormatter,
+  capitalizeFormatter,
+  trimFormatter
+} from '@wsolutions/form-validation';
+
+uppercaseFormatter.format('hello');     // "HELLO"
+lowercaseFormatter.format('HELLO');     // "hello"
+capitalizeFormatter.format('hello');    // "Hello"
+trimFormatter.format('  hello  ');      // "hello"
+```
 
 ### Brazilian Formatters
 
-- `cpfFormatter` - Format CPF (000.000.000-00)
-- `cnpjFormatter` - Format CNPJ (00.000.000/0000-00)
-- `cepFormatter` - Format CEP (00000-000)
-- `phoneBRFormatter` - Format Brazilian phone ((00) 90000-0000)
+```typescript
+import { 
+  createCPFFormatter,
+  createCNPJFormatter,
+  createCEPFormatter,
+  createPhoneBRFormatter
+} from '@wsolutions/form-validation';
 
-## 🔧 API Reference
+const cpfFormatter = createCPFFormatter();
+cpfFormatter.format('12345678900');           // "123.456.789-00"
+cpfFormatter.clean('123.456.789-00');         // "12345678900"
+
+const cnpjFormatter = createCNPJFormatter();
+cnpjFormatter.format('12345678000100');       // "12.345.678/0001-00"
+
+const cepFormatter = createCEPFormatter();
+cepFormatter.format('12345678');              // "12345-678"
+
+const phoneFormatter = createPhoneBRFormatter();
+phoneFormatter.format('11987654321');         // "(11) 98765-4321"
+phoneFormatter.format('1134567890');          // "(11) 3456-7890"
+```
+
+### Argentine Formatters
+
+```typescript
+import { 
+  createDNIFormatter,
+  createCUILFormatter,
+  createCUITFormatter
+} from '@wsolutions/form-validation';
+
+const dniFormatter = createDNIFormatter();
+dniFormatter.format('12345678');              // "12.345.678"
+
+const cuilFormatter = createCUILFormatter();
+cuilFormatter.format('20123456789');          // "20-12345678-9"
+
+const cuitFormatter = createCUITFormatter();
+cuitFormatter.format('30123456789');          // "30-12345678-9"
+```
+
+## 🎯 Advanced Usage
+
+### Custom Validators
+
+```typescript
+import { Validator, ValidationResult } from '@wsolutions/form-validation';
+
+const createEvenNumberValidator = (): Validator<number> => ({
+  name: 'evenNumber',
+  validate: (value: number): ValidationResult => {
+    const isValid = value % 2 === 0;
+    return {
+      isValid,
+      errors: isValid ? [] : ['Number must be even']
+    };
+  }
+});
+```
+
+### Async Validators
+
+```typescript
+import { Validator, ValidationResult } from '@wsolutions/form-validation';
+
+const createUniqueEmailValidator = (checkFn: (email: string) => Promise<boolean>): Validator<string> => ({
+  name: 'uniqueEmail',
+  validate: async (value: string): Promise<ValidationResult> => {
+    const isUnique = await checkFn(value);
+    return {
+      isValid: isUnique,
+      errors: isUnique ? [] : ['Email already exists']
+    };
+  }
+});
+```
+
+### Conditional Validation
+
+```typescript
+import { composeValidators, createRequiredValidator, createPhoneBRValidator } from '@wsolutions/form-validation';
+
+const createConditionalPhoneValidator = (isMobile: boolean) => {
+  return createPhoneBRValidator({
+    allowFormatted: true,
+    ...(isMobile ? { mobileOnly: true } : { landlineOnly: true })
+  });
+};
+```
+
+### Custom Formatters
+
+```typescript
+import { Formatter } from '@wsolutions/form-validation';
+
+const createCreditCardFormatter = (): Formatter => ({
+  name: 'creditCard',
+  format: (value: string): string => {
+    const cleaned = value.replace(/\D/g, '');
+    const groups = cleaned.match(/.{1,4}/g) || [];
+    return groups.join(' ');
+  },
+  clean: (value: string): string => {
+    return value.replace(/\D/g, '');
+  }
+});
+```
+
+## 📖 API Reference
 
 ### Validator Interface
 
@@ -136,32 +266,171 @@ interface ValidationResult {
 ### Formatter Interface
 
 ```typescript
-interface Formatter<T = any, R = string> {
+interface Formatter<T = string, R = string> {
   name: string;
   format: (value: T, options?: any) => R;
+  clean?: (value: R) => T;
+}
+```
+
+### Composer Functions
+
+```typescript
+// Compose multiple validators (all must pass)
+function composeValidators<T = any>(
+  validators: Validator<T>[]
+): Validator<T>;
+
+// Compose multiple formatters (applied sequentially)
+function composeFormatters<T = string>(
+  formatters: Formatter<T>[]
+): Formatter<T>;
+```
+
+### Validator Options
+
+#### Required Validator
+```typescript
+interface RequiredValidatorOptions {
+  fieldName?: string;
+  message?: string;
+  allowWhitespace?: boolean;
+}
+```
+
+#### Email Validator
+```typescript
+interface EmailValidatorOptions {
+  message?: string;
+  allowDisposable?: boolean;
+  requireTld?: boolean;
+  maxLength?: number;
+}
+```
+
+#### Length Validator
+```typescript
+interface LengthValidatorOptions {
+  min?: number;
+  max?: number;
+  exact?: number;
+  message?: string | {
+    min?: string;
+    max?: string;
+    exact?: string;
+  };
+}
+```
+
+#### Phone BR Validator
+```typescript
+interface PhoneBRValidatorOptions {
+  message?: string;
+  allowFormatted?: boolean;
+  mobileOnly?: boolean;
+  landlineOnly?: boolean;
+}
+```
+
+### Formatter Options
+
+#### CPF/CNPJ Formatter
+```typescript
+interface BrazilianDocumentFormatterOptions {
+  includeFormatting?: boolean;  // default: true
+}
+```
+
+#### Phone BR Formatter
+```typescript
+interface PhoneBRFormatterOptions {
+  includeCountryCode?: boolean;  // default: false
 }
 ```
 
 ## 🧪 Testing
 
+Run tests:
+
 ```bash
-npm test                 # Run all tests
+npm test                 # Run all tests (86 total, 66 passing)
 npm run test:watch       # Watch mode
 npm run test:coverage    # Coverage report
 ```
 
-## 📖 Documentation
+Example test:
 
-Full documentation available at: [https://wsolutions.dev/docs/form-validation](https://wsolutions.dev/docs/form-validation)
+```typescript
+import { describe, test, expect } from 'vitest';
+import { createCPFValidator } from '@wsolutions/form-validation';
 
-## 🤝 Contributing
+describe('CPF Validator', () => {
+  test('validates valid CPF', () => {
+    const validator = createCPFValidator();
+    const result = validator.validate('123.456.789-09');
+    
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+});
+```
 
-Contributions are welcome! Please read our [Contributing Guide](../../CONTRIBUTING.md) for details.
+## 🤝 Integration Examples
 
-## 📄 License
+### With React
 
-MIT © Wilton
+```tsx
+import { useState } from 'react';
+import { createCPFValidator, createCPFFormatter } from '@wsolutions/form-validation';
+
+function CPFInput() {
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+
+  const validator = createCPFValidator();
+  const formatter = createCPFFormatter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatter.format(e.target.value);
+    setValue(formatted);
+  };
+
+  const handleBlur = () => {
+    const result = validator.validate(value);
+    setError(result.isValid ? '' : result.errors[0]);
+  };
+
+  return (
+    <div>
+      <input value={value} onChange={handleChange} onBlur={handleBlur} />
+      {error && <span>{error}</span>}
+    </div>
+  );
+}
+```
+
+### With Node.js
+
+```typescript
+import { createCPFValidator } from '@wsolutions/form-validation';
+
+const validator = createCPFValidator();
+
+async function validateUser(cpf: string) {
+  const result = validator.validate(cpf);
+  
+  if (!result.isValid) {
+    throw new Error(result.errors.join(', '));
+  }
+  
+  return true;
+}
+```
+
+## 📝 License
+
+MIT © [WSolutions](https://github.com/WILWSO/Advocacia-Wilson)
 
 ## 🔗 Related Packages
 
-- [`@wsolutions/form-components`](../form-components) - React components with integrated validation and formatting
+- [@wsolutions/form-components](../form-components) - React components with integrated validation and formatting

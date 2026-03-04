@@ -19,6 +19,7 @@ import { CEPData } from '../../features/cep'
 // Formulario vacío con todos los campos inicializados como strings vacíos
 // Esto previene warnings de React sobre inputs controlados (null/undefined)
 const EMPTY_CLIENTE_FORM: ClienteFormData = {
+  tipo_cliente: 'PF', // Default: Pessoa Física
   nome_completo: '',
   cpf_cnpj: '',
   rg: '',
@@ -63,6 +64,8 @@ export const useClienteForm = () => {
   const initialData = formModal.item ? {
     ...EMPTY_CLIENTE_FORM,
     ...formModal.item,
+    // Asegurar tipo_cliente con fallback a 'PF' para clientes legacy
+    tipo_cliente: formModal.item.tipo_cliente || 'PF',
     // Asegurar que campos opcionales sean strings vacíos en lugar de null/undefined
     cpf_cnpj: formModal.item.cpf_cnpj || '',
     rg: formModal.item.rg || '',
@@ -96,6 +99,8 @@ export const useClienteForm = () => {
       const data = {
         ...EMPTY_CLIENTE_FORM,
         ...formModal.item,
+        // Asegurar tipo_cliente con fallback a 'PF' para clientes legacy
+        tipo_cliente: formModal.item.tipo_cliente || 'PF',
         // Garantizar que todos los campos sean strings (nunca null/undefined)
         cpf_cnpj: formModal.item.cpf_cnpj || '',
         rg: formModal.item.rg || '',
@@ -163,17 +168,8 @@ export const useClienteForm = () => {
       if (!emailValidation.isValid) allErrors.push(...emailValidation.errors)
     }
 
-    // Validar celular (obrigatório)
-    const celularValidation = FormValidator.validateTelefoneBR(data.celular, true)
-    if (!celularValidation.isValid) allErrors.push(...celularValidation.errors)
-
-    // Validar telefone (opcional)
-    const telefoneValidation = FormValidator.validateTelefoneBR(data.telefone || '', false)
-    if (!telefoneValidation.isValid) allErrors.push(...telefoneValidation.errors)
-
-    // Validar telefone_alternativo (opcional)
-    const telefoneAltValidation = FormValidator.validateTelefoneBR(data.telefone_alternativo || '', false)
-    if (!telefoneAltValidation.isValid) allErrors.push(...telefoneAltValidation.errors)
+    // Teléfonos: sin validación estricta (acepta formato internacional)
+    // La validación de requerido para celular se hace en el nivel del form input
 
     // Validar CEP (opcional)
     const cepValidation = FormValidator.validateCEP(data.cep || '')
@@ -354,6 +350,7 @@ export const useClienteForm = () => {
       celular: '',
       status: 'ativo',
       pais: 'Brasil',
+      tipo_cliente: 'PF',
       documentos_cliente: []
     } as ClienteFormData)
   }
@@ -409,12 +406,12 @@ export const useClienteForm = () => {
         const validation = FormValidator.validateEmail(value)
         return validation.isValid ? null : validation.errors[0]
       }
+      // Teléfonos: sin validación estricta (acepta formato internacional)
+      // El componente InternationalPhoneInput no valida, solo formatea
       case 'celular':
       case 'telefone':
-      case 'telefone_alternativo': {
-        const validation = FormValidator.validateTelefoneBR(value, fieldName === 'celular')
-        return validation.isValid ? null : validation.errors[0]
-      }
+      case 'telefone_alternativo':
+        return null
       case 'cep': {
         const validation = FormValidator.validateCEP(value)
         return validation.isValid ? null : validation.errors[0]

@@ -54,7 +54,7 @@ Verifica la carpeta <nombre> con sus subcarpetas (si hay) e identifica si viola 
 Revisa la carpeta <nombre> con sus subcarpetas (si hay) y verifica sy hay algun archivo que deberia ser movido a otra carpeta más adecuada o si algun archivo del resto del proyecto debaría estar en esta carpeta, conforme nuestra arquitectura adoptada.
 
 ### 6.  Fusion - KISS (Keep It Simple, Stupid) - sobre-modularización
-En la carpeta <nombre> con sus subcarpetas (si hay) verifica si todos los archivos son realmente necesarios o se puede fusionar con algun otro archivo del proyecto sin violar los principios KISS (Keep It Simple, Stupid) y DRY (Don't Repeat Yourself), separacion de camadas y responsabilidades, escalabilidad, mantenibilidad y la responsividad. Sugierir mejoras, yo decido. 
+En la carpeta <nombre> con sus subcarpetas (si hay) verifica si todos los archivos son realmente necesarios o se puede fusionar con algun otro archivo del proyecto sin violar los principios SRP (Single Responsibility Principle - Principio de Responsabilidad Única) + SSoT + DRY (Don't Repeat Yourself), manteniento la filosofia KISS (Keep It Simple, Stupid) con separacion de camadas, escalabilidad, mantenibilidad y responsividad. Sugierir mejoras, yo decido. 
   OBS: KISS no es un principio que "agregas" o "quitas". KISS es una filosofía de diseño que dice: "De todas las soluciones posibles, elige la MÁS SIMPLE que resuelva el problema" La pregunta correcta es: "¿Cuál es la solución MÁS SIMPLE que logre SSoT + DRY?"
 
 ### 7. CARPETAS MAYORES - analisis amplia
@@ -64,8 +64,9 @@ En la carpeta <nombre> con sus subcarpetas (si hay) verifica los principios SSoT
 Verifica si hay errores en el componente/modulo <nombre> y si el nombre del componente/modulo está consistente con el nombre del archivo y de los imports. Explicacion breve de funcionalidad.
 
 ### 9. SSoT (Single Source of Truth - Fuente Única de la Verdad). 
-)
 Analisa si la carpeta <nombre> atiende al princípio Single Source of Truth (SSoT).
+
+Analisa si la carpeta <nombre> cumple o viola a los principios SRP (Single Responsibility Principle - Principio de Responsabilidad Única) + SSoT (Single Source of Truth - Fuente Única de la Verdad) + DRY (Don't Repeat Yourself), manteniento la filosofia KISS (Keep It Simple, Stupid) con separacion de camadas, escalabilidad, mantenibilidad y responsividad.
 
 ### 10. Componente individual
 Analisa la funcionalidad de este componente, donde esta siendo usado y si viola SSoT.

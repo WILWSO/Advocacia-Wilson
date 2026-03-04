@@ -26,8 +26,8 @@ export interface UseFieldValidationOptions {
   debounce?: number;
   /** Show error only after first blur */
   showErrorOnBlur?: boolean;
-  /** Custom onChange handler */
-  onChange?: (value: string, formattedValue: string) => void;
+  /** Custom onChange handler - receives raw, formatted, and clean (numeric only) values */
+  onChange?: (rawValue: string, formattedValue: string, cleanValue: string) => void;
   /** Custom onBlur handler */
   onBlur?: () => void;
   /** Custom onValidation handler */
@@ -206,9 +206,12 @@ export function useFieldValidation(config: {
       }
       setFormattedValue(formatted);
 
-      // Call custom onChange
+      // Extract clean value (numbers only) - useful for database storage
+      const clean = formatted.replace(/\D/g, '');
+
+      // Call custom onChange with all three versions
       if (onChange) {
-        onChange(value, formatted);
+        onChange(value, formatted, clean);
       }
 
       // Validate on change if enabled
