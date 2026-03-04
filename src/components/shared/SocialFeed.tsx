@@ -11,8 +11,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
-import { getTypeIcon, getTypeColor, formatDate, truncateText } from '../../utils/postUtils';
-import { formatCompactDate } from '../../utils/dateUtils';
+import { getTypeIcon, getTypeColor, truncateText } from '../../utils/postUtils';
+import { formatCompactDate, formatDate } from '../../utils/dateUtils';
 import { useMultiplePostsLike } from '../../hooks/features/useLikes';
 import { PostsService } from '../../services/postsService';
 import { EXTERNAL_COMPONENT_CLASSES } from '../../config/theme';
