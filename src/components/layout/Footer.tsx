@@ -11,6 +11,7 @@ import {
   Linkedin 
 } from 'lucide-react';
 import Logo from '../shared/Logo';
+import DeveloperBadge from '../shared/DeveloperBadge';
 import { company } from '../../data/DataCompany';
 import { footerQuickLinks } from '../home/NavBar';
 import { ResponsiveGrid, ResponsiveContainer } from '../shared/ResponsiveGrid';
@@ -198,7 +199,7 @@ const Footer: React.FC = () => {
 
         {/* Separador y Copyright */}
         <div className={cn(
-          "border-t border-primary-800 pt-8",
+          "border-t border-primary-800 pt-8 pb-4",
           isMobile ? "mt-8" : "mt-12"
         )}>
           <ResponsiveGrid
@@ -232,12 +233,7 @@ const Footer: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.15 }}
             >
-              <span className="text-neutral-400 text-xs">Developed by</span>
-              <img 
-                src="/Images/WSOlutions.jpg" 
-                alt="WSOlutions" 
-                className="h-8 object-contain rounded-sm hover:scale-110 transition-transform duration-300"
-              />
+              <DeveloperBadge />
             </motion.div>
 
             <motion.div

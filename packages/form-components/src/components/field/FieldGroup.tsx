@@ -18,7 +18,7 @@ export interface FieldGroupProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   /** Field name/id */
   name: string;
   /** Validator to use */
-  validator: Validator<unknown>;
+  validator?: Validator<unknown>;
   /** Optional formatter */
   formatter?: Formatter<string, string>;
   /** Initial value */
@@ -104,7 +104,7 @@ export const FieldGroup = forwardRef<HTMLInputElement, FieldGroupProps>(
       onValidation,
       showErrorOnBlur = true,
       validateOnMount = false,
-      formatOnMount = false, // Not yet implemented in useFieldValidation
+      // formatOnMount not yet implemented in useFieldValidation
       debounce,
       renderError,
       containerClassName = 'field-group',

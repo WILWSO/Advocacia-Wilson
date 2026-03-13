@@ -6,7 +6,7 @@
  * by providing a reusable pattern for creating validated and formatted inputs.
  */
 
-import React, { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import type { Validator, Formatter } from '@wsolutions/form-validation';
 import { FieldGroup, type FieldGroupProps } from '../field/FieldGroup';
 
@@ -116,7 +116,7 @@ export function createValidatedDomainInput<TProps extends Omit<FieldGroupProps, 
     return (
       <FieldGroup
         ref={ref}
-        validator={validator as any}
+        validator={validator}
         {...mergedProps}
       />
     );

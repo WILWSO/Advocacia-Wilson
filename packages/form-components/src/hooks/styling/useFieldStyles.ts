@@ -4,8 +4,8 @@
  */
 
 import { useMemo } from 'react';
-import type { ValidationState, FieldSize } from '../config/styles.config';
-import { DEFAULT_FIELD_STYLES } from '../config/styles.config';
+import type { ValidationState, FieldSize } from '../../config/styles.config';
+import { DEFAULT_FIELD_STYLES } from '../../config/styles.config';
 
 /**
  * Utility to merge Tailwind classes

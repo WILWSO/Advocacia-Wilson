@@ -12,7 +12,6 @@ export {
   BaseList,
   BaseGrid,
   BaseDivider,
-  type BaseListItem
 } from './BaseComponents'
 
 // Componente de selector de vista (Supabase-style)
@@ -46,6 +45,9 @@ export {
   type ButtonCategory,
   type CategoryConfig
 } from './baseButtonCategories'
+
+// Badge do desenvolvedor (SSoT)
+export { default as DeveloperBadge } from './DeveloperBadge'
 
 // Re-exportar tipos de props
 export type {

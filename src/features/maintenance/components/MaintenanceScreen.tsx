@@ -10,6 +10,7 @@ import { Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthLogin } from '../../../components/auth/useAuthLogin';
 import { MAINTENANCE_CONFIG } from '../config/maintenance.config';
+import DeveloperBadge from '../../../components/shared/DeveloperBadge';
 import type { MaintenanceScreenProps } from '../types/maintenance.types';
 
 /**
@@ -144,6 +145,7 @@ export const MaintenanceScreen: React.FC<MaintenanceScreenProps> = ({
           <p className="text-xs text-gray-500">
             Gracias por tu paciencia mientras mejoramos el sistema
           </p>
+           <DeveloperBadge logoClassName="h-6 w-auto opacity-70" />
         </div>
       </div>
     </div>
